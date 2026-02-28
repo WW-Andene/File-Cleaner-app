@@ -6,6 +6,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
+import com.filecleaner.app.R
 
 /**
  * Attaches drag-to-move and edge-snap behavior to an existing ImageView.
@@ -16,8 +17,13 @@ object RaccoonBubble {
     private var pulseAnimatorX: ObjectAnimator? = null
     private var pulseAnimatorY: ObjectAnimator? = null
 
+    private val TAG_ATTACHED = R.id.raccoon_bubble_attached
+
     @SuppressLint("ClickableViewAccessibility")
     fun attach(bubble: View, onClick: () -> Unit) {
+        // Guard against duplicate attach — prevents stacking listeners and pulse animators
+        if (bubble.getTag(TAG_ATTACHED) == true) return
+        bubble.setTag(TAG_ATTACHED, true)
         var downX = 0f
         var downY = 0f
         var startTransX = 0f
@@ -67,6 +73,7 @@ object RaccoonBubble {
             override fun onViewAttachedToWindow(v: View) {}
             override fun onViewDetachedFromWindow(v: View) {
                 cancelPulse()
+                v.setTag(TAG_ATTACHED, null)
                 v.removeOnAttachStateChangeListener(this)
             }
         })
@@ -76,31 +83,31 @@ object RaccoonBubble {
         val parent = view.parent as? ViewGroup ?: return
         val parentW = parent.width.toFloat()
         val centerX = view.x + view.width / 2f
+        val pageMotion = view.resources.getInteger(R.integer.motion_page).toLong()
 
         val targetX = if (centerX < parentW / 2f) {
-            // Snap to left edge
             -view.left.toFloat() + 16f
         } else {
-            // Snap to right edge
             parentW - view.left.toFloat() - view.width.toFloat() - 16f
         }
 
         ObjectAnimator.ofFloat(view, "translationX", view.translationX, targetX).apply {
-            duration = 300
+            duration = pageMotion
             interpolator = OvershootInterpolator(1.2f)
             start()
         }
     }
 
     private fun startPulse(view: View) {
+        val emphasisMotion = view.resources.getInteger(R.integer.motion_emphasis).toLong()
         pulseAnimatorX = ObjectAnimator.ofFloat(view, "scaleX", 1f, 1.05f, 1f).apply {
-            duration = 600
+            duration = emphasisMotion
             startDelay = 15000
             repeatCount = 2
             repeatMode = ObjectAnimator.RESTART
         }
         pulseAnimatorY = ObjectAnimator.ofFloat(view, "scaleY", 1f, 1.05f, 1f).apply {
-            duration = 600
+            duration = emphasisMotion
             startDelay = 15000
             repeatCount = 2
             repeatMode = ObjectAnimator.RESTART

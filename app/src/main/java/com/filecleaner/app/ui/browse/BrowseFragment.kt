@@ -25,7 +25,7 @@ class BrowseFragment : Fragment() {
     private val categories by lazy {
         listOf(
             getString(R.string.all_files) to null,
-            *FileCategory.values().map { "${it.emoji} ${it.displayName}" to it }.toTypedArray()
+            *FileCategory.entries.map { "${it.emoji} ${it.displayName}" to it }.toTypedArray()
         )
     }
 
@@ -82,13 +82,12 @@ class BrowseFragment : Fragment() {
         }
 
         val sorted = when (binding.spinnerSort.selectedItemPosition) {
-            0 -> raw.sortedBy   { it.name.lowercase() }
+            0 -> raw.sortedBy { it.name.lowercase() }
             1 -> raw.sortedByDescending { it.name.lowercase() }
-            2 -> raw.sortedBy   { it.size }
+            2 -> raw.sortedBy { it.size }
             3 -> raw.sortedByDescending { it.size }
-            4 -> raw.sortedBy   { it.lastModified }
-            5 -> raw.sortedByDescending { it.lastModified }
-            else -> raw
+            4 -> raw.sortedBy { it.lastModified }
+            else -> raw.sortedByDescending { it.lastModified }
         }
 
         adapter.submitList(sorted)

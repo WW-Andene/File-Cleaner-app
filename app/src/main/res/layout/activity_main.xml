@@ -3,49 +3,92 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/surfaceBase">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.MaterialComponents.ActionBar">
+        android:background="@color/surfaceBase"
+        app:elevation="0dp">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="@string/app_name"
-            app:titleTextColor="@android:color/white"
-            android:background="@color/colorPrimary" />
-
-        <!-- Scan status bar -->
+        <!-- Clean header with app branding -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="6dp"
-            android:background="@color/colorPrimaryDark">
+            android:paddingHorizontal="20dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="4dp">
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_raccoon_face"
+                android:importantForAccessibility="no" />
 
             <TextView
-                android:id="@+id/tv_scan_status"
+                android:id="@+id/toolbar_title"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:text="@string/scan_prompt"
-                android:textColor="@android:color/white"
-                android:textSize="13sp" />
-
-            <ProgressBar
-                android:id="@+id/progress_bar"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:visibility="gone"
-                android:indeterminate="true"
-                android:indeterminateTint="@android:color/white"
-                android:contentDescription="@string/scanning_in_progress" />
+                android:layout_marginStart="10dp"
+                android:text="@string/app_name"
+                android:textColor="@color/textPrimary"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium" />
         </LinearLayout>
+
+        <!-- Scan status bar — soft container style -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="4dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/scanBarBackground"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="10dp">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_scan"
+                    android:importantForAccessibility="no"
+                    app:tint="@color/colorPrimary" />
+
+                <TextView
+                    android:id="@+id/tv_scan_status"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="@string/scan_prompt"
+                    android:textColor="@color/scanBarText"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <ProgressBar
+                    android:id="@+id/progress_bar"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:visibility="gone"
+                    android:indeterminate="true"
+                    android:indeterminateTint="@color/colorPrimary"
+                    android:contentDescription="@string/scanning_in_progress" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Fragment container -->
@@ -58,7 +101,7 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/nav_graph" />
 
-    <!-- FAB scan button (F-023: use individual margins to avoid overlap) -->
+    <!-- FAB scan button -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab_scan"
         android:layout_width="wrap_content"
@@ -67,26 +110,38 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="72dp"
+        android:layout_marginBottom="80dp"
         android:text="@string/scan_storage"
         app:icon="@drawable/ic_scan"
         android:backgroundTint="@color/colorPrimary"
-        android:textColor="@android:color/white"
-        app:iconTint="@android:color/white" />
+        android:textColor="@color/textOnPrimary"
+        app:iconTint="@color/textOnPrimary"
+        app:shapeAppearance="@style/ShapeMedium"
+        app:elevation="4dp" />
 
-    <!-- Raccoon bubble: draggable floating toggle for arborescence view -->
-    <ImageView
-        android:id="@+id/raccoon_bubble"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+    <!-- Raccoon bubble: draggable floating toggle for tree view -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/raccoon_bubble_card"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
         android:layout_gravity="bottom|start"
         android:layout_marginStart="16dp"
-        android:layout_marginBottom="72dp"
-        android:src="@drawable/ic_raccoon_face"
-        android:background="@drawable/bg_bubble"
-        android:elevation="8dp"
-        android:contentDescription="@string/open_arborescence"
-        android:importantForAccessibility="yes" />
+        android:layout_marginBottom="80dp"
+        app:cardCornerRadius="26dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="@color/surfaceColor"
+        app:strokeWidth="2dp"
+        app:strokeColor="@color/colorPrimaryContainer">
+
+        <ImageView
+            android:id="@+id/raccoon_bubble"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_raccoon_face"
+            android:contentDescription="@string/open_arborescence"
+            android:importantForAccessibility="yes" />
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- Bottom nav -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -94,8 +149,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="?android:attr/colorBackground"
+        android:background="@color/bottomNavBackground"
         app:menu="@menu/bottom_nav_menu"
-        app:labelVisibilityMode="labeled" />
+        app:labelVisibilityMode="labeled"
+        app:itemIconTint="@color/bottom_nav_color"
+        app:itemTextColor="@color/bottom_nav_color"
+        app:itemActiveIndicatorStyle="@style/Widget.FileCleaner.BottomNav.ActiveIndicator"
+        app:elevation="8dp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

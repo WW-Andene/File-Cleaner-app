@@ -3,23 +3,26 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/surfaceBase">
 
     <!-- Search bar -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/til_search_tree"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
+        android:layout_marginHorizontal="16dp"
         android:layout_marginTop="8dp"
         app:startIconDrawable="@drawable/ic_search"
         app:endIconMode="clear_text"
         app:boxBackgroundMode="outline"
-        app:boxCornerRadiusTopStart="8dp"
-        app:boxCornerRadiusTopEnd="8dp"
-        app:boxCornerRadiusBottomStart="8dp"
-        app:boxCornerRadiusBottomEnd="8dp"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxStrokeColor="@color/borderDefault"
+        app:hintTextColor="@color/colorPrimary"
+        app:startIconTint="@color/textTertiary"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -29,7 +32,8 @@
             android:hint="@string/search_tree_hint"
             android:inputType="text"
             android:maxLines="1"
-            android:imeOptions="actionSearch" />
+            android:imeOptions="actionSearch"
+            android:textSize="14sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Stats row + filter toggle + zoom info -->
@@ -38,34 +42,45 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="4dp">
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="6dp">
 
         <TextView
             android:id="@+id/tv_stats_header"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textColor="@color/textSecondary"
+            android:textColor="@color/textTertiary"
             android:textSize="12sp"
+            android:fontFamily="sans-serif-medium"
             android:visibility="gone" />
 
-        <ImageButton
-            android:id="@+id/btn_toggle_filters"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:src="@drawable/ic_view_list"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:scaleType="centerInside"
-            android:padding="6dp"
-            android:layout_marginHorizontal="4dp"
-            android:contentDescription="@string/toggle_filters" />
+            app:cardCornerRadius="10dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/surfaceDim"
+            app:strokeWidth="0dp"
+            android:layout_marginHorizontal="4dp">
+
+            <ImageButton
+                android:id="@+id/btn_toggle_filters"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_view_list"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:scaleType="centerInside"
+                android:padding="6dp"
+                android:contentDescription="@string/toggle_filters"
+                app:tint="@color/textSecondary" />
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/tv_zoom_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/textSecondary"
+            android:textColor="@color/textTertiary"
             android:textSize="12sp"
             android:visibility="gone" />
     </LinearLayout>
@@ -76,7 +91,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingHorizontal="8dp"
+        android:paddingHorizontal="16dp"
         android:paddingVertical="4dp"
         android:visibility="gone">
 
@@ -90,15 +105,21 @@
                 android:id="@+id/spinner_tree_category"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:layout_height="40dp"
-                android:layout_marginEnd="4dp" />
+                android:layout_height="44dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/bg_spinner"
+                android:popupBackground="@color/surfaceColor"
+                android:paddingHorizontal="12dp" />
 
             <Spinner
                 android:id="@+id/spinner_tree_sort"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:layout_height="40dp"
-                android:layout_marginStart="4dp" />
+                android:layout_height="44dp"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/bg_spinner"
+                android:popupBackground="@color/surfaceColor"
+                android:paddingHorizontal="12dp" />
         </LinearLayout>
 
         <HorizontalScrollView
@@ -106,13 +127,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="none"
+            android:paddingTop="4dp"
             android:visibility="gone">
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/chip_group_tree_extensions"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:singleLine="true" />
+                app:singleLine="true"
+                app:chipSpacingHorizontal="6dp" />
         </HorizontalScrollView>
     </LinearLayout>
 
@@ -128,14 +151,31 @@
             android:layout_height="match_parent" />
 
         <!-- Empty state -->
-        <TextView
+        <LinearLayout
             android:id="@+id/tv_empty"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/scan_to_see_results"
-            android:textSize="16sp"
-            android:visibility="gone" />
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/ic_raccoon_face"
+                android:alpha="0.4"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/scan_to_see_results"
+                android:textSize="15sp"
+                android:textColor="@color/textSecondary"
+                android:gravity="center" />
+        </LinearLayout>
 
         <!-- Selected node detail (bottom-right) -->
         <TextView
@@ -146,10 +186,12 @@
             android:layout_marginEnd="12dp"
             android:layout_marginBottom="12dp"
             android:background="@drawable/bg_stats_overlay"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="8dp"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="10dp"
             android:textColor="@android:color/white"
             android:textSize="13sp"
+            android:fontFamily="sans-serif-medium"
+            android:elevation="4dp"
             android:visibility="gone" />
 
         <!-- Back-to-root mini FAB (bottom-start) -->
@@ -163,7 +205,9 @@
             android:contentDescription="@string/reset_view"
             android:src="@drawable/ic_raccoon_face"
             app:fabSize="mini"
-            app:backgroundTint="@color/colorPrimary" />
+            app:backgroundTint="@color/colorPrimary"
+            app:tint="@android:color/white"
+            app:shapeAppearance="@style/ShapeSmall" />
     </FrameLayout>
 
 </LinearLayout>

@@ -1,56 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:padding="12dp"
-    android:background="?attr/selectableItemBackground">
+    android:layout_marginHorizontal="4dp"
+    android:layout_marginVertical="3dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@color/surfaceColor"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/borderDefault"
+    app:rippleColor="@color/colorPrimaryContainer">
 
-    <!-- Thumbnail / icon (decorative — F-032, F-035) -->
-    <ImageView
-        android:id="@+id/iv_file_icon"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:scaleType="centerCrop"
-        android:background="@drawable/bg_icon_rounded"
-        android:padding="4dp"
-        android:importantForAccessibility="no" />
-
-    <!-- Text block -->
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_weight="1"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="4dp">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="10dp">
 
-        <TextView
-            android:id="@+id/tv_file_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textColor="@color/textPrimary"
-            android:maxLines="1"
-            android:ellipsize="middle"
-            android:textStyle="bold" />
+        <!-- Thumbnail / icon -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="@color/surfaceDim">
 
-        <TextView
-            android:id="@+id/tv_file_meta"
-            android:layout_width="match_parent"
+            <ImageView
+                android:id="@+id/iv_file_icon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:padding="8dp"
+                android:importantForAccessibility="no" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Text block -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:textColor="@color/textSecondary"
-            android:layout_marginTop="2dp" />
+            android:orientation="vertical"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp">
+
+            <TextView
+                android:id="@+id/tv_file_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/textPrimary"
+                android:maxLines="1"
+                android:ellipsize="middle"
+                android:fontFamily="sans-serif-medium" />
+
+            <TextView
+                android:id="@+id/tv_file_meta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="@color/textTertiary"
+                android:layout_marginTop="2dp" />
+
+        </LinearLayout>
+
+        <!-- Checkbox -->
+        <CheckBox
+            android:id="@+id/cb_select"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:buttonTint="@color/colorPrimary" />
 
     </LinearLayout>
-
-    <!-- Checkbox (F-033: removed focusable=false for switch/TalkBack access) -->
-    <CheckBox
-        android:id="@+id/cb_select"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:clickable="false" />
-
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

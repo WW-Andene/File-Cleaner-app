@@ -62,7 +62,14 @@ object JunkFinder {
             .take(maxResults)
     }
 
-    private fun isMedia(ext: String) = ext in setOf(
-        "jpg","jpeg","png","gif","mp4","mkv","avi","mov","mp3","aac","flac","wav"
+    private val MEDIA_EXTENSIONS = setOf(
+        // Images — matches FileScanner.CATEGORY_MAP
+        "jpg","jpeg","png","gif","bmp","webp","heic","heif","tiff","svg","raw","cr2","nef",
+        // Videos
+        "mp4","mkv","avi","mov","wmv","flv","webm","m4v","3gp","ts","mpeg","mpg",
+        // Audio
+        "mp3","aac","flac","wav","ogg","m4a","wma","opus","aiff","mid"
     )
+
+    private fun isMedia(ext: String) = ext in MEDIA_EXTENSIONS
 }

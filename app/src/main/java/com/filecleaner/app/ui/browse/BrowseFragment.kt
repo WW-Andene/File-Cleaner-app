@@ -8,11 +8,14 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.filecleaner.app.R
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.databinding.FragmentBrowseBinding
 import com.filecleaner.app.ui.adapters.FileAdapter
+import com.filecleaner.app.ui.adapters.ViewMode
 import com.filecleaner.app.viewmodel.MainViewModel
 
 class BrowseFragment : Fragment() {
@@ -21,6 +24,8 @@ class BrowseFragment : Fragment() {
     private val binding get() = _binding!!
     private val vm: MainViewModel by activityViewModels()
     private lateinit var adapter: FileAdapter
+
+    private var currentViewMode = ViewMode.LIST
 
     private val categories by lazy {
         listOf(
@@ -39,7 +44,12 @@ class BrowseFragment : Fragment() {
 
         // RecyclerView
         adapter = FileAdapter(selectable = false)
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
+
+        // View mode toggle
+        binding.btnViewMode.setOnClickListener { cycleViewMode() }
+        updateViewModeIcon()
 
         // Category spinner
         val labels = categories.map { it.first }
@@ -69,6 +79,32 @@ class BrowseFragment : Fragment() {
         }
 
         vm.filesByCategory.observe(viewLifecycleOwner) { refresh() }
+    }
+
+    private fun cycleViewMode() {
+        val modes = ViewMode.entries
+        val nextIndex = (modes.indexOf(currentViewMode) + 1) % modes.size
+        currentViewMode = modes[nextIndex]
+        adapter.viewMode = currentViewMode
+        applyLayoutManager()
+        updateViewModeIcon()
+    }
+
+    private fun applyLayoutManager() {
+        val spanCount = currentViewMode.spanCount
+        binding.recyclerView.layoutManager = if (spanCount == 1) {
+            LinearLayoutManager(requireContext())
+        } else {
+            GridLayoutManager(requireContext(), spanCount)
+        }
+    }
+
+    private fun updateViewModeIcon() {
+        val iconRes = when (currentViewMode) {
+            ViewMode.LIST, ViewMode.LIST_WITH_THUMBNAILS -> R.drawable.ic_view_list
+            ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE -> R.drawable.ic_view_grid
+        }
+        binding.btnViewMode.setImageResource(iconRes)
     }
 
     private fun refresh() {

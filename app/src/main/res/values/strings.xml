@@ -89,6 +89,9 @@
     <string name="stats_header_format">%1$d files \u2022 %2$s</string>
     <string name="zoom_info_format">%1$d%% \u2022 %2$d nodes</string>
 
+    <!-- View mode -->
+    <string name="view_mode">View mode</string>
+
     <!-- Date format -->
     <string name="date_format_short">dd MMM yyyy</string>
 </resources>

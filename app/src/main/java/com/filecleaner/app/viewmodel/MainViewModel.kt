@@ -11,7 +11,10 @@ import com.filecleaner.app.utils.DuplicateFinder
 import com.filecleaner.app.utils.FileScanner
 import com.filecleaner.app.utils.JunkFinder
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 sealed class ScanState {
@@ -25,6 +28,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     private val _scanState = MutableLiveData<ScanState>(ScanState.Idle)
     val scanState: LiveData<ScanState> = _scanState
+
+    private var scanJob: Job? = null
+    private val stateMutex = Mutex()
 
     private val _allFiles = MutableLiveData<List<FileItem>>(emptyList())
 
@@ -61,42 +67,51 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val freedBytes: Long
     )
 
+    val isScanning: Boolean get() = _scanState.value is ScanState.Scanning
+
     fun startScan(minLargeFileMb: Int = 50) {
-        viewModelScope.launch {
+        // Cancel any in-progress scan before starting a new one (F-004)
+        scanJob?.cancel()
+        scanJob = viewModelScope.launch {
             _scanState.value = ScanState.Scanning(0)
             runCatching {
                 // 1. Scan
                 val files = FileScanner.scanAll(getApplication()) { count ->
                     _scanState.postValue(ScanState.Scanning(count))
                 }
-                _allFiles.postValue(files)
 
-                // 2. Classify by category
-                _filesByCategory.postValue(files.groupBy { it.category })
+                // Use mutex to prevent concurrent state mutations (F-013)
+                stateMutex.withLock {
+                    _allFiles.postValue(files)
 
-                // 3. Find duplicates
-                val dupes = DuplicateFinder.findDuplicates(files)
-                _duplicates.postValue(dupes)
+                    // 2. Classify by category
+                    _filesByCategory.postValue(files.groupBy { it.category })
 
-                // 4. Large files
-                val large = JunkFinder.findLargeFiles(files, minLargeFileMb * 1024L * 1024L)
-                _largeFiles.postValue(large)
+                    // 3. Find duplicates
+                    val dupes = DuplicateFinder.findDuplicates(files)
+                    _duplicates.postValue(dupes)
 
-                // 5. Junk files
-                val junk = JunkFinder.findJunk(files)
-                _junkFiles.postValue(junk)
+                    // 4. Large files
+                    val large = JunkFinder.findLargeFiles(files, minLargeFileMb * 1024L * 1024L)
+                    _largeFiles.postValue(large)
 
-                // 6. Stats
-                _storageStats.postValue(StorageStats(
-                    totalFiles    = files.size,
-                    totalSize     = files.sumOf { it.size },
-                    junkSize      = junk.sumOf { it.size },
-                    duplicateSize = dupes.sumOf { it.size },
-                    largeSize     = large.sumOf { it.size }
-                ))
+                    // 5. Junk files
+                    val junk = JunkFinder.findJunk(files)
+                    _junkFiles.postValue(junk)
+
+                    // 6. Stats
+                    _storageStats.postValue(StorageStats(
+                        totalFiles    = files.size,
+                        totalSize     = files.sumOf { it.size },
+                        junkSize      = junk.sumOf { it.size },
+                        duplicateSize = dupes.sumOf { it.size },
+                        largeSize     = large.sumOf { it.size }
+                    ))
+                }
 
                 _scanState.postValue(ScanState.Done)
             }.onFailure { e ->
+                if (e is kotlinx.coroutines.CancellationException) throw e
                 _scanState.postValue(ScanState.Error(e.message ?: "Unknown error"))
             }
         }
@@ -104,6 +119,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Deletes a list of FileItems from disk and removes them from all caches. */
     fun deleteFiles(toDelete: List<FileItem>) {
+        if (isScanning) return // Don't delete during an active scan (F-013)
         viewModelScope.launch {
             // Perform IO on background thread (F-014)
             val (deletedPaths, freedBytes) = withContext(Dispatchers.IO) {
@@ -123,25 +139,27 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             val failed = toDelete.size - deletedPaths.size
             _deleteResult.postValue(DeleteResult(deletedPaths.size, failed, freedBytes))
 
-            // Update all lists with only successfully deleted files
-            val remaining = _allFiles.value?.filter { it.path !in deletedPaths } ?: return@launch
-            _allFiles.postValue(remaining)
-            _filesByCategory.postValue(remaining.groupBy { it.category })
-            _duplicates.postValue(_duplicates.value?.filter { it.path !in deletedPaths })
-            _largeFiles.postValue(_largeFiles.value?.filter { it.path !in deletedPaths })
-            _junkFiles.postValue(_junkFiles.value?.filter { it.path !in deletedPaths })
+            // Serialize state mutations with scan (F-013)
+            stateMutex.withLock {
+                val remaining = _allFiles.value?.filter { it.path !in deletedPaths } ?: return@launch
+                _allFiles.postValue(remaining)
+                _filesByCategory.postValue(remaining.groupBy { it.category })
+                _duplicates.postValue(_duplicates.value?.filter { it.path !in deletedPaths })
+                _largeFiles.postValue(_largeFiles.value?.filter { it.path !in deletedPaths })
+                _junkFiles.postValue(_junkFiles.value?.filter { it.path !in deletedPaths })
 
-            // Recalculate storage stats (F-006)
-            val dupes = _duplicates.value ?: emptyList()
-            val large = _largeFiles.value ?: emptyList()
-            val junk = _junkFiles.value ?: emptyList()
-            _storageStats.postValue(StorageStats(
-                totalFiles    = remaining.size,
-                totalSize     = remaining.sumOf { it.size },
-                junkSize      = junk.sumOf { it.size },
-                duplicateSize = dupes.sumOf { it.size },
-                largeSize     = large.sumOf { it.size }
-            ))
+                // Recalculate storage stats (F-006)
+                val dupes = _duplicates.value ?: emptyList()
+                val large = _largeFiles.value ?: emptyList()
+                val junk = _junkFiles.value ?: emptyList()
+                _storageStats.postValue(StorageStats(
+                    totalFiles    = remaining.size,
+                    totalSize     = remaining.sumOf { it.size },
+                    junkSize      = junk.sumOf { it.size },
+                    duplicateSize = dupes.sumOf { it.size },
+                    largeSize     = large.sumOf { it.size }
+                ))
+            }
         }
     }
 }

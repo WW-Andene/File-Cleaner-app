@@ -75,19 +75,25 @@ class FileAdapter(
             holder.itemView.setBackgroundColor(0x00000000)
         }
 
-        // Checkbox
+        // Checkbox + accessibility (F-033)
         if (selectable) {
             holder.check.visibility = View.VISIBLE
             holder.check.isChecked = isSelected
+            holder.check.contentDescription = if (isSelected) "Deselect ${item.name}" else "Select ${item.name}"
             val toggle = {
                 toggleSelection(item.path)
-                holder.check.isChecked = item.path in selectedPaths
+                val nowSelected = item.path in selectedPaths
+                holder.check.isChecked = nowSelected
+                holder.check.contentDescription = if (nowSelected) "Deselect ${item.name}" else "Select ${item.name}"
                 notifySelectionChanged()
             }
             holder.check.setOnClickListener { toggle() }
             holder.itemView.setOnClickListener { toggle() }
+            // Row-level accessibility description
+            holder.itemView.contentDescription = "${item.name}, ${buildMeta(item)}, ${if (isSelected) "selected" else "not selected"}"
         } else {
             holder.check.visibility = View.GONE
+            holder.itemView.contentDescription = "${item.name}, ${buildMeta(item)}"
         }
     }
 

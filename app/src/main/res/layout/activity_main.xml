@@ -43,7 +43,8 @@
                 android:layout_height="24dp"
                 android:visibility="gone"
                 android:indeterminate="true"
-                android:indeterminateTint="@android:color/white" />
+                android:indeterminateTint="@android:color/white"
+                android:contentDescription="Scanning in progress" />
         </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
 

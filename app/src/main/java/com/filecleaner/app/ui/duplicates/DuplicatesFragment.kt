@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.databinding.FragmentListActionBinding
 import com.filecleaner.app.ui.adapters.FileAdapter
 import com.filecleaner.app.viewmodel.MainViewModel
@@ -17,7 +18,7 @@ class DuplicatesFragment : Fragment() {
     private val binding get() = _binding!!
     private val vm: MainViewModel by activityViewModels()
     private lateinit var adapter: FileAdapter
-    private var selected = listOf<com.filecleaner.app.data.FileItem>()
+    private var selected = listOf<FileItem>()
 
     override fun onCreateView(i: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
         _binding = FragmentListActionBinding.inflate(i, c, false)
@@ -35,7 +36,8 @@ class DuplicatesFragment : Fragment() {
         }
         binding.recyclerView.adapter = adapter
 
-        binding.btnSelectAll.setOnClickListener { adapter.selectAll() }
+        // Select All keeps one copy per group (F-028)
+        binding.btnSelectAll.setOnClickListener { adapter.selectAllDuplicatesExceptBest() }
         binding.btnDeselectAll.setOnClickListener { adapter.deselectAll() }
 
         binding.btnAction.text = "Delete selected"
@@ -45,7 +47,7 @@ class DuplicatesFragment : Fragment() {
         vm.duplicates.observe(viewLifecycleOwner) { dupes ->
             adapter.submitList(dupes)
             binding.tvSummary.text = if (dupes.isEmpty()) "No duplicates found" else
-                "${dupes.size} duplicate files — ${totalSize(dupes)} wasted"
+                "${dupes.size} duplicate files \u2014 ${totalSize(dupes)} in duplicates"
             binding.tvEmpty.visibility = if (dupes.isEmpty()) View.VISIBLE else View.GONE
         }
     }
@@ -59,7 +61,7 @@ class DuplicatesFragment : Fragment() {
             .show()
     }
 
-    private fun totalSize(list: List<com.filecleaner.app.data.FileItem>): String {
+    private fun totalSize(list: List<FileItem>): String {
         val bytes = list.sumOf { it.size }
         return when {
             bytes >= 1_073_741_824 -> "%.1f GB".format(bytes / 1_073_741_824.0)

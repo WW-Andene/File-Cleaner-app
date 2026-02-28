@@ -37,12 +37,12 @@ object DuplicateFinder {
         }
 
         // Step 3: Keep only actual duplicates (2+ files with same hash)
+        // Return new copies with duplicateGroup set (immutable FileItem — F-008)
         val result = mutableListOf<FileItem>()
         var groupId = 0
         for ((_, group) in byHash) {
             if (group.size > 1) {
-                group.forEach { it.duplicateGroup = groupId }
-                result.addAll(group)
+                result.addAll(group.map { it.copy(duplicateGroup = groupId) })
                 groupId++
             }
         }

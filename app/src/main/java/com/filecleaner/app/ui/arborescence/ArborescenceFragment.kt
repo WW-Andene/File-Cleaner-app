@@ -11,6 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.filecleaner.app.R
+import com.filecleaner.app.data.DirectoryNode
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.databinding.FragmentArborescenceBinding
@@ -28,6 +29,8 @@ class ArborescenceFragment : Fragment() {
 
     private var filterPanelVisible = false
     private val selectedTreeExtensions = mutableSetOf<String>()
+    private var savedExpandedPaths: Set<String>? = null
+    private var lastTreeRef: DirectoryNode? = null
 
     private val treeCategories by lazy {
         listOf(
@@ -126,6 +129,7 @@ class ArborescenceFragment : Fragment() {
 
         // Reset view button
         binding.fabResetView.setOnClickListener {
+            lastTreeRef = null
             vm.directoryTree.value?.let { tree ->
                 binding.arborescenceView.setTree(tree)
             }
@@ -136,7 +140,16 @@ class ArborescenceFragment : Fragment() {
             if (tree != null) {
                 binding.arborescenceView.visibility = View.VISIBLE
                 binding.tvEmpty.visibility = View.GONE
-                binding.arborescenceView.setTree(tree)
+                // Restore expansion state if navigating back
+                if (tree === lastTreeRef) {
+                    // Same tree reference, already set — skip
+                } else if (savedExpandedPaths != null) {
+                    binding.arborescenceView.setTreeWithState(tree, savedExpandedPaths!!)
+                    savedExpandedPaths = null
+                } else {
+                    binding.arborescenceView.setTree(tree)
+                }
+                lastTreeRef = tree
                 updateTreeExtensionChips()
             } else {
                 binding.arborescenceView.visibility = View.GONE
@@ -158,6 +171,8 @@ class ArborescenceFragment : Fragment() {
         vm.navigateToTree.observe(viewLifecycleOwner) { filePath ->
             if (filePath != null) {
                 binding.arborescenceView.highlightFilePath(filePath)
+                val fileName = File(filePath).name
+                Snackbar.make(binding.root, "Located: $fileName", Snackbar.LENGTH_SHORT).show()
                 vm.clearTreeHighlight()
             }
         }
@@ -284,6 +299,7 @@ class ArborescenceFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        savedExpandedPaths = binding.arborescenceView.getExpandedPaths()
         super.onDestroyView()
         _binding = null
     }

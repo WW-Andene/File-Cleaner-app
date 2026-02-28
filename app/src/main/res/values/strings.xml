@@ -94,6 +94,7 @@
 
     <!-- Extension filter -->
     <string name="filter_by_extension">Filter by extension</string>
+    <string name="toggle_filters">Toggle filters</string>
 
     <!-- Search -->
     <string name="search_files_hint">Search files\u2026</string>

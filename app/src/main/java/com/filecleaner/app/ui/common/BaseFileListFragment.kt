@@ -14,6 +14,7 @@ import com.filecleaner.app.ui.adapters.FileAdapter
 import com.filecleaner.app.utils.FileOpener
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.MainViewModel
+import com.google.android.material.snackbar.Snackbar
 
 /**
  * Shared base for Junk / Large / Duplicates screens (F-039).
@@ -92,6 +93,10 @@ abstract class BaseFileListFragment : Fragment() {
 
         vm.deleteResult.observe(viewLifecycleOwner) { result ->
             UndoHelper.showUndoSnackbar(binding.root, result, vm)
+        }
+
+        vm.operationResult.observe(viewLifecycleOwner) { result ->
+            Snackbar.make(binding.root, result.message, Snackbar.LENGTH_SHORT).show()
         }
     }
 

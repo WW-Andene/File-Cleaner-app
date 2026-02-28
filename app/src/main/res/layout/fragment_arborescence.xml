@@ -108,7 +108,7 @@
         android:background="@drawable/bg_stats_overlay"
         android:scaleType="centerInside"
         android:padding="6dp"
-        android:contentDescription="@string/filter_by_extension" />
+        android:contentDescription="@string/toggle_filters" />
 
     <!-- Stats header (top-left, below filter panel) -->
     <TextView

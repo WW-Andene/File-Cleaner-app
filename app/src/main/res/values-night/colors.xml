@@ -1,10 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#4DB6AC</color>
-    <color name="colorPrimaryDark">#00897B</color>
-    <color name="colorAccent">#FFD54F</color>
+    <!-- Primary: Lighter green for dark mode legibility -->
+    <color name="colorPrimary">#66BB9A</color>
+    <color name="colorPrimaryDark">#2E7D5F</color>
+    <color name="colorPrimaryLight">#81C9A8</color>
+    <color name="colorPrimaryContainer">#1A3D2E</color>
+    <color name="colorOnPrimaryContainer">#B8E6D0</color>
+
+    <!-- Accent -->
+    <color name="colorAccent">#F0A856</color>
+    <color name="colorAccentLight">#3D2E1A</color>
+
+    <!-- Semantic -->
     <color name="colorError">#EF5350</color>
-    <color name="surfaceColor">#1E1E1E</color>
-    <color name="textPrimary">#E0E0E0</color>
-    <color name="textSecondary">#B0B0B0</color>
+    <color name="colorErrorLight">#3D1A1A</color>
+    <color name="colorSuccess">#66BB6A</color>
+    <color name="colorWarning">#FFD54F</color>
+
+    <!-- Surface elevation ladder (chromatic near-blacks) -->
+    <color name="surfaceBase">#0F1412</color>
+    <color name="surfaceColor">#171D1A</color>
+    <color name="surfaceElevated">#1E2622</color>
+    <color name="surfaceDim">#232B27</color>
+
+    <!-- Text -->
+    <color name="textPrimary">#E8E6E1</color>
+    <color name="textSecondary">#A3A8A5</color>
+    <color name="textTertiary">#6E7572</color>
+    <color name="textOnPrimary">#0F1412</color>
+
+    <!-- Borders -->
+    <color name="borderDefault">#2E3631</color>
+    <color name="borderFocus">#66BB9A</color>
+
+    <!-- Bottom nav -->
+    <color name="bottomNavBackground">#171D1A</color>
+    <color name="bottomNavIndicator">#1A3D2E</color>
+
+    <!-- Scan bar -->
+    <color name="scanBarBackground">#1A3D2E</color>
+    <color name="scanBarText">#B8E6D0</color>
+
+    <!-- File category tints -->
+    <color name="catImage">#B388FF</color>
+    <color name="catVideo">#F48FB1</color>
+    <color name="catAudio">#FFAB40</color>
+    <color name="catDocument">#64B5F6</color>
+    <color name="catApk">#4DB6AC</color>
+    <color name="catArchive">#A1887F</color>
+    <color name="catDownload">#90A4AE</color>
+    <color name="catOther">#B0BEC5</color>
+
+    <!-- Duplicate group backgrounds -->
+    <color name="dupGroup0">#1B3D28</color>
+    <color name="dupGroup1">#1A2E3D</color>
+    <color name="dupGroup2">#3D2E1A</color>
+    <color name="dupGroup3">#2E1A3D</color>
+    <color name="dupGroup4">#3D1A1A</color>
+    <color name="dupGroup5">#1A3D3D</color>
 </resources>

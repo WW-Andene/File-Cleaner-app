@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
 
         // Raccoon bubble → toggle arborescence
         val navController = navHost.navController
-        RaccoonBubble.attach(binding.raccoonBubble) {
+        RaccoonBubble.attach(binding.raccoonBubbleCard) {
             val currentDest = navController.currentDestination?.id
             if (currentDest == R.id.arborescenceFragment) {
                 navController.popBackStack()

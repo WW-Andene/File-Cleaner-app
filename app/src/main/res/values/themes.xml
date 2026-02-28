@@ -1,9 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.FileCleaner" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Color attributes -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+        <item name="colorSecondary">@color/colorAccent</item>
+        <item name="colorError">@color/colorError</item>
+
+        <!-- Surface and background -->
+        <item name="android:colorBackground">@color/surfaceBase</item>
+        <item name="android:windowBackground">@color/surfaceBase</item>
+        <item name="android:statusBarColor">@color/surfaceBase</item>
+        <item name="android:navigationBarColor">@color/bottomNavBackground</item>
+
+        <!-- Light status bar icons on light theme -->
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+
+        <!-- Default text colors -->
+        <item name="android:textColorPrimary">@color/textPrimary</item>
+        <item name="android:textColorSecondary">@color/textSecondary</item>
+
+        <!-- Shape theming -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeSmall</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeMedium</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeLarge</item>
+
+        <!-- Bottom Navigation styling -->
+        <item name="bottomNavigationStyle">@style/Widget.FileCleaner.BottomNav</item>
+
+        <!-- Material Button styling -->
+        <item name="materialButtonStyle">@style/Widget.FileCleaner.Button</item>
+
+        <!-- Chip styling -->
+        <item name="chipStyle">@style/Widget.FileCleaner.Chip</item>
+    </style>
+
+    <!-- Shape appearances -->
+    <style name="ShapeSmall" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+        <item name="cornerSize">8dp</item>
+    </style>
+
+    <style name="ShapeMedium" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerSize">12dp</item>
+    </style>
+
+    <style name="ShapeLarge" parent="ShapeAppearance.MaterialComponents.LargeComponent">
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <!-- Bottom Navigation -->
+    <style name="Widget.FileCleaner.BottomNav" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="backgroundTint">@color/bottomNavBackground</item>
+        <item name="itemIconTint">@color/bottom_nav_color</item>
+        <item name="itemTextColor">@color/bottom_nav_color</item>
+        <item name="labelVisibilityMode">labeled</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.FileCleaner.BottomNav.ActiveIndicator</item>
+    </style>
+
+    <style name="Widget.FileCleaner.BottomNav.ActiveIndicator" parent="Widget.MaterialComponents.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/bottomNavIndicator</item>
+    </style>
+
+    <!-- Material Button -->
+    <style name="Widget.FileCleaner.Button" parent="Widget.MaterialComponents.Button">
+        <item name="cornerRadius">12dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <!-- Outlined Button -->
+    <style name="Widget.FileCleaner.Button.Outlined" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="cornerRadius">12dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="strokeColor">@color/borderDefault</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <!-- Chip -->
+    <style name="Widget.FileCleaner.Chip" parent="Widget.MaterialComponents.Chip.Filter">
+        <item name="chipCornerRadius">20dp</item>
+        <item name="chipBackgroundColor">@color/surfaceDim</item>
+        <item name="chipStrokeWidth">0dp</item>
+        <item name="checkedIconVisible">false</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    <!-- TextInputLayout styling -->
+    <style name="Widget.FileCleaner.TextInput" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+        <item name="boxCornerRadiusTopStart">12dp</item>
+        <item name="boxCornerRadiusTopEnd">12dp</item>
+        <item name="boxCornerRadiusBottomStart">12dp</item>
+        <item name="boxCornerRadiusBottomEnd">12dp</item>
+        <item name="boxStrokeColor">@color/borderDefault</item>
+        <item name="hintTextColor">@color/colorPrimary</item>
+    </style>
+
+    <!-- Card style for file items -->
+    <style name="Widget.FileCleaner.Card" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">12dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/borderDefault</item>
+        <item name="cardBackgroundColor">@color/surfaceColor</item>
+    </style>
+
+    <!-- FAB -->
+    <style name="Widget.FileCleaner.FAB" parent="Widget.MaterialComponents.ExtendedFloatingActionButton">
+        <item name="backgroundTint">@color/colorPrimary</item>
+        <item name="shapeAppearance">@style/ShapeSmall</item>
     </style>
 </resources>

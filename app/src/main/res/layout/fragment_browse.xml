@@ -3,21 +3,25 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/surfaceBase">
 
     <!-- Search bar -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="8dp"
-        android:paddingTop="4dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="8dp"
         app:startIconDrawable="@drawable/ic_search"
         app:endIconMode="clear_text"
         app:boxBackgroundMode="outline"
-        app:boxCornerRadiusTopStart="8dp"
-        app:boxCornerRadiusTopEnd="8dp"
-        app:boxCornerRadiusBottomStart="8dp"
-        app:boxCornerRadiusBottomEnd="8dp"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxStrokeColor="@color/borderDefault"
+        app:hintTextColor="@color/colorPrimary"
+        app:startIconTint="@color/textTertiary"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -27,7 +31,8 @@
             android:hint="@string/search_files_hint"
             android:inputType="text"
             android:maxLines="1"
-            android:imeOptions="actionSearch" />
+            android:imeOptions="actionSearch"
+            android:textSize="14sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Filters row -->
@@ -35,33 +40,51 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp"
         android:gravity="center_vertical">
 
         <Spinner
             android:id="@+id/spinner_category"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="48dp"
-            android:layout_marginEnd="4dp" />
+            android:layout_height="44dp"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/bg_spinner"
+            android:popupBackground="@color/surfaceColor"
+            android:paddingHorizontal="12dp" />
 
         <Spinner
             android:id="@+id/spinner_sort"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="48dp"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp" />
+            android:layout_height="44dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/bg_spinner"
+            android:popupBackground="@color/surfaceColor"
+            android:paddingHorizontal="12dp" />
 
-        <ImageButton
-            android:id="@+id/btn_view_mode"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:src="@drawable/ic_view_list"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/view_mode"
-            android:scaleType="centerInside"
-            android:padding="8dp" />
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/surfaceDim"
+            app:strokeWidth="0dp">
+
+            <ImageButton
+                android:id="@+id/btn_view_mode"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_view_list"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/view_mode"
+                android:scaleType="centerInside"
+                android:padding="8dp"
+                app:tint="@color/textSecondary" />
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 
     <!-- Extension chips -->
@@ -70,42 +93,58 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scrollbars="none"
-        android:paddingHorizontal="8dp"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="4dp"
         android:visibility="gone">
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chip_group_extensions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:singleLine="true" />
+            app:singleLine="true"
+            app:chipSpacingHorizontal="6dp" />
     </HorizontalScrollView>
 
     <!-- Stats bar -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingHorizontal="12dp"
-        android:paddingBottom="4dp">
-
-        <TextView
-            android:id="@+id/tv_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/n_files"
-            android:textSize="12sp"
-            android:textColor="@color/textSecondary" />
-    </LinearLayout>
-
     <TextView
+        android:id="@+id/tv_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/n_files"
+        android:textSize="12sp"
+        android:textColor="@color/textTertiary"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp"
+        android:fontFamily="sans-serif-medium" />
+
+    <!-- Empty state -->
+    <LinearLayout
         android:id="@+id/tv_empty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:gravity="center"
-        android:padding="32dp"
-        android:text="@string/no_files_found"
-        android:visibility="gone"
-        android:textColor="@color/textSecondary" />
+        android:padding="48dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/ic_raccoon_face"
+            android:alpha="0.4"
+            android:importantForAccessibility="no" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/no_files_found"
+            android:textColor="@color/textSecondary"
+            android:textSize="15sp"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp" />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
@@ -113,7 +152,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingBottom="80dp"
-        />
+        android:paddingHorizontal="12dp"
+        android:paddingBottom="80dp" />
 
 </LinearLayout>

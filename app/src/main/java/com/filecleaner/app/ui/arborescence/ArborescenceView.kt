@@ -13,6 +13,7 @@ import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
+import androidx.core.content.ContextCompat
 import com.filecleaner.app.R
 import com.filecleaner.app.data.DirectoryNode
 import com.filecleaner.app.data.FileCategory
@@ -37,14 +38,24 @@ class ArborescenceView @JvmOverloads constructor(
     private val cornerRadius = 16f
     private val headerHeight = 48f
 
+    // ── Theme colors (resolved from resources) ──
+    private val colorPrimary get() = ContextCompat.getColor(context, R.color.colorPrimary)
+    private val colorAccent get() = ContextCompat.getColor(context, R.color.colorAccent)
+    private val colorSurface get() = ContextCompat.getColor(context, R.color.surfaceColor)
+    private val colorSurfaceDim get() = ContextCompat.getColor(context, R.color.surfaceDim)
+    private val colorBorder get() = ContextCompat.getColor(context, R.color.borderDefault)
+    private val colorTextPrimary get() = ContextCompat.getColor(context, R.color.textPrimary)
+    private val colorTextSecondary get() = ContextCompat.getColor(context, R.color.textSecondary)
+    private val colorTextTertiary get() = ContextCompat.getColor(context, R.color.textTertiary)
+    private val colorPrimaryDark get() = ContextCompat.getColor(context, R.color.colorPrimaryDark)
+
     // ── Paints ──
     private val blockPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
     }
     private val blockStrokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
-        strokeWidth = 2f
-        color = 0xFF455A64.toInt()
+        strokeWidth = 1.5f
     }
     private val headerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
@@ -60,24 +71,19 @@ class ArborescenceView @JvmOverloads constructor(
     }
     private val filePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textSize = 14f
-        color = 0xFF212121.toInt()
     }
     private val fileSizePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textSize = 12f
-        color = 0xFF757575.toInt()
     }
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
-        strokeWidth = 2.5f
-        color = 0x6600897B.toInt()
+        strokeWidth = 2f
     }
     private val expandPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textSize = 22f
-        color = 0xFF00897B.toInt()
         typeface = Typeface.DEFAULT_BOLD
     }
     private val statsBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xCC000000.toInt()
         style = Paint.Style.FILL
     }
     private val statsTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -87,25 +93,23 @@ class ArborescenceView @JvmOverloads constructor(
     private val highlightPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
         strokeWidth = 6f
-        color = 0xFFFFB300.toInt()
     }
     private val highlightFillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
-        color = 0x44FFB300.toInt()
     }
     private var highlightAnimator: ValueAnimator? = null
     private var highlightAlpha = 1f
 
-    // ── Category colors ──
-    private val categoryColors = mapOf(
-        FileCategory.IMAGE to 0xFF43A047.toInt(),
-        FileCategory.VIDEO to 0xFF1E88E5.toInt(),
-        FileCategory.AUDIO to 0xFFE53935.toInt(),
-        FileCategory.DOCUMENT to 0xFF8E24AA.toInt(),
-        FileCategory.APK to 0xFFFF6F00.toInt(),
-        FileCategory.ARCHIVE to 0xFF6D4C41.toInt(),
-        FileCategory.DOWNLOAD to 0xFF00ACC1.toInt(),
-        FileCategory.OTHER to 0xFF78909C.toInt()
+    // ── Category colors (resolved from resources for theme support) ──
+    private val categoryColors: Map<FileCategory, Int> get() = mapOf(
+        FileCategory.IMAGE to ContextCompat.getColor(context, R.color.catImage),
+        FileCategory.VIDEO to ContextCompat.getColor(context, R.color.catVideo),
+        FileCategory.AUDIO to ContextCompat.getColor(context, R.color.catAudio),
+        FileCategory.DOCUMENT to ContextCompat.getColor(context, R.color.catDocument),
+        FileCategory.APK to ContextCompat.getColor(context, R.color.catApk),
+        FileCategory.ARCHIVE to ContextCompat.getColor(context, R.color.catArchive),
+        FileCategory.DOWNLOAD to ContextCompat.getColor(context, R.color.catDownload),
+        FileCategory.OTHER to ContextCompat.getColor(context, R.color.catOther)
     )
 
     // ── Node layout data ──
@@ -537,17 +541,21 @@ class ArborescenceView @JvmOverloads constructor(
         val node = layout.node
         val rect = RectF(layout.x, layout.y, layout.x + layout.w, layout.y + layout.h)
 
-        // Theme-aware text colors
-        filePaint.color = if (isDarkMode) 0xFFE0E0E0.toInt() else 0xFF212121.toInt()
-        fileSizePaint.color = if (isDarkMode) 0xFFB0B0B0.toInt() else 0xFF757575.toInt()
-        blockStrokePaint.color = if (isDarkMode) 0xFF616161.toInt() else 0xFF455A64.toInt()
-        linePaint.color = if (isDarkMode) 0x664DB6AC.toInt() else 0x6600897B.toInt()
+        // Theme-aware colors from resources
+        filePaint.color = colorTextPrimary
+        fileSizePaint.color = colorTextSecondary
+        blockStrokePaint.color = colorBorder
+        linePaint.color = (colorPrimary and 0x00FFFFFF) or 0x66000000
+        expandPaint.color = colorPrimary
+        highlightPaint.color = colorAccent
+        highlightFillPaint.color = (colorAccent and 0x00FFFFFF) or 0x44000000
+        statsBgPaint.color = colorPrimaryDark
 
-        // Block background (theme-aware), semi-transparent if no matching files
+        // Block background, semi-transparent if no matching files
         val hasMatchingFiles = filteredFiles(node).isNotEmpty() ||
             (filterCategory == null && filterExtensions.isEmpty())
         val alpha = if (hasMatchingFiles) 255 else 80
-        blockPaint.color = if (isDarkMode) 0xFF2C2C2C.toInt() else 0xFFFAFAFA.toInt()
+        blockPaint.color = colorSurface
         blockPaint.alpha = alpha
         canvas.drawRoundRect(rect, cornerRadius, cornerRadius, blockPaint)
         blockPaint.alpha = 255
@@ -559,7 +567,7 @@ class ArborescenceView @JvmOverloads constructor(
 
         // Selection highlight
         if (isSelected) {
-            val selPaint = Paint(highlightPaint).apply { color = 0xFF00897B.toInt() }
+            val selPaint = Paint(highlightPaint).apply { color = colorPrimary }
             canvas.drawRoundRect(rect, cornerRadius, cornerRadius, selPaint)
         }
 
@@ -626,9 +634,10 @@ class ArborescenceView @JvmOverloads constructor(
         if (filtered.size > maxFiles) {
             val moreY = layout.y + headerHeight + maxFiles * fileLineHeight + 20f
             val moreText = "+${filtered.size - maxFiles} more\u2026"
-            fileSizePaint.color = 0xFF9E9E9E.toInt()
+            val savedColor = fileSizePaint.color
+            fileSizePaint.color = colorTextTertiary
             canvas.drawText(moreText, layout.x + 28f, moreY, fileSizePaint)
-            fileSizePaint.color = 0xFF757575.toInt()
+            fileSizePaint.color = savedColor
         }
 
         // Border
@@ -659,11 +668,11 @@ class ArborescenceView @JvmOverloads constructor(
     private fun drawDragGhost(canvas: Canvas) {
         val name = dragFileName ?: return
         val ghostPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = 0xDDFFB300.toInt()
+            color = (colorAccent and 0x00FFFFFF) or 0xDD000000.toInt()
             style = Paint.Style.FILL
         }
         val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = 0xFF212121.toInt()
+            color = colorTextPrimary
             textSize = 16f
         }
         val tw = textPaint.measureText(name) + 24f

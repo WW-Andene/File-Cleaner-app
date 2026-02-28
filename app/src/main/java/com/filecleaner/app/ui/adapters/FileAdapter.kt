@@ -6,10 +6,12 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.android.material.card.MaterialCardView
 import com.filecleaner.app.R
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
@@ -31,9 +33,9 @@ class FileAdapter(
     // Selection tracked separately from FileItem (F-001)
     private val selectedPaths = mutableSetOf<String>()
 
-    private val DUPLICATE_HEADER_COLORS = listOf(
-        0xFFE3F2FD.toInt(), 0xFFF3E5F5.toInt(), 0xFFE8F5E9.toInt(),
-        0xFFFFF3E0.toInt(), 0xFFFFEBEE.toInt(), 0xFFF1F8E9.toInt()
+    private val DUPLICATE_GROUP_COLOR_RES = listOf(
+        R.color.dupGroup0, R.color.dupGroup1, R.color.dupGroup2,
+        R.color.dupGroup3, R.color.dupGroup4, R.color.dupGroup5
     )
 
     var viewMode: ViewMode = ViewMode.LIST
@@ -122,12 +124,15 @@ class FileAdapter(
             }
         }
 
-        // Duplicate group colouring
+        // Duplicate group colouring — use card background for MaterialCardView
+        val card = holder.itemView as? MaterialCardView
         if (item.duplicateGroup >= 0) {
-            val color = DUPLICATE_HEADER_COLORS[item.duplicateGroup % DUPLICATE_HEADER_COLORS.size]
-            holder.itemView.setBackgroundColor(color)
+            val colorRes = DUPLICATE_GROUP_COLOR_RES[item.duplicateGroup % DUPLICATE_GROUP_COLOR_RES.size]
+            val color = ContextCompat.getColor(holder.itemView.context, colorRes)
+            card?.setCardBackgroundColor(color) ?: holder.itemView.setBackgroundColor(color)
         } else {
-            holder.itemView.setBackgroundColor(0x00000000)
+            val defaultColor = ContextCompat.getColor(holder.itemView.context, R.color.surfaceColor)
+            card?.setCardBackgroundColor(defaultColor) ?: holder.itemView.setBackgroundColor(0x00000000)
         }
 
         // Meta line (only in list layouts that have it)

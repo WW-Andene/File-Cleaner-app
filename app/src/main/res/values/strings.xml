@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Racoons - Files Cleaners</string>
+    <string name="app_name">Raccoon File Cleaner</string>
 
     <!-- Scan -->
     <string name="scan_storage">Scan Storage</string>
-    <string name="scan_prompt">Tap \u25B6 to scan your storage</string>
+    <string name="scan_prompt">Ready to scan your storage</string>
     <string name="scanning_progress">Scanning\u2026 %d files found</string>
-    <string name="scan_complete">Scan complete \u2713</string>
+    <string name="scan_complete">Scan complete</string>
     <string name="scanning_in_progress">Scanning in progress</string>
     <string name="error_prefix">Error: %s</string>
 
@@ -36,9 +36,9 @@
     <!-- Browse -->
     <string name="all_files">All files</string>
     <string name="n_files">%d files</string>
-    <string name="no_files_found">No files found.\nTap \'Scan Storage\' to start.</string>
-    <string name="nothing_found">Nothing found.\nTap \'Scan Storage\' to start.</string>
-    <string name="scan_to_see_results">Scan to see results</string>
+    <string name="no_files_found">No files found yet.\nTap Scan Storage to get started.</string>
+    <string name="nothing_found">Nothing found yet.\nTap Scan Storage to get started.</string>
+    <string name="scan_to_see_results">Tap Scan Storage to get started</string>
 
     <!-- Sort options -->
     <string name="sort_name_asc">Name \u2191</string>

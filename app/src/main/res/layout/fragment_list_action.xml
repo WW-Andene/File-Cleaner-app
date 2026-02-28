@@ -163,7 +163,6 @@
         app:cornerRadius="@dimen/radius_btn"
         android:textAllCaps="false"
         android:textAppearance="@style/TextAppearance.FileCleaner.Body"
-        android:textColor="@android:color/white"
         android:fontFamily="sans-serif-medium" />
 
 </LinearLayout>

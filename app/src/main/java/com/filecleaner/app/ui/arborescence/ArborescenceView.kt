@@ -426,7 +426,8 @@ class ArborescenceView @JvmOverloads constructor(
             if (wx < layout.x || wx > layout.x + layout.w) continue
             val fileStartY = layout.y + headerHeight
             val maxFiles = 5
-            val files = layout.node.files.take(maxFiles)
+            // Use filteredFiles() to match what drawBlock() actually renders
+            val files = filteredFiles(layout.node).take(maxFiles)
             for ((i, file) in files.withIndex()) {
                 val rowTop = fileStartY + i * fileLineHeight
                 if (wy >= rowTop && wy <= rowTop + fileLineHeight) {
@@ -513,9 +514,6 @@ class ArborescenceView @JvmOverloads constructor(
         }
 
         canvas.restore()
-
-        // Stats are now shown via fragment TextViews (onStatsUpdate callback)
-        notifyStats()
 
         // Draw drag ghost
         if (isDragging && dragFileName != null) {
@@ -839,10 +837,6 @@ class ArborescenceView @JvmOverloads constructor(
         onStatsUpdate?.invoke(root.totalFileCount, root.totalSize, layouts.size, scaleFactor)
     }
 
-    private fun formatSize(bytes: Long): String = when {
-        bytes >= 1_073_741_824 -> "%.1f GB".format(bytes / 1_073_741_824.0)
-        bytes >= 1_048_576 -> "%.1f MB".format(bytes / 1_048_576.0)
-        bytes >= 1_024 -> "%.0f KB".format(bytes / 1_024.0)
-        else -> "$bytes B"
-    }
+    private fun formatSize(bytes: Long): String =
+        com.filecleaner.app.utils.UndoHelper.formatBytes(bytes)
 }

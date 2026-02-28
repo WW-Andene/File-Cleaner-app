@@ -14,20 +14,7 @@ import kotlin.coroutines.coroutineContext
 
 object FileScanner {
 
-    // Flat extension → category map for O(1) lookup (F-019)
-    private val EXT_TO_CATEGORY: Map<String, FileCategory> = buildMap {
-        val groups = mapOf(
-            FileCategory.IMAGE    to setOf("jpg","jpeg","png","gif","bmp","webp","heic","heif","tiff","svg","raw","cr2","nef"),
-            FileCategory.VIDEO    to setOf("mp4","mkv","avi","mov","wmv","flv","webm","m4v","3gp","ts","mpeg","mpg"),
-            FileCategory.AUDIO    to setOf("mp3","aac","flac","wav","ogg","m4a","wma","opus","aiff","mid"),
-            FileCategory.DOCUMENT to setOf("pdf","doc","docx","xls","xlsx","ppt","pptx","txt","csv","odt","ods","odp","epub","mobi","rtf","md"),
-            FileCategory.APK      to setOf("apk","xapk","apks"),
-            FileCategory.ARCHIVE  to setOf("zip","rar","7z","tar","gz","bz2","xz","cab","iso","tgz")
-        )
-        for ((cat, exts) in groups) {
-            for (ext in exts) put(ext, cat)
-        }
-    }
+    // Use FileCategory's single source of truth for extension mapping
 
     private val SKIP_DIRS = setOf(
         "Android/data", "Android/obb", ".thumbnails", ".cache",
@@ -151,9 +138,10 @@ object FileScanner {
 
     fun File.toFileItem(): FileItem {
         val ext = extension.lowercase()
-        val category = EXT_TO_CATEGORY[ext]
-            ?: if (absolutePath.contains("/Download/", ignoreCase = true)) FileCategory.DOWNLOAD
-            else FileCategory.OTHER
+        val rawCategory = FileCategory.fromExtension(ext)
+        val category = if (rawCategory == FileCategory.OTHER &&
+            absolutePath.contains("/Download/", ignoreCase = true)) FileCategory.DOWNLOAD
+        else rawCategory
 
         return FileItem(
             path         = absolutePath,

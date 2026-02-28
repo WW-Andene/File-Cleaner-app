@@ -133,9 +133,12 @@ abstract class BaseFileListFragment : Fragment() {
     }
 
     private fun confirmDelete() {
+        val totalSize = com.filecleaner.app.utils.UndoHelper.totalSize(selected)
+        val detailMessage = getString(com.filecleaner.app.R.string.confirm_delete_detail,
+            selected.size, totalSize)
         AlertDialog.Builder(requireContext())
             .setTitle(confirmTitle(selected.size))
-            .setMessage(getString(com.filecleaner.app.R.string.confirm_delete_message))
+            .setMessage(detailMessage)
             .setPositiveButton(confirmPositiveLabel) { _, _ ->
                 vm.deleteFiles(selected)
                 adapter.deselectAll()
@@ -159,6 +162,11 @@ abstract class BaseFileListFragment : Fragment() {
         }
         override fun onOpenInTree(item: FileItem) {
             vm.requestTreeHighlight(item.path)
+        }
+        override fun onPaste(targetDirPath: String) {
+            FileContextMenu.clipboardItem?.let { cut ->
+                vm.moveFile(cut.path, targetDirPath)
+            }
         }
         override fun onRefresh() {}
     }

@@ -3,8 +3,10 @@ package com.filecleaner.app.ui.common
 import android.content.Context
 import android.content.Intent
 import android.view.View
+import android.webkit.MimeTypeMap
 import android.widget.EditText
 import android.widget.PopupMenu
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
 import com.filecleaner.app.R
@@ -23,6 +25,7 @@ object FileContextMenu {
         fun onCompress(item: FileItem)
         fun onExtract(item: FileItem)
         fun onOpenInTree(item: FileItem)
+        fun onPaste(targetDirPath: String) {}
         fun onRefresh()
     }
 
@@ -34,11 +37,18 @@ object FileContextMenu {
             add(0, 3, 2, context.getString(R.string.ctx_rename))
             add(0, 4, 3, context.getString(R.string.ctx_share))
             add(0, 5, 4, context.getString(R.string.ctx_cut))
-            add(0, 6, 5, context.getString(R.string.ctx_compress))
-            if (item.category == FileCategory.ARCHIVE) {
-                add(0, 7, 6, context.getString(R.string.ctx_extract))
+            // Show Paste option if there's a cut file and this item is in a directory
+            if (clipboardItem != null) {
+                val targetDir = File(item.path).parent
+                if (targetDir != null) {
+                    add(0, 9, 5, context.getString(R.string.ctx_paste_here))
+                }
             }
-            add(0, 8, 7, context.getString(R.string.ctx_open_in_tree))
+            add(0, 6, 6, context.getString(R.string.ctx_compress))
+            if (item.category == FileCategory.ARCHIVE) {
+                add(0, 7, 7, context.getString(R.string.ctx_extract))
+            }
+            add(0, 8, 8, context.getString(R.string.ctx_open_in_tree))
         }
 
         popup.setOnMenuItemClickListener { menuItem ->
@@ -80,8 +90,10 @@ object FileContextMenu {
                     val uri = FileProvider.getUriForFile(
                         context, "${context.packageName}.fileprovider", item.file
                     )
+                    val ext = item.name.substringAfterLast('.', "").lowercase()
+                    val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext) ?: "*/*"
                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                        type = "*/*"
+                        type = mimeType
                         putExtra(Intent.EXTRA_STREAM, uri)
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
@@ -90,6 +102,9 @@ object FileContextMenu {
                 }
                 5 -> { // Cut
                     clipboardItem = item
+                    Toast.makeText(context,
+                        context.getString(R.string.cut_hint, item.name),
+                        Toast.LENGTH_SHORT).show()
                     true
                 }
                 6 -> { // Compress
@@ -102,6 +117,14 @@ object FileContextMenu {
                 }
                 8 -> { // Open in Raccoon Tab
                     callback.onOpenInTree(item)
+                    true
+                }
+                9 -> { // Paste here (move cut file to this file's directory)
+                    val targetDir = File(item.path).parent
+                    if (targetDir != null && clipboardItem != null) {
+                        callback.onPaste(targetDir)
+                        clipboardItem = null
+                    }
                     true
                 }
                 else -> false

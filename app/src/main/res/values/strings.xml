@@ -22,6 +22,7 @@
     <!-- Confirm dialog -->
     <string name="confirm_delete_title">Confirm Delete</string>
     <string name="confirm_delete_message">Files will be moved to trash. You can undo within 8 seconds.</string>
+    <string name="confirm_delete_detail">%1$d files (%2$s) will be moved to trash.\nYou can undo within 8 seconds.</string>
     <string name="delete_n_files_title">Delete %d files?</string>
     <string name="clean_n_files_title">Clean %d files?</string>
 
@@ -111,6 +112,8 @@
     <string name="ctx_rename">Rename</string>
     <string name="ctx_share">Share</string>
     <string name="ctx_cut">Cut</string>
+    <string name="ctx_paste_here">Paste here</string>
+    <string name="cut_hint">%s cut \u2014 long-press a file to paste into its folder</string>
     <string name="ctx_compress">Compress</string>
     <string name="ctx_extract">Extract</string>
     <string name="ctx_open_in_tree">Open in Raccoon Tab</string>

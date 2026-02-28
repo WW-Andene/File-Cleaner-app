@@ -243,6 +243,11 @@ class BrowseFragment : Fragment() {
         override fun onOpenInTree(item: FileItem) {
             vm.requestTreeHighlight(item.path)
         }
+        override fun onPaste(targetDirPath: String) {
+            FileContextMenu.clipboardItem?.let { cut ->
+                vm.moveFile(cut.path, targetDirPath)
+            }
+        }
         override fun onRefresh() {
             refresh()
         }

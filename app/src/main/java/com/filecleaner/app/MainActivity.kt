@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.filecleaner.app.databinding.ActivityMainBinding
+import com.filecleaner.app.ui.widget.RaccoonBubble
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.viewmodel.ScanState
 
@@ -52,6 +53,17 @@ class MainActivity : AppCompatActivity() {
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         binding.bottomNav.setupWithNavController(navHost.navController)
 
+        // Raccoon bubble → toggle arborescence
+        val navController = navHost.navController
+        RaccoonBubble.attach(binding.raccoonBubble) {
+            val currentDest = navController.currentDestination?.id
+            if (currentDest == R.id.arborescenceFragment) {
+                navController.popBackStack()
+            } else {
+                navController.navigate(R.id.arborescenceFragment)
+            }
+        }
+
         // Scan button
         binding.fabScan.setOnClickListener { requestPermissionsAndScan() }
 
@@ -60,19 +72,19 @@ class MainActivity : AppCompatActivity() {
             when (state) {
                 is ScanState.Idle     -> {
                     binding.progressBar.visibility = View.GONE
-                    binding.tvScanStatus.text = "Tap ▶ to scan your storage"
+                    binding.tvScanStatus.text = getString(R.string.scan_prompt)
                 }
                 is ScanState.Scanning -> {
                     binding.progressBar.visibility = View.VISIBLE
-                    binding.tvScanStatus.text = "Scanning… ${state.filesFound} files found"
+                    binding.tvScanStatus.text = getString(R.string.scanning_progress, state.filesFound)
                 }
                 is ScanState.Done     -> {
                     binding.progressBar.visibility = View.GONE
-                    binding.tvScanStatus.text = "Scan complete ✓"
+                    binding.tvScanStatus.text = getString(R.string.scan_complete)
                 }
                 is ScanState.Error    -> {
                     binding.progressBar.visibility = View.GONE
-                    Toast.makeText(this, "Error: ${state.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, getString(R.string.error_prefix, state.message), Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -86,12 +98,9 @@ class MainActivity : AppCompatActivity() {
                     startScan()
                 } else {
                     AlertDialog.Builder(this)
-                        .setTitle("Storage access needed")
-                        .setMessage(
-                            "To scan all files, please grant 'Allow access to manage all files' " +
-                            "in the next screen."
-                        )
-                        .setPositiveButton("Open Settings") { _, _ ->
+                        .setTitle(getString(R.string.storage_access_needed))
+                        .setMessage(getString(R.string.storage_access_message))
+                        .setPositiveButton(getString(R.string.open_settings)) { _, _ ->
                             manageFilesLauncher.launch(
                                 Intent(
                                     Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
@@ -99,7 +108,7 @@ class MainActivity : AppCompatActivity() {
                                 )
                             )
                         }
-                        .setNegativeButton("Cancel", null)
+                        .setNegativeButton(getString(R.string.cancel), null)
                         .show()
                 }
             }
@@ -140,13 +149,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun showPermissionDeniedDialog() {
         AlertDialog.Builder(this)
-            .setTitle("Permission required")
-            .setMessage("Storage permission is required to scan files. Please grant it in Settings.")
-            .setPositiveButton("Settings") { _, _ ->
+            .setTitle(getString(R.string.permission_required))
+            .setMessage(getString(R.string.permission_required_message))
+            .setPositiveButton(getString(R.string.settings)) { _, _ ->
                 startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                     Uri.parse("package:$packageName")))
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 }

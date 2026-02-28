@@ -39,10 +39,13 @@ object JunkFinder {
                 // In a cache/temp directory
                 JUNK_DIR_KEYWORDS.any { path.contains("/$it/") } -> true
 
-                // Old download (> 90 days old, not a media file)
+                // Old download (> 90 days old, only truly disposable types)
+                // Excludes documents, media, archives, APKs — only flags
+                // files with no recognized extension (F-002)
                 item.path.startsWith(downloadPath) &&
                         item.lastModified < cutoff90Days &&
-                        !isMedia(ext) -> true
+                        !isMedia(ext) && !isDocument(ext) &&
+                        !isArchiveOrApk(ext) -> true
 
                 else -> false
             }
@@ -62,7 +65,26 @@ object JunkFinder {
             .take(maxResults)
     }
 
-    private fun isMedia(ext: String) = ext in setOf(
-        "jpg","jpeg","png","gif","mp4","mkv","avi","mov","mp3","aac","flac","wav"
+    private val MEDIA_EXTENSIONS = setOf(
+        // Images — matches FileScanner.CATEGORY_MAP
+        "jpg","jpeg","png","gif","bmp","webp","heic","heif","tiff","svg","raw","cr2","nef",
+        // Videos
+        "mp4","mkv","avi","mov","wmv","flv","webm","m4v","3gp","ts","mpeg","mpg",
+        // Audio
+        "mp3","aac","flac","wav","ogg","m4a","wma","opus","aiff","mid"
     )
+
+    private fun isMedia(ext: String) = ext in MEDIA_EXTENSIONS
+
+    private val DOCUMENT_EXTENSIONS = setOf(
+        "pdf","doc","docx","xls","xlsx","ppt","pptx","txt","csv",
+        "odt","ods","odp","epub","mobi","rtf","md"
+    )
+
+    private val ARCHIVE_APK_EXTENSIONS = setOf(
+        "apk","xapk","apks","zip","rar","7z","tar","gz","bz2","xz","cab","iso","tgz"
+    )
+
+    private fun isDocument(ext: String) = ext in DOCUMENT_EXTENSIONS
+    private fun isArchiveOrApk(ext: String) = ext in ARCHIVE_APK_EXTENSIONS
 }

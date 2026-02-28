@@ -22,10 +22,12 @@ class BrowseFragment : Fragment() {
     private val vm: MainViewModel by activityViewModels()
     private lateinit var adapter: FileAdapter
 
-    private val categories = listOf(
-        "All files" to null,
-        *FileCategory.values().map { "${it.emoji} ${it.displayName}" to it }.toTypedArray()
-    )
+    private val categories by lazy {
+        listOf(
+            getString(R.string.all_files) to null,
+            *FileCategory.entries.map { "${it.emoji} ${it.displayName}" to it }.toTypedArray()
+        )
+    }
 
     override fun onCreateView(i: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
         _binding = FragmentBrowseBinding.inflate(i, c, false)
@@ -47,7 +49,11 @@ class BrowseFragment : Fragment() {
         binding.spinnerCategory.adapter = spinnerAdapter
 
         // Sort spinner
-        val sortOptions = listOf("Name ↑", "Name ↓", "Size ↑", "Size ↓", "Date ↑", "Date ↓")
+        val sortOptions = listOf(
+            getString(R.string.sort_name_asc), getString(R.string.sort_name_desc),
+            getString(R.string.sort_size_asc), getString(R.string.sort_size_desc),
+            getString(R.string.sort_date_asc), getString(R.string.sort_date_desc)
+        )
         val sortAdapter = ArrayAdapter(requireContext(),
             android.R.layout.simple_spinner_item, sortOptions)
         sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -76,18 +82,17 @@ class BrowseFragment : Fragment() {
         }
 
         val sorted = when (binding.spinnerSort.selectedItemPosition) {
-            0 -> raw.sortedBy   { it.name.lowercase() }
+            0 -> raw.sortedBy { it.name.lowercase() }
             1 -> raw.sortedByDescending { it.name.lowercase() }
-            2 -> raw.sortedBy   { it.size }
+            2 -> raw.sortedBy { it.size }
             3 -> raw.sortedByDescending { it.size }
-            4 -> raw.sortedBy   { it.lastModified }
-            5 -> raw.sortedByDescending { it.lastModified }
-            else -> raw
+            4 -> raw.sortedBy { it.lastModified }
+            else -> raw.sortedByDescending { it.lastModified }
         }
 
         adapter.submitList(sorted)
         binding.tvEmpty.visibility = if (sorted.isEmpty()) View.VISIBLE else View.GONE
-        binding.tvCount.text = "${sorted.size} files"
+        binding.tvCount.text = getString(R.string.n_files, sorted.size)
     }
 
     override fun onDestroyView() { super.onDestroyView(); _binding = null }

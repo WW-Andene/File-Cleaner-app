@@ -24,4 +24,9 @@
         android:name="com.filecleaner.app.ui.junk.JunkFragment"
         android:label="Junk" />
 
+    <fragment
+        android:id="@+id/arborescenceFragment"
+        android:name="com.filecleaner.app.ui.arborescence.ArborescenceFragment"
+        android:label="@string/tree_view" />
+
 </navigation>

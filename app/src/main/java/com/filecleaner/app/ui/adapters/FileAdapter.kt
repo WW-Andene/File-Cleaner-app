@@ -24,6 +24,8 @@ class FileAdapter(
             override fun areItemsTheSame(a: FileItem, b: FileItem) = a.path == b.path
             override fun areContentsTheSame(a: FileItem, b: FileItem) = a == b
         }
+        private const val TYPE_LIST = 0
+        private const val TYPE_GRID = 1
     }
 
     // Selection tracked separately from FileItem (F-001)
@@ -34,16 +36,32 @@ class FileAdapter(
         0xFFFFF3E0.toInt(), 0xFFFFEBEE.toInt(), 0xFFF1F8E9.toInt()
     )
 
+    var viewMode: ViewMode = ViewMode.LIST
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
+
+    var onItemClick: ((FileItem) -> Unit)? = null
+    var onItemLongClick: ((FileItem, View) -> Unit)? = null
+
     inner class FileVH(view: View) : RecyclerView.ViewHolder(view) {
         val icon: ImageView = view.findViewById(R.id.iv_file_icon)
-        val name: TextView  = view.findViewById(R.id.tv_file_name)
-        val meta: TextView  = view.findViewById(R.id.tv_file_meta)
-        val check: CheckBox = view.findViewById(R.id.cb_select)
+        val name: TextView = view.findViewById(R.id.tv_file_name)
+        val meta: TextView? = view.findViewById(R.id.tv_file_meta)
+        val check: CheckBox? = view.findViewById(R.id.cb_select)
+    }
+
+    override fun getItemViewType(position: Int): Int = when (viewMode) {
+        ViewMode.LIST, ViewMode.LIST_WITH_THUMBNAILS -> TYPE_LIST
+        ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE -> TYPE_GRID
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileVH {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_file, parent, false)
+        val layoutRes = if (viewType == TYPE_GRID) R.layout.item_file_grid else R.layout.item_file
+        val view = LayoutInflater.from(parent.context).inflate(layoutRes, parent, false)
         return FileVH(view)
     }
 
@@ -53,17 +71,55 @@ class FileAdapter(
 
         holder.name.text = item.name
 
-        // Thumbnail for images/videos; icon otherwise
-        if (item.category == FileCategory.IMAGE || item.category == FileCategory.VIDEO) {
-            Glide.with(holder.itemView)
-                .load(item.file)
-                .placeholder(categoryDrawable(item.category))
-                .centerCrop()
-                .into(holder.icon)
-        } else {
-            Glide.with(holder.itemView).clear(holder.icon)
-            holder.icon.setImageResource(categoryDrawable(item.category))
-            holder.icon.scaleType = ImageView.ScaleType.CENTER_INSIDE
+        // Thumbnail strategy based on view mode
+        when (viewMode) {
+            ViewMode.LIST -> {
+                // Standard list: thumbnails only for images/videos
+                if (item.category == FileCategory.IMAGE || item.category == FileCategory.VIDEO) {
+                    Glide.with(holder.itemView)
+                        .load(item.file)
+                        .placeholder(categoryDrawable(item.category))
+                        .centerCrop()
+                        .into(holder.icon)
+                } else {
+                    Glide.with(holder.itemView).clear(holder.icon)
+                    holder.icon.setImageResource(categoryDrawable(item.category))
+                    holder.icon.scaleType = ImageView.ScaleType.CENTER_INSIDE
+                }
+            }
+            ViewMode.LIST_WITH_THUMBNAILS -> {
+                // List with larger thumbnails for all media types
+                val lp = holder.icon.layoutParams
+                lp.width = 72.dpToPx(holder.itemView)
+                lp.height = 72.dpToPx(holder.itemView)
+                holder.icon.layoutParams = lp
+
+                if (item.category == FileCategory.IMAGE || item.category == FileCategory.VIDEO) {
+                    Glide.with(holder.itemView)
+                        .load(item.file)
+                        .placeholder(categoryDrawable(item.category))
+                        .centerCrop()
+                        .into(holder.icon)
+                } else {
+                    Glide.with(holder.itemView).clear(holder.icon)
+                    holder.icon.setImageResource(categoryDrawable(item.category))
+                    holder.icon.scaleType = ImageView.ScaleType.CENTER_INSIDE
+                }
+            }
+            ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE -> {
+                // Grid: always try to load thumbnail
+                if (item.category == FileCategory.IMAGE || item.category == FileCategory.VIDEO) {
+                    Glide.with(holder.itemView)
+                        .load(item.file)
+                        .placeholder(categoryDrawable(item.category))
+                        .centerCrop()
+                        .into(holder.icon)
+                } else {
+                    Glide.with(holder.itemView).clear(holder.icon)
+                    holder.icon.setImageResource(categoryDrawable(item.category))
+                    holder.icon.scaleType = ImageView.ScaleType.CENTER_INSIDE
+                }
+            }
         }
 
         // Duplicate group colouring
@@ -74,10 +130,12 @@ class FileAdapter(
             holder.itemView.setBackgroundColor(0x00000000)
         }
 
+        // Meta line (only in list layouts that have it)
+        holder.meta?.let { buildMeta(it, item) }
+
         // Checkbox + accessibility (F-033)
         val ctx = holder.itemView.context
-        val meta = buildMeta(holder, item)
-        if (selectable) {
+        if (selectable && holder.check != null) {
             holder.check.visibility = View.VISIBLE
             holder.check.isChecked = isSelected
             holder.check.contentDescription = ctx.getString(
@@ -93,12 +151,23 @@ class FileAdapter(
             holder.check.setOnClickListener { toggle() }
             holder.itemView.setOnClickListener { toggle() }
             holder.itemView.contentDescription = ctx.getString(
-                if (isSelected) R.string.a11y_file_selected else R.string.a11y_file_not_selected, item.name, meta)
+                if (isSelected) R.string.a11y_file_selected else R.string.a11y_file_not_selected,
+                item.name, holder.meta?.text ?: "")
         } else {
-            holder.check.visibility = View.GONE
-            holder.itemView.contentDescription = ctx.getString(R.string.a11y_file_info, item.name, meta)
+            holder.check?.visibility = View.GONE
+            // Wire click and long-click for non-selectable mode
+            holder.itemView.setOnClickListener { onItemClick?.invoke(item) }
+            holder.itemView.setOnLongClickListener { v ->
+                onItemLongClick?.invoke(item, v)
+                true
+            }
+            holder.itemView.contentDescription = ctx.getString(
+                R.string.a11y_file_info, item.name, holder.meta?.text ?: item.sizeReadable)
         }
     }
+
+    private fun Int.dpToPx(view: View): Int =
+        (this * view.resources.displayMetrics.density).toInt()
 
     private fun toggleSelection(path: String) {
         if (path in selectedPaths) selectedPaths.remove(path) else selectedPaths.add(path)
@@ -135,12 +204,13 @@ class FileAdapter(
 
     fun getSelectedItems(): List<FileItem> = currentList.filter { it.path in selectedPaths }
 
-    private fun buildMeta(holder: FileVH, item: FileItem): String {
+    private fun buildMeta(metaView: TextView, item: FileItem): String {
         val pattern = android.text.format.DateFormat.getBestDateTimePattern(
-            holder.itemView.resources.configuration.locales[0], "dd MMM yyyy")
+            metaView.resources.configuration.locales[0], "dd MMM yyyy")
         val date = android.text.format.DateFormat.format(pattern, item.lastModified)
-        holder.meta.text = "${item.sizeReadable}  \u2022  $date"
-        return "${item.sizeReadable}  \u2022  $date"
+        val text = "${item.sizeReadable}  \u2022  $date"
+        metaView.text = text
+        return text
     }
 
     private fun categoryDrawable(cat: FileCategory) = when (cat) {

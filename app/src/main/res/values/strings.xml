@@ -86,6 +86,41 @@
     <string name="confirm_move_title">Move file?</string>
     <string name="confirm_move_message">Move \"%1$s\" to \"%2$s\"?</string>
     <string name="move">Move</string>
+    <string name="stats_header_format">%1$d files \u2022 %2$s</string>
+    <string name="zoom_info_format">%1$d%% \u2022 %2$d nodes</string>
+
+    <!-- View mode -->
+    <string name="view_mode">View mode</string>
+
+    <!-- Extension filter -->
+    <string name="filter_by_extension">Filter by extension</string>
+    <string name="toggle_filters">Toggle filters</string>
+
+    <!-- Search -->
+    <string name="search_files_hint">Search files\u2026</string>
+    <string name="search_tree_hint">Search in tree\u2026</string>
+    <string name="search_not_found">No match found</string>
+
+    <!-- File opening -->
+    <string name="open_with">Open with</string>
+    <string name="no_app_found">No app found to open this file</string>
+
+    <!-- Context menu -->
+    <string name="ctx_open">Open</string>
+    <string name="ctx_delete">Delete</string>
+    <string name="ctx_rename">Rename</string>
+    <string name="ctx_share">Share</string>
+    <string name="ctx_cut">Cut</string>
+    <string name="ctx_compress">Compress</string>
+    <string name="ctx_extract">Extract</string>
+    <string name="ctx_open_in_tree">Open in Raccoon Tab</string>
+    <string name="rename_success">Renamed successfully</string>
+    <string name="rename_failed">Rename failed</string>
+    <string name="compress_success">Compressed successfully</string>
+    <string name="compress_failed">Compression failed</string>
+    <string name="extract_success">Extracted successfully</string>
+    <string name="extract_failed">Extraction failed</string>
+    <string name="extract_unsupported">Only ZIP archives can be extracted</string>
 
     <!-- Date format -->
     <string name="date_format_short">dd MMM yyyy</string>

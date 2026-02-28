@@ -11,8 +11,10 @@ import androidx.lifecycle.LiveData
 import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.databinding.FragmentListActionBinding
 import com.filecleaner.app.ui.adapters.FileAdapter
+import com.filecleaner.app.utils.FileOpener
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.MainViewModel
+import com.google.android.material.snackbar.Snackbar
 
 /**
  * Shared base for Junk / Large / Duplicates screens (F-039).
@@ -69,6 +71,10 @@ abstract class BaseFileListFragment : Fragment() {
             binding.btnAction.isEnabled = sel.isNotEmpty()
             binding.btnAction.text = actionLabel(sel.size, UndoHelper.totalSize(sel))
         }
+        adapter.onItemClick = { item -> FileOpener.open(requireContext(), item.file) }
+        adapter.onItemLongClick = { item, anchor ->
+            FileContextMenu.show(requireContext(), anchor, item, contextMenuCallback)
+        }
         binding.recyclerView.adapter = adapter
 
         binding.btnSelectAll.setOnClickListener { onSelectAll() }
@@ -88,6 +94,10 @@ abstract class BaseFileListFragment : Fragment() {
         vm.deleteResult.observe(viewLifecycleOwner) { result ->
             UndoHelper.showUndoSnackbar(binding.root, result, vm)
         }
+
+        vm.operationResult.observe(viewLifecycleOwner) { result ->
+            Snackbar.make(binding.root, result.message, Snackbar.LENGTH_SHORT).show()
+        }
     }
 
     private fun confirmDelete() {
@@ -100,6 +110,25 @@ abstract class BaseFileListFragment : Fragment() {
             }
             .setNegativeButton(getString(com.filecleaner.app.R.string.cancel), null)
             .show()
+    }
+
+    private val contextMenuCallback = object : FileContextMenu.Callback {
+        override fun onDelete(item: FileItem) {
+            vm.deleteFiles(listOf(item))
+        }
+        override fun onRename(item: FileItem, newName: String) {
+            vm.renameFile(item.path, newName)
+        }
+        override fun onCompress(item: FileItem) {
+            vm.compressFile(item.path)
+        }
+        override fun onExtract(item: FileItem) {
+            vm.extractArchive(item.path)
+        }
+        override fun onOpenInTree(item: FileItem) {
+            vm.requestTreeHighlight(item.path)
+        }
+        override fun onRefresh() {}
     }
 
     override fun onDestroyView() {

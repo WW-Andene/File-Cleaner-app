@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -16,6 +17,127 @@
         android:layout_gravity="center"
         android:text="@string/scan_to_see_results"
         android:textSize="16sp"
+        android:visibility="gone" />
+
+    <!-- Search bar -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_search_tree"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="12dp"
+        app:startIconDrawable="@drawable/ic_search"
+        app:endIconMode="clear_text"
+        app:boxBackgroundMode="outline"
+        app:boxCornerRadiusTopStart="8dp"
+        app:boxCornerRadiusTopEnd="8dp"
+        app:boxCornerRadiusBottomStart="8dp"
+        app:boxCornerRadiusBottomEnd="8dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_search_tree"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/search_tree_hint"
+            android:inputType="text"
+            android:maxLines="1"
+            android:imeOptions="actionSearch" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Filter panel (collapsible) -->
+    <LinearLayout
+        android:id="@+id/filter_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginTop="64dp"
+        android:orientation="vertical"
+        android:background="@drawable/bg_stats_overlay"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="4dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Spinner
+                android:id="@+id/spinner_tree_category"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="40dp"
+                android:layout_marginEnd="4dp" />
+
+            <Spinner
+                android:id="@+id/spinner_tree_sort"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp" />
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:id="@+id/scroll_tree_extensions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:visibility="gone">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chip_group_tree_extensions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:singleLine="true" />
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <!-- Filter toggle button -->
+    <ImageButton
+        android:id="@+id/btn_toggle_filters"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_gravity="top|end"
+        android:layout_marginEnd="56dp"
+        android:layout_marginTop="68dp"
+        android:src="@drawable/ic_view_list"
+        android:background="@drawable/bg_stats_overlay"
+        android:scaleType="centerInside"
+        android:padding="6dp"
+        android:contentDescription="@string/toggle_filters" />
+
+    <!-- Stats header (top-left, below filter panel) -->
+    <TextView
+        android:id="@+id/tv_stats_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="68dp"
+        android:background="@drawable/bg_stats_overlay"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="8dp"
+        android:textColor="@android:color/white"
+        android:textSize="13sp"
+        android:visibility="gone" />
+
+    <!-- Zoom info (top-right) -->
+    <TextView
+        android:id="@+id/tv_zoom_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="68dp"
+        android:background="@drawable/bg_stats_overlay"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="8dp"
+        android:textColor="@android:color/white"
+        android:textSize="13sp"
         android:visibility="gone" />
 
     <!-- Selected node detail (bottom-right) -->
@@ -44,7 +166,6 @@
         android:contentDescription="@string/reset_view"
         android:src="@drawable/ic_raccoon_face"
         app:fabSize="mini"
-        app:backgroundTint="@color/colorPrimary"
-        xmlns:app="http://schemas.android.com/apk/res-auto" />
+        app:backgroundTint="@color/colorPrimary" />
 
 </FrameLayout>

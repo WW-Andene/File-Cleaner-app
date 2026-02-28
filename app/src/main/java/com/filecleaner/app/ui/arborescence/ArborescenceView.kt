@@ -13,6 +13,7 @@ import android.view.View
 import com.filecleaner.app.R
 import com.filecleaner.app.data.DirectoryNode
 import com.filecleaner.app.data.FileCategory
+import com.filecleaner.app.data.FileItem
 import kotlin.math.max
 import kotlin.math.min
 
@@ -112,6 +113,10 @@ class ArborescenceView @JvmOverloads constructor(
     private val layouts = mutableMapOf<String, NodeLayout>()
     private var selectedPath: String? = null
 
+    // ── Filter state ──
+    private var filterCategory: FileCategory? = null
+    private var filterExtensions: Set<String> = emptySet()
+
     // ── Transform ──
     private val viewMatrix = Matrix()
     private val inverseMatrix = Matrix()
@@ -135,6 +140,7 @@ class ArborescenceView @JvmOverloads constructor(
     var onFileMoveRequested: ((filePath: String, targetDirPath: String) -> Unit)? = null
     var onStatsUpdate: ((totalFiles: Int, totalSize: Long, visibleNodes: Int, zoom: Float) -> Unit)? = null
     var onNodeSelected: ((DirectoryNode?) -> Unit)? = null
+    var onFileLongPress: ((filePath: String, fileName: String) -> Unit)? = null
 
     // ── Gesture detectors ──
     private val scaleDetector = ScaleGestureDetector(context,
@@ -187,14 +193,19 @@ class ArborescenceView @JvmOverloads constructor(
                 val pt = screenToWorld(e.x, e.y)
                 val hit = hitTestFile(pt[0], pt[1])
                 if (hit != null) {
-                    isDragging = true
-                    dragFilePath = hit.first
-                    dragFileName = hit.second
-                    dragSourceBlock = hit.third
-                    dragX = e.x
-                    dragY = e.y
                     performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-                    invalidate()
+                    // If context menu callback is set, use that; otherwise drag
+                    if (onFileLongPress != null) {
+                        onFileLongPress?.invoke(hit.first, hit.second)
+                    } else {
+                        isDragging = true
+                        dragFilePath = hit.first
+                        dragFileName = hit.second
+                        dragSourceBlock = hit.third
+                        dragX = e.x
+                        dragY = e.y
+                        invalidate()
+                    }
                 }
             }
         })
@@ -203,8 +214,8 @@ class ArborescenceView @JvmOverloads constructor(
         rootNode = root
         layouts.clear()
         selectedPath = null
-        // Expand root + first level by default (2-level display)
-        buildLayout(root, expanded = true, expandChildren = true)
+        // Start collapsed — user expands as they explore
+        buildLayout(root, expanded = false, expandChildren = false)
         computePositions()
         // Center on root
         viewMatrix.reset()
@@ -216,11 +227,48 @@ class ArborescenceView @JvmOverloads constructor(
         notifyStats()
     }
 
+    fun setFilter(category: FileCategory?, extensions: Set<String>) {
+        filterCategory = category
+        filterExtensions = extensions
+        // Rebuild layouts to recalculate heights based on filtered files
+        val expandedPaths = layouts.filter { it.value.expanded }.keys.toSet()
+        layouts.clear()
+        val root = rootNode ?: return
+        rebuildWithState(root, expandedPaths)
+        computePositions()
+        invalidate()
+        notifyStats()
+    }
+
+    private fun rebuildWithState(node: DirectoryNode, expandedPaths: Set<String>) {
+        val expanded = node.path in expandedPaths
+        buildLayout(node, expanded = expanded, expandChildren = false)
+        if (expanded) {
+            for (child in node.children) {
+                rebuildWithState(child, expandedPaths)
+            }
+        }
+    }
+
+    private fun filteredFiles(node: DirectoryNode): List<FileItem> {
+        var files = node.files
+        if (filterCategory != null) {
+            files = files.filter { it.category == filterCategory }
+        }
+        if (filterExtensions.isNotEmpty()) {
+            files = files.filter { file ->
+                file.name.substringAfterLast('.', "").lowercase() in filterExtensions
+            }
+        }
+        return files
+    }
+
     private fun buildLayout(node: DirectoryNode, expanded: Boolean, expandChildren: Boolean) {
+        val filtered = filteredFiles(node)
         val maxFiles = 5
-        val displayFiles = min(node.files.size, maxFiles)
+        val displayFiles = min(filtered.size, maxFiles)
         val h = headerHeight + displayFiles * fileLineHeight +
-            (if (node.files.size > maxFiles) fileLineHeight else 0f) + 12f
+            (if (filtered.size > maxFiles) fileLineHeight else 0f) + 12f
         layouts[node.path] = NodeLayout(
             node = node,
             w = blockWidth,
@@ -411,8 +459,8 @@ class ArborescenceView @JvmOverloads constructor(
 
         canvas.restore()
 
-        // Draw stats overlay in screen space
-        drawStatsOverlay(canvas)
+        // Stats are now shown via fragment TextViews (onStatsUpdate callback)
+        notifyStats()
 
         // Draw drag ghost
         if (isDragging && dragFileName != null) {
@@ -444,9 +492,14 @@ class ArborescenceView @JvmOverloads constructor(
         blockStrokePaint.color = if (isDarkMode) 0xFF616161.toInt() else 0xFF455A64.toInt()
         linePaint.color = if (isDarkMode) 0x664DB6AC.toInt() else 0x6600897B.toInt()
 
-        // Block background (theme-aware)
+        // Block background (theme-aware), semi-transparent if no matching files
+        val hasMatchingFiles = filteredFiles(node).isNotEmpty() ||
+            (filterCategory == null && filterExtensions.isEmpty())
+        val alpha = if (hasMatchingFiles) 255 else 80
         blockPaint.color = if (isDarkMode) 0xFF2C2C2C.toInt() else 0xFFFAFAFA.toInt()
+        blockPaint.alpha = alpha
         canvas.drawRoundRect(rect, cornerRadius, cornerRadius, blockPaint)
+        blockPaint.alpha = 255
 
         // Drop target highlight
         if (isDropTarget) {
@@ -484,9 +537,10 @@ class ArborescenceView @JvmOverloads constructor(
             canvas.drawText(indicator, layout.x + layout.w - 28f, layout.y + 30f, expandPaint)
         }
 
-        // File list
+        // File list (filtered)
+        val filtered = filteredFiles(node)
         val maxFiles = 5
-        val files = node.files.take(maxFiles)
+        val files = filtered.take(maxFiles)
         for ((i, file) in files.withIndex()) {
             val fy = layout.y + headerHeight + i * fileLineHeight + 20f
 
@@ -502,12 +556,22 @@ class ArborescenceView @JvmOverloads constructor(
             // File size
             val fsz = formatSize(file.size)
             canvas.drawText(fsz, layout.x + layout.w - fileSizePaint.measureText(fsz) - 8f, fy, fileSizePaint)
+
+            // Highlight matched file
+            if (file.path == highlightedFilePath) {
+                val fileRowTop = layout.y + headerHeight + i * fileLineHeight
+                val highlightRect = RectF(
+                    layout.x + 4f, fileRowTop,
+                    layout.x + layout.w - 4f, fileRowTop + fileLineHeight
+                )
+                canvas.drawRoundRect(highlightRect, 4f, 4f, highlightPaint)
+            }
         }
 
         // "and N more..." label
-        if (node.files.size > maxFiles) {
+        if (filtered.size > maxFiles) {
             val moreY = layout.y + headerHeight + maxFiles * fileLineHeight + 20f
-            val moreText = "+${node.files.size - maxFiles} more\u2026"
+            val moreText = "+${filtered.size - maxFiles} more\u2026"
             fileSizePaint.color = 0xFF9E9E9E.toInt()
             canvas.drawText(moreText, layout.x + 28f, moreY, fileSizePaint)
             fileSizePaint.color = 0xFF757575.toInt()
@@ -554,6 +618,106 @@ class ArborescenceView @JvmOverloads constructor(
             12f, 12f, ghostPaint
         )
         canvas.drawText(name, dragX - tw / 2 + 12f, dragY - 4f, textPaint)
+    }
+
+    // ── Search + highlight ──
+    var highlightedFilePath: String? = null
+        private set
+
+    fun searchAndHighlight(query: String): Boolean {
+        if (query.isBlank()) {
+            clearHighlight()
+            return false
+        }
+        val root = rootNode ?: return false
+        val lowerQuery = query.lowercase()
+
+        // BFS to find first matching file or folder
+        val queue = ArrayDeque<DirectoryNode>()
+        queue.add(root)
+        while (queue.isNotEmpty()) {
+            val node = queue.removeFirst()
+            // Check folder name
+            if (node.name.lowercase().contains(lowerQuery)) {
+                expandToNode(node)
+                highlightedFilePath = null
+                selectedPath = node.path
+                zoomToFit(node.path)
+                onNodeSelected?.invoke(node)
+                invalidate()
+                return true
+            }
+            // Check files in this folder
+            for (file in node.files) {
+                if (file.name.lowercase().contains(lowerQuery)) {
+                    expandToNode(node)
+                    highlightedFilePath = file.path
+                    selectedPath = node.path
+                    zoomToFit(node.path)
+                    invalidate()
+                    return true
+                }
+            }
+            queue.addAll(node.children)
+        }
+        return false
+    }
+
+    fun highlightFilePath(filePath: String) {
+        val root = rootNode ?: return
+        val node = findNodeContainingFile(root, filePath) ?: return
+        expandToNode(node)
+        highlightedFilePath = filePath
+        selectedPath = node.path
+        zoomToFit(node.path)
+        invalidate()
+    }
+
+    fun clearHighlight() {
+        highlightedFilePath = null
+        invalidate()
+    }
+
+    private fun expandToNode(target: DirectoryNode) {
+        val root = rootNode ?: return
+        val path = mutableListOf<DirectoryNode>()
+        if (!findPath(root, target, path)) return
+
+        // Expand each ancestor
+        for (ancestor in path) {
+            val layout = layouts[ancestor.path]
+            if (layout != null && !layout.expanded && ancestor.children.isNotEmpty()) {
+                layout.expanded = true
+                for (child in ancestor.children) {
+                    if (child.path !in layouts) {
+                        buildLayout(child, expanded = false, expandChildren = false)
+                    }
+                }
+            }
+        }
+        computePositions()
+        notifyStats()
+    }
+
+    private fun findPath(current: DirectoryNode, target: DirectoryNode, path: MutableList<DirectoryNode>): Boolean {
+        path.add(current)
+        if (current.path == target.path) return true
+        for (child in current.children) {
+            if (findPath(child, target, path)) return true
+        }
+        path.removeAt(path.lastIndex)
+        return false
+    }
+
+    private fun findNodeContainingFile(node: DirectoryNode, filePath: String): DirectoryNode? {
+        for (file in node.files) {
+            if (file.path == filePath) return node
+        }
+        for (child in node.children) {
+            val result = findNodeContainingFile(child, filePath)
+            if (result != null) return result
+        }
+        return null
     }
 
     private fun notifyStats() {

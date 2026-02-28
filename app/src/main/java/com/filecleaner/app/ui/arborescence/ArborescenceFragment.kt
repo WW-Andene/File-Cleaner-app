@@ -172,7 +172,7 @@ class ArborescenceFragment : Fragment() {
             if (filePath != null) {
                 binding.arborescenceView.highlightFilePath(filePath)
                 val fileName = File(filePath).name
-                Snackbar.make(binding.root, "Located: $fileName", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, getString(R.string.located_file, fileName), Snackbar.LENGTH_SHORT).show()
                 vm.clearTreeHighlight()
             }
         }
@@ -272,12 +272,8 @@ class ArborescenceFragment : Fragment() {
         return result
     }
 
-    private fun formatSize(bytes: Long): String = when {
-        bytes >= 1_073_741_824 -> "%.1f GB".format(bytes / 1_073_741_824.0)
-        bytes >= 1_048_576 -> "%.1f MB".format(bytes / 1_048_576.0)
-        bytes >= 1_024 -> "%.0f KB".format(bytes / 1_024.0)
-        else -> "$bytes B"
-    }
+    private fun formatSize(bytes: Long): String =
+        com.filecleaner.app.utils.UndoHelper.formatBytes(bytes)
 
     private val contextMenuCallback = object : FileContextMenu.Callback {
         override fun onDelete(item: FileItem) {
@@ -294,6 +290,11 @@ class ArborescenceFragment : Fragment() {
         }
         override fun onOpenInTree(item: FileItem) {
             binding.arborescenceView.highlightFilePath(item.path)
+        }
+        override fun onPaste(targetDirPath: String) {
+            FileContextMenu.clipboardItem?.let { cut ->
+                vm.moveFile(cut.path, targetDirPath)
+            }
         }
         override fun onRefresh() {}
     }

@@ -44,10 +44,14 @@ object ScanCache {
                 val filesArray = root.getJSONArray("files")
                 val files = mutableListOf<FileItem>()
                 for (i in 0 until filesArray.length()) {
-                    files.add(jsonToFileItem(filesArray.getJSONObject(i)))
+                    val item = jsonToFileItem(filesArray.getJSONObject(i))
+                    // Validate file still exists on disk — prevents ghost entries
+                    if (File(item.path).exists()) {
+                        files.add(item)
+                    }
                 }
 
-                val tree = jsonToDirectoryNode(root.getJSONObject("tree"))
+                val tree = pruneDeletedFiles(jsonToDirectoryNode(root.getJSONObject("tree")))
 
                 Pair(files, tree)
             } catch (e: Exception) {
@@ -56,6 +60,27 @@ object ScanCache {
                 null
             }
         }
+
+    /**
+     * Recursively prune files that no longer exist on disk from the directory tree.
+     * Recalculates totalSize and totalFileCount after pruning.
+     */
+    private fun pruneDeletedFiles(node: DirectoryNode): DirectoryNode {
+        val validFiles = node.files.filter { File(it.path).exists() }
+        val prunedChildren = node.children.map { pruneDeletedFiles(it) }.toMutableList()
+
+        val ownFileSize = validFiles.sumOf { it.size }
+        val ownFileCount = validFiles.size
+        val totalSize = ownFileSize + prunedChildren.sumOf { it.totalSize }
+        val totalFileCount = ownFileCount + prunedChildren.sumOf { it.totalFileCount }
+
+        return node.copy(
+            files = validFiles,
+            children = prunedChildren,
+            totalSize = totalSize,
+            totalFileCount = totalFileCount
+        )
+    }
 
     private fun fileItemToJson(item: FileItem): JSONObject = JSONObject().apply {
         put("path", item.path)

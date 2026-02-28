@@ -13,6 +13,9 @@ import android.view.animation.OvershootInterpolator
  */
 object RaccoonBubble {
 
+    private var pulseAnimatorX: ObjectAnimator? = null
+    private var pulseAnimatorY: ObjectAnimator? = null
+
     @SuppressLint("ClickableViewAccessibility")
     fun attach(bubble: View, onClick: () -> Unit) {
         var downX = 0f
@@ -53,8 +56,20 @@ object RaccoonBubble {
             }
         }
 
+        // Cancel any previous pulse before starting a new one
+        cancelPulse()
+
         // Subtle pulse animation every 5 seconds
         startPulse(bubble)
+
+        // Cancel animations when view is detached to prevent leaks
+        bubble.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(v: View) {}
+            override fun onViewDetachedFromWindow(v: View) {
+                cancelPulse()
+                v.removeOnAttachStateChangeListener(this)
+            }
+        })
     }
 
     private fun snapToEdge(view: View) {
@@ -78,19 +93,26 @@ object RaccoonBubble {
     }
 
     private fun startPulse(view: View) {
-        val scaleX = ObjectAnimator.ofFloat(view, "scaleX", 1f, 1.08f, 1f).apply {
+        pulseAnimatorX = ObjectAnimator.ofFloat(view, "scaleX", 1f, 1.05f, 1f).apply {
             duration = 600
-            startDelay = 5000
-            repeatCount = ObjectAnimator.INFINITE
+            startDelay = 15000
+            repeatCount = 2
             repeatMode = ObjectAnimator.RESTART
         }
-        val scaleY = ObjectAnimator.ofFloat(view, "scaleY", 1f, 1.08f, 1f).apply {
+        pulseAnimatorY = ObjectAnimator.ofFloat(view, "scaleY", 1f, 1.05f, 1f).apply {
             duration = 600
-            startDelay = 5000
-            repeatCount = ObjectAnimator.INFINITE
+            startDelay = 15000
+            repeatCount = 2
             repeatMode = ObjectAnimator.RESTART
         }
-        scaleX.start()
-        scaleY.start()
+        pulseAnimatorX?.start()
+        pulseAnimatorY?.start()
+    }
+
+    private fun cancelPulse() {
+        pulseAnimatorX?.cancel()
+        pulseAnimatorY?.cancel()
+        pulseAnimatorX = null
+        pulseAnimatorY = null
     }
 }

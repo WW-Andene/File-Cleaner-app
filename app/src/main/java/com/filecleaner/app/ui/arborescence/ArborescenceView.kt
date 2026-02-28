@@ -210,6 +210,9 @@ class ArborescenceView @JvmOverloads constructor(
             }
         })
 
+    fun getExpandedPaths(): Set<String> =
+        layouts.filter { it.value.expanded }.keys.toSet()
+
     fun setTree(root: DirectoryNode) {
         rootNode = root
         layouts.clear()
@@ -221,6 +224,23 @@ class ArborescenceView @JvmOverloads constructor(
         viewMatrix.reset()
         scaleFactor = 1f
         viewMatrix.postTranslate(60f, 60f)
+        contentDescription = context.getString(
+            R.string.a11y_tree_view, root.totalFileCount, formatSize(root.totalSize))
+        invalidate()
+        notifyStats()
+    }
+
+    fun setTreeWithState(root: DirectoryNode, expandedPaths: Set<String>) {
+        rootNode = root
+        layouts.clear()
+        selectedPath = null
+        rebuildWithState(root, expandedPaths)
+        computePositions()
+        if (expandedPaths.isEmpty()) {
+            viewMatrix.reset()
+            scaleFactor = 1f
+            viewMatrix.postTranslate(60f, 60f)
+        }
         contentDescription = context.getString(
             R.string.a11y_tree_view, root.totalFileCount, formatSize(root.totalSize))
         invalidate()

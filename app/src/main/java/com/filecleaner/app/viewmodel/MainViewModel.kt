@@ -10,7 +10,9 @@ import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.utils.DuplicateFinder
 import com.filecleaner.app.utils.FileScanner
 import com.filecleaner.app.utils.JunkFinder
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 sealed class ScanState {
     object Idle : ScanState()
@@ -42,13 +44,21 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val _storageStats = MutableLiveData<StorageStats>()
     val storageStats: LiveData<StorageStats> = _storageStats
 
-    // How many bytes we'd free by deleting junk
+    private val _deleteResult = MutableLiveData<DeleteResult>()
+    val deleteResult: LiveData<DeleteResult> = _deleteResult
+
     data class StorageStats(
         val totalFiles: Int,
         val totalSize: Long,
         val junkSize: Long,
         val duplicateSize: Long,
         val largeSize: Long
+    )
+
+    data class DeleteResult(
+        val deleted: Int,
+        val failed: Int,
+        val freedBytes: Long
     )
 
     fun startScan(minLargeFileMb: Int = 50) {
@@ -95,15 +105,43 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     /** Deletes a list of FileItems from disk and removes them from all caches. */
     fun deleteFiles(toDelete: List<FileItem>) {
         viewModelScope.launch {
-            val paths = toDelete.map { it.path }.toSet()
-            toDelete.forEach { it.file.delete() }
+            // Perform IO on background thread (F-014)
+            val (deletedPaths, freedBytes) = withContext(Dispatchers.IO) {
+                var freed = 0L
+                val succeeded = mutableSetOf<String>()
+                for (item in toDelete) {
+                    val size = item.size
+                    if (item.file.delete()) {
+                        succeeded.add(item.path)
+                        freed += size
+                    }
+                }
+                succeeded to freed
+            }
 
-            val remaining = _allFiles.value?.filter { it.path !in paths } ?: return@launch
+            // Report result including failures (F-005)
+            val failed = toDelete.size - deletedPaths.size
+            _deleteResult.postValue(DeleteResult(deletedPaths.size, failed, freedBytes))
+
+            // Update all lists with only successfully deleted files
+            val remaining = _allFiles.value?.filter { it.path !in deletedPaths } ?: return@launch
             _allFiles.postValue(remaining)
             _filesByCategory.postValue(remaining.groupBy { it.category })
-            _duplicates.postValue(_duplicates.value?.filter { it.path !in paths })
-            _largeFiles.postValue(_largeFiles.value?.filter { it.path !in paths })
-            _junkFiles.postValue(_junkFiles.value?.filter { it.path !in paths })
+            _duplicates.postValue(_duplicates.value?.filter { it.path !in deletedPaths })
+            _largeFiles.postValue(_largeFiles.value?.filter { it.path !in deletedPaths })
+            _junkFiles.postValue(_junkFiles.value?.filter { it.path !in deletedPaths })
+
+            // Recalculate storage stats (F-006)
+            val dupes = _duplicates.value ?: emptyList()
+            val large = _largeFiles.value ?: emptyList()
+            val junk = _junkFiles.value ?: emptyList()
+            _storageStats.postValue(StorageStats(
+                totalFiles    = remaining.size,
+                totalSize     = remaining.sumOf { it.size },
+                junkSize      = junk.sumOf { it.size },
+                duplicateSize = dupes.sumOf { it.size },
+                largeSize     = large.sumOf { it.size }
+            ))
         }
     }
 }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Broom/sweep icon representing file cleaning -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,28 L54,58 M44,58 L64,58 M42,62 C42,62 40,78 54,78 C68,78 66,62 66,62 L42,62 Z M50,28 L58,28 L56,34 L52,34 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,34 L54,58"
+        android:strokeWidth="3"
+        android:strokeColor="#FFFFFF" />
+</vector>

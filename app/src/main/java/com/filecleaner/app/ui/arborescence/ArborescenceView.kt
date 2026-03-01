@@ -554,9 +554,12 @@ class ArborescenceView @JvmOverloads constructor(
         canvas.drawRoundRect(rect, cornerRadius, cornerRadius, blockPaint)
         blockPaint.alpha = 255
 
-        // Clip to exact block bounds to prevent text overflow / superposition
+        // Clip to rounded block bounds to prevent text overflow / superposition
         canvas.save()
-        canvas.clipRect(rect)
+        val blockClipPath = Path().apply {
+            addRoundRect(rect, cornerRadius, cornerRadius, Path.Direction.CW)
+        }
+        canvas.clipPath(blockClipPath)
 
         // Header bar with category-based color
         val dominant = node.files.groupBy { it.category }

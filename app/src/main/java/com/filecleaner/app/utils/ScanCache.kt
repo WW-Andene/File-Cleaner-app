@@ -5,6 +5,7 @@ import com.filecleaner.app.data.DirectoryNode
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
@@ -44,6 +45,7 @@ object ScanCache {
                 val filesArray = root.getJSONArray("files")
                 val files = mutableListOf<FileItem>()
                 for (i in 0 until filesArray.length()) {
+                    if (i % 500 == 0) ensureActive()
                     val item = jsonToFileItem(filesArray.getJSONObject(i))
                     // Validate file still exists on disk — prevents ghost entries
                     if (File(item.path).exists()) {

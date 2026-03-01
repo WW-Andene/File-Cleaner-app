@@ -116,6 +116,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             if (cached != null) {
                 val (files, tree) = cached
                 stateMutex.withLock {
+                    // Skip cache load if a scan has already started (user tapped scan
+                    // before cache finished loading — the scan's results take priority)
+                    if (_scanState.value !is ScanState.Idle) return@withLock
+
                     latestFiles = files
                     latestTree = tree
                     _allFiles.postValue(files)
@@ -139,7 +143,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                         largeSize     = large.sumOf { it.size }
                     ))
                 }
-                _scanState.postValue(ScanState.Done)
+                // Only transition to Done if no scan superseded the cache load
+                if (_scanState.value is ScanState.Idle) {
+                    _scanState.postValue(ScanState.Done)
+                }
             }
         }
     }
@@ -208,8 +215,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             if (result.success) {
                 val dst = File(targetDirPath, File(filePath).name)
                 refreshAfterFileChange(removedPath = filePath, addedFile = dst)
-                // Also rebuild directory tree since paths changed
-                startScan()
+                // Tree will be stale until next scan, but showing scanning UI
+                // for a single file move is disruptive — prefer incremental update
             }
         }
     }
@@ -282,7 +289,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Undo the last delete — move files back from trash to original locations. */
     fun undoDelete() {
-        if (pendingTrash.isEmpty()) return
+        if (pendingTrash.isEmpty() || isScanning) return
         viewModelScope.launch {
             val restored = withContext(Dispatchers.IO) {
                 val items = mutableListOf<FileItem>()

@@ -10,18 +10,18 @@
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginHorizontal="@dimen/spacing_lg"
+        android:layout_marginTop="@dimen/spacing_sm"
         app:cardCornerRadius="@dimen/radius_header"
-        app:cardElevation="0dp"
+        app:cardElevation="@dimen/elevation_none"
         app:cardBackgroundColor="@color/colorPrimaryContainer"
-        app:strokeWidth="0dp">
+        app:strokeWidth="@dimen/stroke_none">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="@dimen/spacing_lg">
 
             <TextView
                 android:id="@+id/tv_title"
@@ -42,7 +42,7 @@
                 android:alpha="0.8"
                 android:maxLines="2"
                 android:ellipsize="end"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="@dimen/spacing_xs"
                 android:text="@string/scan_to_see_results" />
 
             <!-- Select All / Deselect All -->
@@ -50,30 +50,30 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="12dp">
+                android:layout_marginTop="@dimen/spacing_md">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_select_all"
                     style="@style/Widget.FileCleaner.Button.Outlined"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
+                    android:layout_height="@dimen/button_height_sm"
                     android:text="@string/select_all"
-                    android:textSize="12sp"
-                    android:layout_marginEnd="8dp"
+                    android:textSize="@dimen/text_body_small"
+                    android:layout_marginEnd="@dimen/spacing_sm"
                     app:strokeColor="@color/colorOnPrimaryContainer"
                     android:textColor="@color/colorOnPrimaryContainer"
-                    app:cornerRadius="20dp" />
+                    app:cornerRadius="@dimen/radius_pill" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_deselect_all"
                     style="@style/Widget.FileCleaner.Button.Outlined"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
+                    android:layout_height="@dimen/button_height_sm"
                     android:text="@string/deselect_all"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/text_body_small"
                     app:strokeColor="@color/colorOnPrimaryContainer"
                     android:textColor="@color/colorOnPrimaryContainer"
-                    app:cornerRadius="20dp" />
+                    app:cornerRadius="@dimen/radius_pill" />
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
@@ -83,8 +83,8 @@
         android:id="@+id/til_search"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginHorizontal="@dimen/spacing_lg"
+        android:layout_marginTop="@dimen/spacing_md"
         app:startIconDrawable="@drawable/ic_search"
         app:endIconMode="clear_text"
         app:boxBackgroundMode="outline"
@@ -116,12 +116,12 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
-        android:padding="48dp"
+        android:padding="@dimen/spacing_4xl"
         android:visibility="gone">
 
         <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="@dimen/icon_empty_state"
+            android:layout_height="@dimen/icon_empty_state"
             android:src="@drawable/ic_raccoon_brand"
             android:alpha="0.55"
             android:importantForAccessibility="no" />
@@ -130,12 +130,12 @@
             android:id="@+id/tv_empty_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/spacing_lg"
             android:text="@string/nothing_found"
             android:textAppearance="@style/TextAppearance.FileCleaner.Body"
             android:textColor="@color/textSecondary"
             android:gravity="center"
-            android:lineSpacingExtra="4dp" />
+            android:lineSpacingExtra="@dimen/spacing_xs" />
     </LinearLayout>
 
     <!-- File list -->
@@ -145,9 +145,9 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingHorizontal="12dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="80dp"
+        android:paddingHorizontal="@dimen/spacing_md"
+        android:paddingTop="@dimen/spacing_sm"
+        android:paddingBottom="@dimen/spacing_above_nav"
         android:layoutAnimation="@anim/layout_item_stagger"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
@@ -155,12 +155,12 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_action"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
+        android:layout_height="@dimen/button_height"
         android:layout_gravity="center_horizontal"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="72dp"
+        android:layout_marginHorizontal="@dimen/spacing_lg"
+        android:layout_marginBottom="@dimen/spacing_bottom_inset"
         android:minWidth="200dp"
-        android:paddingHorizontal="32dp"
+        android:paddingHorizontal="@dimen/spacing_3xl"
         android:text="@string/delete_selected"
         android:backgroundTint="@color/colorError"
         android:textColor="@android:color/white"

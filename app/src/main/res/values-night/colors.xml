@@ -46,6 +46,9 @@
     <color name="scanBarBackground">#1A3D2E</color>
     <color name="scanBarText">#B8E6D0</color>
 
+    <!-- Text on colored backgrounds (e.g. tree view headers) -->
+    <color name="textOnColor">#CCFFFFFF</color>
+
     <!-- File category tints -->
     <color name="catImage">#B388FF</color>
     <color name="catVideo">#F48FB1</color>

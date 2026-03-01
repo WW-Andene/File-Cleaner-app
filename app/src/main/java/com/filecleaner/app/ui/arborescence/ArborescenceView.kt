@@ -73,7 +73,7 @@ class ArborescenceView @JvmOverloads constructor(
     }
     private val subtitlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textSize = context.resources.getDimension(R.dimen.text_body_small)
-        color = 0xCCFFFFFF.toInt()
+        color = ContextCompat.getColor(context, R.color.textOnColor)
     }
     private val filePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textSize = context.resources.getDimension(R.dimen.text_body)
@@ -580,7 +580,7 @@ class ArborescenceView @JvmOverloads constructor(
         // Header bar with category-based color
         val dominant = node.files.groupBy { it.category }
             .maxByOrNull { it.value.size }?.key ?: FileCategory.OTHER
-        headerPaint.color = categoryColors[dominant] ?: 0xFF78909C.toInt()
+        headerPaint.color = categoryColors[dominant] ?: ContextCompat.getColor(context, R.color.catOther)
         val headerRect = RectF(layout.x, layout.y, layout.x + layout.w, layout.y + headerHeight)
         canvas.drawRoundRect(headerRect, cornerRadius, cornerRadius, headerPaint)
         // Square off bottom corners of header
@@ -617,7 +617,7 @@ class ArborescenceView @JvmOverloads constructor(
             val fy = layout.y + headerHeight + i * fileLineHeight + 20f
 
             // Category dot
-            val dotColor = categoryColors[file.category] ?: 0xFF78909C.toInt()
+            val dotColor = categoryColors[file.category] ?: ContextCompat.getColor(context, R.color.catOther)
             val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG)
             dotPaint.color = dotColor
             canvas.drawCircle(layout.x + 16f, fy - 5f, 4f, dotPaint)

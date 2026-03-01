@@ -11,8 +11,8 @@
         android:id="@+id/til_search_tree"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginHorizontal="@dimen/spacing_lg"
+        android:layout_marginTop="@dimen/spacing_sm"
         app:startIconDrawable="@drawable/ic_search"
         app:endIconMode="clear_text"
         app:boxBackgroundMode="outline"
@@ -43,8 +43,8 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="6dp">
+        android:paddingHorizontal="@dimen/spacing_lg"
+        android:paddingVertical="@dimen/spacing_sm">
 
         <TextView
             android:id="@+id/tv_stats_header"
@@ -56,13 +56,13 @@
             android:visibility="gone" />
 
         <com.google.android.material.card.MaterialCardView
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            app:cardCornerRadius="10dp"
-            app:cardElevation="0dp"
+            android:layout_width="@dimen/icon_button"
+            android:layout_height="@dimen/icon_button"
+            app:cardCornerRadius="@dimen/radius_btn"
+            app:cardElevation="@dimen/elevation_none"
             app:cardBackgroundColor="@color/surfaceDim"
-            app:strokeWidth="0dp"
-            android:layout_marginHorizontal="4dp">
+            app:strokeWidth="@dimen/stroke_none"
+            android:layout_marginHorizontal="@dimen/spacing_xs">
 
             <ImageButton
                 android:id="@+id/btn_toggle_filters"
@@ -71,7 +71,7 @@
                 android:src="@drawable/ic_view_list"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:scaleType="centerInside"
-                android:padding="10dp"
+                android:padding="@dimen/spacing_md"
                 android:contentDescription="@string/toggle_filters"
                 app:tint="@color/textSecondary" />
         </com.google.android.material.card.MaterialCardView>
@@ -90,8 +90,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="4dp"
+        android:paddingHorizontal="@dimen/spacing_lg"
+        android:paddingVertical="@dimen/spacing_xs"
         android:visibility="gone">
 
         <LinearLayout
@@ -104,22 +104,22 @@
                 android:id="@+id/spinner_tree_category"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:layout_height="48dp"
-                android:layout_marginEnd="6dp"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginEnd="@dimen/spacing_sm"
                 android:background="@drawable/bg_spinner"
                 android:popupBackground="@drawable/bg_spinner_dropdown"
-                android:paddingHorizontal="12dp"
+                android:paddingHorizontal="@dimen/spacing_md"
                 android:contentDescription="@string/filter_by_extension" />
 
             <Spinner
                 android:id="@+id/spinner_tree_sort"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:layout_height="48dp"
-                android:layout_marginStart="6dp"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginStart="@dimen/spacing_sm"
                 android:background="@drawable/bg_spinner"
                 android:popupBackground="@drawable/bg_spinner_dropdown"
-                android:paddingHorizontal="12dp"
+                android:paddingHorizontal="@dimen/spacing_md"
                 android:contentDescription="@string/a11y_sort_order" />
         </LinearLayout>
 
@@ -128,7 +128,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="none"
-            android:paddingTop="4dp"
+            android:paddingTop="@dimen/spacing_xs"
             android:visibility="gone">
 
             <com.google.android.material.chip.ChipGroup
@@ -164,8 +164,8 @@
             android:visibility="gone">
 
             <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:layout_width="@dimen/icon_empty_state"
+                android:layout_height="@dimen/icon_empty_state"
                 android:src="@drawable/ic_raccoon_brand"
                 android:alpha="0.55"
                 android:importantForAccessibility="no" />
@@ -173,7 +173,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="@dimen/spacing_lg"
                 android:text="@string/scan_to_see_results"
                 android:textAppearance="@style/TextAppearance.FileCleaner.Body"
                 android:textColor="@color/textSecondary"
@@ -187,17 +187,17 @@
             android:layout_height="wrap_content"
             android:maxWidth="240dp"
             android:layout_gravity="bottom|start"
-            android:layout_marginStart="64dp"
-            android:layout_marginBottom="72dp"
+            android:layout_marginStart="@dimen/icon_file_list"
+            android:layout_marginBottom="@dimen/spacing_bottom_inset"
             android:background="@drawable/bg_stats_overlay"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="10dp"
+            android:paddingHorizontal="@dimen/spacing_lg"
+            android:paddingVertical="@dimen/spacing_md"
             android:textColor="@android:color/white"
             android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
             android:fontFamily="sans-serif-medium"
             android:maxLines="4"
             android:ellipsize="end"
-            android:elevation="4dp"
+            android:elevation="@dimen/elevation_raised"
             android:visibility="gone" />
 
         <!-- Back-to-root mini FAB (bottom-start) -->
@@ -206,8 +206,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|start"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="72dp"
+            android:layout_marginStart="@dimen/spacing_lg"
+            android:layout_marginBottom="@dimen/spacing_bottom_inset"
             android:contentDescription="@string/reset_view"
             android:src="@drawable/ic_recenter"
             app:fabSize="mini"

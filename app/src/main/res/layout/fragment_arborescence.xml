@@ -136,7 +136,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:singleLine="true"
-                app:chipSpacingHorizontal="6dp" />
+                app:chipSpacingHorizontal="@dimen/spacing_chip" />
         </HorizontalScrollView>
     </LinearLayout>
 
@@ -185,7 +185,7 @@
             android:id="@+id/tv_node_detail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:maxWidth="240dp"
+            android:maxWidth="@dimen/node_detail_max_width"
             android:layout_gravity="bottom|start"
             android:layout_marginStart="@dimen/icon_file_list"
             android:layout_marginBottom="@dimen/spacing_bottom_inset"

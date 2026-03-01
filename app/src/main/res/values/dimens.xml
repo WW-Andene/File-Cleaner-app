@@ -45,8 +45,14 @@
     <dimen name="icon_nav">24dp</dimen>
     <dimen name="icon_raccoon_bubble">36dp</dimen>
     <dimen name="icon_button">48dp</dimen>
+    <dimen name="icon_raccoon_inner">46dp</dimen>
     <dimen name="icon_raccoon">52dp</dimen>
     <dimen name="icon_empty_state">80dp</dimen>
+
+    <!-- Component sizes -->
+    <dimen name="spacing_chip">6dp</dimen>
+    <dimen name="button_min_width">200dp</dimen>
+    <dimen name="node_detail_max_width">240dp</dimen>
 
     <!-- Button heights -->
     <dimen name="button_height_sm">36dp</dimen>

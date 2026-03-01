@@ -69,7 +69,7 @@ object RaccoonBubble {
         // Cancel any previous pulse before starting a new one
         cancelPulse()
 
-        // Subtle pulse animation every 5 seconds
+        // Subtle pulse animation every 15 seconds
         startPulse(bubble)
 
         // Cancel animations when view is detached to prevent leaks

@@ -138,8 +138,8 @@
 
         <ImageView
             android:id="@+id/raccoon_bubble"
-            android:layout_width="46dp"
-            android:layout_height="46dp"
+            android:layout_width="@dimen/icon_raccoon_inner"
+            android:layout_height="@dimen/icon_raccoon_inner"
             android:layout_gravity="center"
             android:src="@drawable/ic_raccoon_logo"
             android:scaleType="centerCrop"

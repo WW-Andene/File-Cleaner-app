@@ -159,7 +159,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginHorizontal="@dimen/spacing_lg"
         android:layout_marginBottom="@dimen/spacing_bottom_inset"
-        android:minWidth="200dp"
+        android:minWidth="@dimen/button_min_width"
         android:paddingHorizontal="@dimen/spacing_3xl"
         android:text="@string/delete_selected"
         android:backgroundTint="@color/colorError"

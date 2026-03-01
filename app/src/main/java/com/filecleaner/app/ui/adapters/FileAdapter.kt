@@ -10,12 +10,10 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.card.MaterialCardView
 import com.filecleaner.app.R
-import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
+import com.filecleaner.app.ui.adapters.FileItemUtils.dpToPx
 
 class FileAdapter(
     private val selectable: Boolean = true,
@@ -83,7 +81,8 @@ class FileAdapter(
         }
 
         // Load thumbnail for images/videos, category icon for everything else
-        loadThumbnail(holder, item)
+        val isGrid = viewMode != ViewMode.LIST && viewMode != ViewMode.LIST_WITH_THUMBNAILS
+        FileItemUtils.loadThumbnail(holder.icon, item, isGrid)
 
         // Visual state: duplicate group colouring → selection highlight → default
         val card = holder.itemView as? MaterialCardView
@@ -105,7 +104,7 @@ class FileAdapter(
         }
 
         // Meta line (only in list layouts that have it)
-        holder.meta?.let { buildMeta(it, item) }
+        holder.meta?.let { FileItemUtils.buildMeta(it, item) }
 
         // Checkbox + accessibility (F-033)
         val ctx = holder.itemView.context
@@ -150,29 +149,6 @@ class FileAdapter(
         }
     }
 
-    private fun loadThumbnail(holder: FileVH, item: FileItem) {
-        if (item.category == FileCategory.IMAGE || item.category == FileCategory.VIDEO) {
-            val thumbSize = when (viewMode) {
-                ViewMode.LIST, ViewMode.LIST_WITH_THUMBNAILS -> 128
-                else -> 256
-            }
-            Glide.with(holder.itemView)
-                .load(item.file)
-                .override(thumbSize, thumbSize)
-                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                .placeholder(categoryDrawable(item.category))
-                .centerCrop()
-                .into(holder.icon)
-        } else {
-            Glide.with(holder.itemView).clear(holder.icon)
-            holder.icon.setImageResource(categoryDrawable(item.category))
-            holder.icon.scaleType = ImageView.ScaleType.CENTER_INSIDE
-        }
-    }
-
-    private fun Int.dpToPx(view: View): Int =
-        (this * view.resources.displayMetrics.density).toInt()
-
     private fun toggleSelection(path: String) {
         if (path in selectedPaths) selectedPaths.remove(path) else selectedPaths.add(path)
     }
@@ -208,23 +184,4 @@ class FileAdapter(
 
     fun getSelectedItems(): List<FileItem> = currentList.filter { it.path in selectedPaths }
 
-    private fun buildMeta(metaView: TextView, item: FileItem): String {
-        val pattern = android.text.format.DateFormat.getBestDateTimePattern(
-            metaView.resources.configuration.locales[0], "dd MMM yyyy")
-        val date = android.text.format.DateFormat.format(pattern, item.lastModified)
-        val text = "${item.sizeReadable}  \u2022  $date"
-        metaView.text = text
-        return text
-    }
-
-    private fun categoryDrawable(cat: FileCategory) = when (cat) {
-        FileCategory.IMAGE    -> R.drawable.ic_image
-        FileCategory.VIDEO    -> R.drawable.ic_video
-        FileCategory.AUDIO    -> R.drawable.ic_audio
-        FileCategory.DOCUMENT -> R.drawable.ic_document
-        FileCategory.APK      -> R.drawable.ic_apk
-        FileCategory.ARCHIVE  -> R.drawable.ic_archive
-        FileCategory.DOWNLOAD -> R.drawable.ic_download
-        else                  -> R.drawable.ic_file
-    }
 }

@@ -184,10 +184,7 @@ class BrowseFragment : Fragment() {
         val filtered = if (selectedExtensions.isEmpty()) {
             searched
         } else {
-            searched.filter { file ->
-                val ext = file.name.substringAfterLast('.', "").lowercase()
-                ext in selectedExtensions
-            }
+            searched.filter { it.extension in selectedExtensions }
         }
 
         val sorted = when (binding.spinnerSort.selectedItemPosition) {
@@ -263,7 +260,7 @@ class BrowseFragment : Fragment() {
         // Count extensions
         val extCounts = mutableMapOf<String, Int>()
         for (file in files) {
-            val ext = file.name.substringAfterLast('.', "").lowercase()
+            val ext = file.extension
             if (ext.isNotEmpty()) {
                 extCounts[ext] = (extCounts[ext] ?: 0) + 1
             }

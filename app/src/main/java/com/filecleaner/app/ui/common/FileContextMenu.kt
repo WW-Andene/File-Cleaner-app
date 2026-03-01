@@ -18,6 +18,18 @@ import java.io.File
 
 object FileContextMenu {
 
+    private const val ID_OPEN = 1
+    private const val ID_DELETE = 2
+    private const val ID_RENAME = 3
+    private const val ID_SHARE = 4
+    private const val ID_CUT = 5
+    private const val ID_COMPRESS = 6
+    private const val ID_EXTRACT = 7
+    private const val ID_OPEN_IN_TREE = 8
+    private const val ID_PASTE = 9
+    private const val ID_COPY = 10
+    private const val ID_MOVE_TO = 11
+
     interface Callback {
         fun onDelete(item: FileItem)
         fun onRename(item: FileItem, newName: String)
@@ -69,33 +81,33 @@ object FileContextMenu {
         val popup = PopupMenu(context, anchor)
         var order = 0
         popup.menu.apply {
-            add(0, 1, order++, context.getString(R.string.ctx_open))
-            add(0, 10, order++, context.getString(R.string.ctx_copy))
-            add(0, 5, order++, context.getString(R.string.ctx_cut))
+            add(0, ID_OPEN, order++, context.getString(R.string.ctx_open))
+            add(0, ID_COPY, order++, context.getString(R.string.ctx_copy))
+            add(0, ID_CUT, order++, context.getString(R.string.ctx_cut))
             if (hasClipboard) {
                 val targetDir = File(item.path).parent
                 if (targetDir != null) {
-                    add(0, 9, order++, context.getString(R.string.ctx_paste_here))
+                    add(0, ID_PASTE, order++, context.getString(R.string.ctx_paste_here))
                 }
             }
-            add(0, 11, order++, context.getString(R.string.ctx_move_to))
-            add(0, 3, order++, context.getString(R.string.ctx_rename))
-            add(0, 4, order++, context.getString(R.string.ctx_share))
-            add(0, 6, order++, context.getString(R.string.ctx_compress))
+            add(0, ID_MOVE_TO, order++, context.getString(R.string.ctx_move_to))
+            add(0, ID_RENAME, order++, context.getString(R.string.ctx_rename))
+            add(0, ID_SHARE, order++, context.getString(R.string.ctx_share))
+            add(0, ID_COMPRESS, order++, context.getString(R.string.ctx_compress))
             if (item.category == FileCategory.ARCHIVE) {
-                add(0, 7, order++, context.getString(R.string.ctx_extract))
+                add(0, ID_EXTRACT, order++, context.getString(R.string.ctx_extract))
             }
-            add(0, 2, order++, context.getString(R.string.ctx_delete))
-            add(0, 8, order++, context.getString(R.string.ctx_open_in_tree))
+            add(0, ID_DELETE, order++, context.getString(R.string.ctx_delete))
+            add(0, ID_OPEN_IN_TREE, order++, context.getString(R.string.ctx_open_in_tree))
         }
 
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
-                1 -> { // Open
+                ID_OPEN -> {
                     FileOpener.open(context, item.file)
                     true
                 }
-                2 -> { // Delete
+                ID_DELETE -> {
                     AlertDialog.Builder(context)
                         .setTitle(context.getString(R.string.confirm_delete_title))
                         .setMessage(context.getString(R.string.confirm_delete_message))
@@ -106,7 +118,7 @@ object FileContextMenu {
                         .show()
                     true
                 }
-                3 -> { // Rename
+                ID_RENAME -> {
                     val editText = EditText(context).apply {
                         setText(item.name)
                         selectAll()
@@ -124,12 +136,11 @@ object FileContextMenu {
                         .show()
                     true
                 }
-                4 -> { // Share
+                ID_SHARE -> {
                     val uri = FileProvider.getUriForFile(
                         context, "${context.packageName}.fileprovider", item.file
                     )
-                    val ext = item.name.substringAfterLast('.', "").lowercase()
-                    val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext) ?: "*/*"
+                    val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(item.extension) ?: "*/*"
                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
                         type = mimeType
                         putExtra(Intent.EXTRA_STREAM, uri)
@@ -138,40 +149,40 @@ object FileContextMenu {
                     context.startActivity(Intent.createChooser(shareIntent, context.getString(R.string.ctx_share)))
                     true
                 }
-                5 -> { // Cut
+                ID_CUT -> {
                     callback.onCut(item)
                     Toast.makeText(context,
                         context.getString(R.string.cut_hint, item.name),
                         Toast.LENGTH_SHORT).show()
                     true
                 }
-                6 -> { // Compress
+                ID_COMPRESS -> {
                     callback.onCompress(item)
                     true
                 }
-                7 -> { // Extract
+                ID_EXTRACT -> {
                     callback.onExtract(item)
                     true
                 }
-                8 -> { // Show in Tree
+                ID_OPEN_IN_TREE -> {
                     callback.onOpenInTree(item)
                     true
                 }
-                9 -> { // Paste here
+                ID_PASTE -> {
                     val targetDir = File(item.path).parent
                     if (targetDir != null) {
                         callback.onPaste(targetDir)
                     }
                     true
                 }
-                10 -> { // Copy
+                ID_COPY -> {
                     callback.onCopy(item)
                     Toast.makeText(context,
                         context.getString(R.string.copy_hint, item.name),
                         Toast.LENGTH_SHORT).show()
                     true
                 }
-                11 -> { // Move to...
+                ID_MOVE_TO -> {
                     callback.onMoveTo(item)
                     true
                 }

@@ -184,7 +184,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 _scanState.postValue(ScanState.Done)
             }.onFailure { e ->
                 if (e is kotlinx.coroutines.CancellationException) throw e
-                _scanState.postValue(ScanState.Error(e.message ?: "Unknown error"))
+                _scanState.postValue(ScanState.Error(e.localizedMessage ?: "Scan failed"))
             }
 
             // Cache results to disk — outside runCatching so save failure
@@ -336,7 +336,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     src.copyTo(dst)
                     MoveResult(true, "Copied ${src.name}")
                 } catch (e: Exception) {
-                    MoveResult(false, "Copy failed: ${e.message}")
+                    MoveResult(false, "Copy failed: ${e.localizedMessage ?: "Unknown error"}")
                 }
             }
             _moveResult.postValue(result)
@@ -394,7 +394,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     }
                     MoveResult(true, "Compressed to ${zipFile.name}")
                 } catch (e: Exception) {
-                    MoveResult(false, "Compression failed: ${e.message}")
+                    MoveResult(false, "Compression failed: ${e.localizedMessage ?: "Unknown error"}")
                 }
             }
             _operationResult.postValue(result)
@@ -436,7 +436,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     }
                     MoveResult(true, "Extracted to ${outDir.name}/")
                 } catch (e: Exception) {
-                    MoveResult(false, "Extraction failed: ${e.message}")
+                    MoveResult(false, "Extraction failed: ${e.localizedMessage ?: "Unknown error"}")
                 }
             }
             _operationResult.postValue(result)

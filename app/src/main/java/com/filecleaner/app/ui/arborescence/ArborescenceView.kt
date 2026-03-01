@@ -321,7 +321,7 @@ class ArborescenceView @JvmOverloads constructor(
         }
         if (filterExtensions.isNotEmpty()) {
             files = files.filter { file ->
-                file.name.substringAfterLast('.', "").lowercase() in filterExtensions
+                file.extension in filterExtensions
             }
         }
         return files

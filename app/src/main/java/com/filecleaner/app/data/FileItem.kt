@@ -55,4 +55,6 @@ data class FileItem(
     val file: File get() = File(path)
 
     val sizeReadable: String get() = UndoHelper.formatBytes(size)
+
+    val extension: String get() = name.substringAfterLast('.', "").lowercase()
 }

@@ -238,7 +238,7 @@ class ArborescenceFragment : Fragment() {
 
         val extCounts = mutableMapOf<String, Int>()
         for (file in filteredByCategory) {
-            val ext = file.name.substringAfterLast('.', "").lowercase()
+            val ext = file.extension
             if (ext.isNotEmpty()) {
                 extCounts[ext] = (extCounts[ext] ?: 0) + 1
             }

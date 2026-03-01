@@ -9,11 +9,9 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.filecleaner.app.R
-import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
+import com.filecleaner.app.ui.adapters.FileItemUtils.dpToPx
 
 class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(DIFF) {
 
@@ -87,26 +85,14 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
 
         if (viewMode == ViewMode.LIST_WITH_THUMBNAILS) {
             val lp = holder.icon.layoutParams
-            lp.width = (72 * holder.itemView.resources.displayMetrics.density).toInt()
-            lp.height = (72 * holder.itemView.resources.displayMetrics.density).toInt()
+            lp.width = 72.dpToPx(holder.itemView)
+            lp.height = 72.dpToPx(holder.itemView)
             holder.icon.layoutParams = lp
         }
 
         // Load thumbnail or icon
-        if (item.category == FileCategory.IMAGE || item.category == FileCategory.VIDEO) {
-            val thumbSize = if (viewMode == ViewMode.LIST || viewMode == ViewMode.LIST_WITH_THUMBNAILS) 128 else 256
-            Glide.with(holder.itemView)
-                .load(item.file)
-                .override(thumbSize, thumbSize)
-                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                .placeholder(categoryDrawable(item.category))
-                .centerCrop()
-                .into(holder.icon)
-        } else {
-            Glide.with(holder.itemView).clear(holder.icon)
-            holder.icon.setImageResource(categoryDrawable(item.category))
-            holder.icon.scaleType = ImageView.ScaleType.CENTER_INSIDE
-        }
+        val isGrid = viewMode != ViewMode.LIST && viewMode != ViewMode.LIST_WITH_THUMBNAILS
+        FileItemUtils.loadThumbnail(holder.icon, item, isGrid)
 
         // Default card colors
         val card = holder.itemView as? com.google.android.material.card.MaterialCardView
@@ -115,7 +101,7 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         card?.strokeColor = ContextCompat.getColor(holder.itemView.context, R.color.borderDefault)
 
         // Meta line
-        holder.meta?.let { buildMeta(it, item) }
+        holder.meta?.let { FileItemUtils.buildMeta(it, item) }
 
         // Hide checkbox
         holder.check?.visibility = View.GONE
@@ -130,24 +116,6 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         val ctx = holder.itemView.context
         holder.itemView.contentDescription = ctx.getString(
             R.string.a11y_file_info, item.name, holder.meta?.text ?: item.sizeReadable)
-    }
-
-    private fun buildMeta(metaView: TextView, item: FileItem) {
-        val pattern = android.text.format.DateFormat.getBestDateTimePattern(
-            metaView.resources.configuration.locales[0], "dd MMM yyyy")
-        val date = android.text.format.DateFormat.format(pattern, item.lastModified)
-        metaView.text = "${item.sizeReadable}  \u2022  $date"
-    }
-
-    private fun categoryDrawable(cat: FileCategory) = when (cat) {
-        FileCategory.IMAGE -> R.drawable.ic_image
-        FileCategory.VIDEO -> R.drawable.ic_video
-        FileCategory.AUDIO -> R.drawable.ic_audio
-        FileCategory.DOCUMENT -> R.drawable.ic_document
-        FileCategory.APK -> R.drawable.ic_apk
-        FileCategory.ARCHIVE -> R.drawable.ic_archive
-        FileCategory.DOWNLOAD -> R.drawable.ic_download
-        else -> R.drawable.ic_file
     }
 
     class HeaderVH(view: View) : RecyclerView.ViewHolder(view) {

@@ -30,7 +30,7 @@ object JunkFinder {
         ).absolutePath
 
         files.filter { item ->
-            val ext = item.name.substringAfterLast('.', "").lowercase()
+            val ext = item.extension
             val path = item.path.lowercase()
 
             when {

@@ -16,6 +16,7 @@ import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.databinding.FragmentListActionBinding
 import com.filecleaner.app.ui.adapters.FileAdapter
 import com.filecleaner.app.utils.FileOpener
+import com.filecleaner.app.utils.MotionUtil
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.viewmodel.ScanState
@@ -27,11 +28,17 @@ import com.google.android.material.snackbar.Snackbar
  */
 abstract class BaseFileListFragment : Fragment() {
 
+    companion object {
+        const val SEARCH_DEBOUNCE_MS = 300L
+        private const val KEY_SELECTED_PATHS = "base_selected_paths"
+    }
+
     private var _binding: FragmentListActionBinding? = null
     protected val binding get() = _binding!!
     protected val vm: MainViewModel by activityViewModels()
     protected lateinit var adapter: FileAdapter
     private var selected = listOf<FileItem>()
+    private var pendingSelectionRestore: Set<String>? = null
 
     // Search state
     private var searchQuery = ""
@@ -91,9 +98,14 @@ abstract class BaseFileListFragment : Fragment() {
         adapter.onItemClick = { item -> FileOpener.open(requireContext(), item.file) }
         adapter.onItemLongClick = { item, anchor ->
             FileContextMenu.show(requireContext(), anchor, item, contextMenuCallback,
-                hasCutFile = vm.clipboardItem.value != null)
+                hasClipboard = vm.clipboardEntry.value != null)
         }
+        binding.recyclerView.setHasFixedSize(true)
         binding.recyclerView.adapter = adapter
+        // Disable stagger animation when user prefers reduced motion (§G4)
+        if (MotionUtil.isReducedMotion(requireContext())) {
+            binding.recyclerView.layoutAnimation = null
+        }
 
         binding.btnSelectAll.setOnClickListener { onSelectAll() }
         binding.btnDeselectAll.setOnClickListener { adapter.deselectAll() }
@@ -112,13 +124,23 @@ abstract class BaseFileListFragment : Fragment() {
                     searchQuery = s?.toString()?.trim() ?: ""
                     applySearch()
                 }
-                handler.postDelayed(searchRunnable!!, 300)
+                handler.postDelayed(searchRunnable!!, SEARCH_DEBOUNCE_MS)
             }
         })
+
+        // Restore selection from config change
+        savedInstanceState?.getStringArrayList(KEY_SELECTED_PATHS)?.let { paths ->
+            pendingSelectionRestore = paths.toSet()
+        }
 
         liveData().observe(viewLifecycleOwner) { items ->
             rawItems = items
             applySearch()
+            // Restore selection after data arrives (adapter needs items to select)
+            pendingSelectionRestore?.let { paths ->
+                adapter.restoreSelection(paths)
+                pendingSelectionRestore = null
+            }
         }
 
         vm.deleteResult.observe(viewLifecycleOwner) { result ->
@@ -132,7 +154,10 @@ abstract class BaseFileListFragment : Fragment() {
 
     private fun applySearch() {
         val filtered = if (searchQuery.isEmpty()) rawItems
-        else rawItems.filter { it.name.lowercase().contains(searchQuery.lowercase()) }
+        else {
+            val lowerQuery = searchQuery.lowercase()
+            rawItems.filter { it.name.lowercase().contains(lowerQuery) }
+        }
 
         adapter.submitList(filtered)
         binding.tvSummary.text = if (rawItems.isEmpty()) emptySummary
@@ -152,8 +177,8 @@ abstract class BaseFileListFragment : Fragment() {
 
     private fun confirmDelete() {
         val totalSize = com.filecleaner.app.utils.UndoHelper.totalSize(selected)
-        val detailMessage = getString(com.filecleaner.app.R.string.confirm_delete_detail,
-            selected.size, totalSize)
+        val detailMessage = resources.getQuantityString(com.filecleaner.app.R.plurals.confirm_delete_detail,
+            selected.size, selected.size, totalSize)
         AlertDialog.Builder(requireContext())
             .setTitle(confirmTitle(selected.size))
             .setMessage(detailMessage)
@@ -165,32 +190,25 @@ abstract class BaseFileListFragment : Fragment() {
             .show()
     }
 
-    private val contextMenuCallback = object : FileContextMenu.Callback {
-        override fun onDelete(item: FileItem) {
-            vm.deleteFiles(listOf(item))
+    private val contextMenuCallback by lazy {
+        FileContextMenu.defaultCallback(vm,
+            onMoveTo = { item -> showDirectoryPicker(item) })
+    }
+
+    private fun showDirectoryPicker(item: com.filecleaner.app.data.FileItem) {
+        val tree = vm.directoryTree.value ?: return
+        DirectoryPickerDialog.show(
+            requireContext(), tree, excludePath = java.io.File(item.path).parent
+        ) { targetDir ->
+            vm.moveFile(item.path, targetDir)
         }
-        override fun onRename(item: FileItem, newName: String) {
-            vm.renameFile(item.path, newName)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (::adapter.isInitialized) {
+            outState.putStringArrayList(KEY_SELECTED_PATHS, ArrayList(adapter.getSelectedPaths()))
         }
-        override fun onCompress(item: FileItem) {
-            vm.compressFile(item.path)
-        }
-        override fun onExtract(item: FileItem) {
-            vm.extractArchive(item.path)
-        }
-        override fun onOpenInTree(item: FileItem) {
-            vm.requestTreeHighlight(item.path)
-        }
-        override fun onCut(item: FileItem) {
-            vm.setCutFile(item)
-        }
-        override fun onPaste(targetDirPath: String) {
-            vm.clipboardItem.value?.let { cut ->
-                vm.moveFile(cut.path, targetDirPath)
-                vm.clearClipboard()
-            }
-        }
-        override fun onRefresh() {}
     }
 
     override fun onDestroyView() {

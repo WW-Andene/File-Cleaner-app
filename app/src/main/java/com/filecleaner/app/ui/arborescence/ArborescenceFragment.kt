@@ -15,6 +15,7 @@ import com.filecleaner.app.data.DirectoryNode
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.databinding.FragmentArborescenceBinding
+import com.filecleaner.app.ui.common.DirectoryPickerDialog
 import com.filecleaner.app.ui.common.FileContextMenu
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.google.android.material.chip.Chip
@@ -47,6 +48,13 @@ class ArborescenceFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Restore expanded paths from config change (rotation)
+        if (savedExpandedPaths == null) {
+            savedInstanceState?.getStringArrayList(KEY_EXPANDED_PATHS)?.let {
+                savedExpandedPaths = it.toSet()
+            }
+        }
+
         // Wire file move callback with confirmation dialog
         binding.arborescenceView.onFileMoveRequested = { filePath, targetDirPath ->
             val fileName = File(filePath).name
@@ -64,8 +72,8 @@ class ArborescenceFragment : Fragment() {
         // Stats header updates
         binding.arborescenceView.onStatsUpdate = { totalFiles, totalSize, visibleNodes, zoom ->
             binding.tvStatsHeader.visibility = View.VISIBLE
-            binding.tvStatsHeader.text = getString(R.string.stats_header_format,
-                totalFiles, formatSize(totalSize))
+            binding.tvStatsHeader.text = resources.getQuantityString(R.plurals.stats_header_format,
+                totalFiles, totalFiles, formatSize(totalSize))
             binding.tvZoomInfo.visibility = View.VISIBLE
             binding.tvZoomInfo.text = getString(R.string.zoom_info_format,
                 (zoom * 100).toInt(), visibleNodes)
@@ -90,17 +98,19 @@ class ArborescenceFragment : Fragment() {
         // File long-press context menu
         binding.arborescenceView.onFileLongPress = { filePath, fileName ->
             val file = File(filePath)
-            val ext = file.extension.lowercase()
-            val category = FileCategory.fromExtension(ext)
-            val item = FileItem(
-                path = filePath,
-                name = fileName,
-                size = file.length(),
-                lastModified = file.lastModified(),
-                category = category
-            )
-            FileContextMenu.show(requireContext(), binding.arborescenceView, item, contextMenuCallback,
-                hasCutFile = vm.clipboardItem.value != null)
+            if (file.exists()) {
+                val ext = file.extension.lowercase()
+                val category = FileCategory.fromExtension(ext)
+                val item = FileItem(
+                    path = filePath,
+                    name = fileName,
+                    size = file.length(),
+                    lastModified = file.lastModified(),
+                    category = category
+                )
+                FileContextMenu.show(requireContext(), binding.arborescenceView, item, contextMenuCallback,
+                    hasClipboard = vm.clipboardEntry.value != null)
+            }
         }
 
         // Tree search
@@ -171,10 +181,13 @@ class ArborescenceFragment : Fragment() {
         // Observe tree highlight navigation from other tabs
         vm.navigateToTree.observe(viewLifecycleOwner) { filePath ->
             if (filePath != null) {
-                binding.arborescenceView.highlightFilePath(filePath)
-                val fileName = File(filePath).name
-                Snackbar.make(binding.root, getString(R.string.located_file, fileName), Snackbar.LENGTH_SHORT).show()
-                vm.clearTreeHighlight()
+                // Defer highlight until the view is laid out and tree data is loaded
+                binding.arborescenceView.post {
+                    binding.arborescenceView.highlightFilePath(filePath)
+                    val fileName = File(filePath).name
+                    Snackbar.make(binding.root, getString(R.string.located_file, fileName), Snackbar.LENGTH_SHORT).show()
+                    vm.clearTreeHighlight()
+                }
             }
         }
     }
@@ -183,8 +196,8 @@ class ArborescenceFragment : Fragment() {
         // Category spinner
         val labels = treeCategories.map { it.first }
         val catAdapter = ArrayAdapter(requireContext(),
-            android.R.layout.simple_spinner_item, labels)
-        catAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            R.layout.item_spinner, labels)
+        catAdapter.setDropDownViewResource(R.layout.item_spinner_dropdown)
         binding.spinnerTreeCategory.adapter = catAdapter
 
         // Sort spinner (not used for tree sorting, but shows filter category)
@@ -194,8 +207,8 @@ class ArborescenceFragment : Fragment() {
             getString(R.string.sort_date_asc), getString(R.string.sort_date_desc)
         )
         val sortAdapter = ArrayAdapter(requireContext(),
-            android.R.layout.simple_spinner_item, sortOptions)
-        sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            R.layout.item_spinner, sortOptions)
+        sortAdapter.setDropDownViewResource(R.layout.item_spinner_dropdown)
         binding.spinnerTreeSort.adapter = sortAdapter
 
         binding.spinnerTreeCategory.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -234,7 +247,7 @@ class ArborescenceFragment : Fragment() {
 
         val extCounts = mutableMapOf<String, Int>()
         for (file in filteredByCategory) {
-            val ext = file.name.substringAfterLast('.', "").lowercase()
+            val ext = file.extension
             if (ext.isNotEmpty()) {
                 extCounts[ext] = (extCounts[ext] ?: 0) + 1
             }
@@ -276,37 +289,34 @@ class ArborescenceFragment : Fragment() {
     private fun formatSize(bytes: Long): String =
         com.filecleaner.app.utils.UndoHelper.formatBytes(bytes)
 
-    private val contextMenuCallback = object : FileContextMenu.Callback {
-        override fun onDelete(item: FileItem) {
-            vm.deleteFiles(listOf(item))
+    private val contextMenuCallback by lazy {
+        FileContextMenu.defaultCallback(vm,
+            onOpenInTree = { binding.arborescenceView.highlightFilePath(it.path) },
+            onMoveTo = { item -> showDirectoryPicker(item) })
+    }
+
+    private fun showDirectoryPicker(item: FileItem) {
+        val tree = vm.directoryTree.value ?: return
+        DirectoryPickerDialog.show(requireContext(), tree, excludePath = File(item.path).parent) { targetDir ->
+            vm.moveFile(item.path, targetDir)
         }
-        override fun onRename(item: FileItem, newName: String) {
-            vm.renameFile(item.path, newName)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        val paths = _binding?.arborescenceView?.getExpandedPaths() ?: savedExpandedPaths
+        if (paths != null) {
+            outState.putStringArrayList(KEY_EXPANDED_PATHS, ArrayList(paths))
         }
-        override fun onCompress(item: FileItem) {
-            vm.compressFile(item.path)
-        }
-        override fun onExtract(item: FileItem) {
-            vm.extractArchive(item.path)
-        }
-        override fun onOpenInTree(item: FileItem) {
-            binding.arborescenceView.highlightFilePath(item.path)
-        }
-        override fun onCut(item: FileItem) {
-            vm.setCutFile(item)
-        }
-        override fun onPaste(targetDirPath: String) {
-            vm.clipboardItem.value?.let { cut ->
-                vm.moveFile(cut.path, targetDirPath)
-                vm.clearClipboard()
-            }
-        }
-        override fun onRefresh() {}
     }
 
     override fun onDestroyView() {
         savedExpandedPaths = binding.arborescenceView.getExpandedPaths()
         super.onDestroyView()
         _binding = null
+    }
+
+    companion object {
+        private const val KEY_EXPANDED_PATHS = "arborescence_expanded_paths"
     }
 }

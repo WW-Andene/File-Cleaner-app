@@ -5,6 +5,7 @@ import com.filecleaner.app.data.DirectoryNode
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
@@ -13,10 +14,12 @@ import java.io.File
 object ScanCache {
 
     private const val CACHE_FILE = "scan_cache.json"
+    private const val CACHE_VERSION = 1
 
     suspend fun save(context: Context, files: List<FileItem>, tree: DirectoryNode) =
         withContext(Dispatchers.IO) {
             val root = JSONObject()
+            root.put("version", CACHE_VERSION)
 
             // Serialize file list
             val filesArray = JSONArray()
@@ -41,9 +44,17 @@ object ScanCache {
             try {
                 val root = JSONObject(cacheFile.readText())
 
+                // Version check — incompatible cache is discarded
+                val version = root.optInt("version", 0)
+                if (version != CACHE_VERSION) {
+                    cacheFile.delete()
+                    return@withContext null
+                }
+
                 val filesArray = root.getJSONArray("files")
                 val files = mutableListOf<FileItem>()
                 for (i in 0 until filesArray.length()) {
+                    if (i % 500 == 0) ensureActive()
                     val item = jsonToFileItem(filesArray.getJSONObject(i))
                     // Validate file still exists on disk — prevents ghost entries
                     if (File(item.path).exists()) {
@@ -51,7 +62,10 @@ object ScanCache {
                     }
                 }
 
-                val tree = pruneDeletedFiles(jsonToDirectoryNode(root.getJSONObject("tree")))
+                // Prune tree using the already-validated path set (avoids
+                // redundant File.exists() calls for every file in the tree)
+                val validPaths = files.mapTo(HashSet(files.size)) { it.path }
+                val tree = pruneTreeByPaths(jsonToDirectoryNode(root.getJSONObject("tree")), validPaths)
 
                 Pair(files, tree)
             } catch (e: Exception) {
@@ -62,12 +76,13 @@ object ScanCache {
         }
 
     /**
-     * Recursively prune files that no longer exist on disk from the directory tree.
-     * Recalculates totalSize and totalFileCount after pruning.
+     * Recursively prune files from the tree that are NOT in [validPaths].
+     * Uses the pre-validated path set from the flat file list, avoiding
+     * redundant File.exists() disk checks for every tree entry.
      */
-    private fun pruneDeletedFiles(node: DirectoryNode): DirectoryNode {
-        val validFiles = node.files.filter { File(it.path).exists() }
-        val prunedChildren = node.children.map { pruneDeletedFiles(it) }.toMutableList()
+    private fun pruneTreeByPaths(node: DirectoryNode, validPaths: Set<String>): DirectoryNode {
+        val validFiles = node.files.filter { it.path in validPaths }
+        val prunedChildren = node.children.map { pruneTreeByPaths(it, validPaths) }.toMutableList()
 
         val ownFileSize = validFiles.sumOf { it.size }
         val ownFileCount = validFiles.size

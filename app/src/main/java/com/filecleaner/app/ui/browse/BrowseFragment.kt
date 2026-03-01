@@ -1,6 +1,7 @@
 package com.filecleaner.app.ui.browse
 
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.text.Editable
@@ -18,27 +19,36 @@ import com.filecleaner.app.R
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.databinding.FragmentBrowseBinding
-import com.filecleaner.app.ui.adapters.FileAdapter
+import com.filecleaner.app.ui.adapters.BrowseAdapter
 import com.filecleaner.app.ui.adapters.ViewMode
+import com.filecleaner.app.ui.common.BaseFileListFragment
 import com.filecleaner.app.ui.common.FileContextMenu
 import com.filecleaner.app.utils.FileOpener
+import com.filecleaner.app.utils.MotionUtil
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.viewmodel.ScanState
 import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
+import java.io.File
 
 class BrowseFragment : Fragment() {
 
     private var _binding: FragmentBrowseBinding? = null
     private val binding get() = _binding!!
     private val vm: MainViewModel by activityViewModels()
-    private lateinit var adapter: FileAdapter
+    private lateinit var adapter: BrowseAdapter
 
     private var currentViewMode = ViewMode.LIST
     private val selectedExtensions = mutableSetOf<String>()
     private var searchQuery = ""
     private val handler = Handler(Looper.getMainLooper())
     private var searchRunnable: Runnable? = null
+
+    // File manager needs broad storage access; MANAGE_EXTERNAL_STORAGE grants it
+    @Suppress("DEPRECATION")
+    private val storagePath: String by lazy {
+        Environment.getExternalStorageDirectory().absolutePath
+    }
 
     private val categories by lazy {
         listOf(
@@ -55,15 +65,28 @@ class BrowseFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // RecyclerView
-        adapter = FileAdapter(selectable = false)
+        // Restore view mode from config change
+        savedInstanceState?.getInt(KEY_VIEW_MODE, -1)?.let { ordinal ->
+            if (ordinal in ViewMode.entries.indices) {
+                currentViewMode = ViewMode.entries[ordinal]
+            }
+        }
+
+        // RecyclerView with BrowseAdapter (supports folder headers)
+        adapter = BrowseAdapter()
+        adapter.viewMode = currentViewMode
         adapter.onItemClick = { item -> FileOpener.open(requireContext(), item.file) }
         adapter.onItemLongClick = { item, anchor ->
             FileContextMenu.show(requireContext(), anchor, item, contextMenuCallback,
-                hasCutFile = vm.clipboardItem.value != null)
+                hasClipboard = vm.clipboardEntry.value != null)
         }
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        applyLayoutManager()
+        binding.recyclerView.setHasFixedSize(true)
         binding.recyclerView.adapter = adapter
+        // Disable stagger animation when user prefers reduced motion (§G4)
+        if (MotionUtil.isReducedMotion(requireContext())) {
+            binding.recyclerView.layoutAnimation = null
+        }
 
         // View mode toggle
         binding.btnViewMode.setOnClickListener { cycleViewMode() }
@@ -79,15 +102,15 @@ class BrowseFragment : Fragment() {
                     searchQuery = s?.toString()?.trim() ?: ""
                     refresh()
                 }
-                handler.postDelayed(searchRunnable!!, 300)
+                handler.postDelayed(searchRunnable!!, BaseFileListFragment.SEARCH_DEBOUNCE_MS)
             }
         })
 
         // Category spinner
         val labels = categories.map { it.first }
         val spinnerAdapter = ArrayAdapter(requireContext(),
-            android.R.layout.simple_spinner_item, labels)
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            R.layout.item_spinner, labels)
+        spinnerAdapter.setDropDownViewResource(R.layout.item_spinner_dropdown)
         binding.spinnerCategory.adapter = spinnerAdapter
 
         // Sort spinner
@@ -97,8 +120,8 @@ class BrowseFragment : Fragment() {
             getString(R.string.sort_date_asc), getString(R.string.sort_date_desc)
         )
         val sortAdapter = ArrayAdapter(requireContext(),
-            android.R.layout.simple_spinner_item, sortOptions)
-        sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            R.layout.item_spinner, sortOptions)
+        sortAdapter.setDropDownViewResource(R.layout.item_spinner_dropdown)
         binding.spinnerSort.adapter = sortAdapter
 
         binding.spinnerCategory.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -134,7 +157,13 @@ class BrowseFragment : Fragment() {
         binding.recyclerView.layoutManager = if (spanCount == 1) {
             LinearLayoutManager(requireContext())
         } else {
-            GridLayoutManager(requireContext(), spanCount)
+            GridLayoutManager(requireContext(), spanCount).apply {
+                spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                    override fun getSpanSize(position: Int): Int {
+                        return if (adapter.isHeader(position)) spanCount else 1
+                    }
+                }
+            }
         }
     }
 
@@ -160,7 +189,8 @@ class BrowseFragment : Fragment() {
         val searched = if (searchQuery.isEmpty()) {
             raw
         } else {
-            raw.filter { it.name.lowercase().contains(searchQuery.lowercase()) }
+            val lowerQuery = searchQuery.lowercase()
+            raw.filter { it.name.lowercase().contains(lowerQuery) }
         }
 
         // Build extension chips from searched file set
@@ -170,10 +200,7 @@ class BrowseFragment : Fragment() {
         val filtered = if (selectedExtensions.isEmpty()) {
             searched
         } else {
-            searched.filter { file ->
-                val ext = file.name.substringAfterLast('.', "").lowercase()
-                ext in selectedExtensions
-            }
+            searched.filter { it.extension in selectedExtensions }
         }
 
         val sorted = when (binding.spinnerSort.selectedItemPosition) {
@@ -185,9 +212,13 @@ class BrowseFragment : Fragment() {
             else -> filtered.sortedByDescending { it.lastModified }
         }
 
-        adapter.submitList(sorted)
+        // Group files by parent folder and build list with section headers
+        val browseItems = buildGroupedList(sorted)
+        adapter.submitList(browseItems)
+        binding.recyclerView.scrollToPosition(0)
 
-        if (sorted.isEmpty()) {
+        val fileCount = adapter.getFileCount()
+        if (fileCount == 0) {
             binding.tvEmpty.visibility = View.VISIBLE
             binding.tvEmptyText.text = when {
                 searchQuery.isNotEmpty() -> getString(R.string.empty_search_results, searchQuery)
@@ -197,7 +228,46 @@ class BrowseFragment : Fragment() {
         } else {
             binding.tvEmpty.visibility = View.GONE
         }
-        binding.tvCount.text = getString(R.string.n_files, sorted.size)
+        binding.tvCount.text = resources.getQuantityString(R.plurals.n_files, fileCount, fileCount)
+    }
+
+    /** Groups files by their parent folder and creates a list with folder headers. */
+    private fun buildGroupedList(files: List<FileItem>): List<BrowseAdapter.Item> {
+        if (files.isEmpty()) return emptyList()
+
+        // Group by parent directory
+        val grouped = files.groupBy { File(it.path).parent ?: "" }
+
+        // Sort groups: root-level first (matching arborescence root), then by path
+        val sortedGroups = grouped.entries.sortedWith(
+            compareBy(
+                { it.key.removePrefix(storagePath).count { c -> c == File.separatorChar } },
+                { it.key.lowercase() }
+            )
+        )
+
+        val result = mutableListOf<BrowseAdapter.Item>()
+        for ((folderPath, folderFiles) in sortedGroups) {
+            // Create a readable folder display name
+            val displayName = folderDisplayName(folderPath)
+            result.add(BrowseAdapter.Item.Header(folderPath, displayName, folderFiles.size))
+            for (file in folderFiles) {
+                result.add(BrowseAdapter.Item.File(file))
+            }
+        }
+        return result
+    }
+
+    /** Converts a full folder path to a user-friendly display name relative to storage. */
+    private fun folderDisplayName(folderPath: String): String {
+        if (folderPath.isEmpty()) return "/"
+        // Show path relative to external storage for readability
+        val relative = if (folderPath.startsWith(storagePath)) {
+            folderPath.removePrefix(storagePath)
+        } else {
+            folderPath
+        }
+        return if (relative.isEmpty()) "/Storage" else relative
     }
 
     private fun updateExtensionChips(files: List<FileItem>) {
@@ -206,7 +276,7 @@ class BrowseFragment : Fragment() {
         // Count extensions
         val extCounts = mutableMapOf<String, Int>()
         for (file in files) {
-            val ext = file.name.substringAfterLast('.', "").lowercase()
+            val ext = file.extension
             if (ext.isNotEmpty()) {
                 extCounts[ext] = (extCounts[ext] ?: 0) + 1
             }
@@ -239,39 +309,33 @@ class BrowseFragment : Fragment() {
         }
     }
 
-    private val contextMenuCallback = object : FileContextMenu.Callback {
-        override fun onDelete(item: FileItem) {
-            vm.deleteFiles(listOf(item))
+    private val contextMenuCallback by lazy {
+        FileContextMenu.defaultCallback(vm,
+            onMoveTo = { item -> showDirectoryPicker(item) },
+            onRefresh = ::refresh)
+    }
+
+    private fun showDirectoryPicker(item: com.filecleaner.app.data.FileItem) {
+        val tree = vm.directoryTree.value ?: return
+        com.filecleaner.app.ui.common.DirectoryPickerDialog.show(
+            requireContext(), tree, excludePath = java.io.File(item.path).parent
+        ) { targetDir ->
+            vm.moveFile(item.path, targetDir)
         }
-        override fun onRename(item: FileItem, newName: String) {
-            vm.renameFile(item.path, newName)
-        }
-        override fun onCompress(item: FileItem) {
-            vm.compressFile(item.path)
-        }
-        override fun onExtract(item: FileItem) {
-            vm.extractArchive(item.path)
-        }
-        override fun onOpenInTree(item: FileItem) {
-            vm.requestTreeHighlight(item.path)
-        }
-        override fun onCut(item: FileItem) {
-            vm.setCutFile(item)
-        }
-        override fun onPaste(targetDirPath: String) {
-            vm.clipboardItem.value?.let { cut ->
-                vm.moveFile(cut.path, targetDirPath)
-                vm.clearClipboard()
-            }
-        }
-        override fun onRefresh() {
-            refresh()
-        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(KEY_VIEW_MODE, currentViewMode.ordinal)
     }
 
     override fun onDestroyView() {
         searchRunnable?.let { handler.removeCallbacks(it) }
         super.onDestroyView()
         _binding = null
+    }
+
+    companion object {
+        private const val KEY_VIEW_MODE = "browse_view_mode"
     }
 }

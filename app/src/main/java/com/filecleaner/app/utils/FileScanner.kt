@@ -14,43 +14,10 @@ import kotlin.coroutines.coroutineContext
 
 object FileScanner {
 
-    // Use FileCategory's single source of truth for extension mapping
-
     private val SKIP_DIRS = setOf(
         "Android/data", "Android/obb", ".thumbnails", ".cache",
         "lost+found", "proc", "sys", "dev"
     )
-
-    suspend fun scanAll(context: Context, onProgress: (Int) -> Unit = {}): List<FileItem> =
-        withContext(Dispatchers.IO) {
-            val results = mutableListOf<FileItem>()
-            val root = Environment.getExternalStorageDirectory()
-            val rootPath = root.absolutePath
-
-            // Iterative walk using explicit stack (F-018)
-            val stack = ArrayDeque<File>()
-            stack.push(root)
-            var scanned = 0
-
-            while (stack.isNotEmpty()) {
-                coroutineContext.ensureActive()
-                val dir = stack.pop()
-                val children = dir.listFiles() ?: continue
-
-                for (child in children) {
-                    if (child.isDirectory) {
-                        val relative = child.absolutePath.substringAfter("$rootPath/")
-                        if (SKIP_DIRS.any { relative.startsWith(it) } || child.name.startsWith(".")) continue
-                        stack.push(child)
-                    } else {
-                        scanned++
-                        if (scanned % 100 == 0) onProgress(scanned)
-                        results.add(child.toFileItem())
-                    }
-                }
-            }
-            results
-        }
 
     /** Scan returning both a flat file list and a directory tree. */
     suspend fun scanWithTree(
@@ -58,6 +25,8 @@ object FileScanner {
         onProgress: (Int) -> Unit = {}
     ): Pair<List<FileItem>, DirectoryNode> = withContext(Dispatchers.IO) {
         val results = mutableListOf<FileItem>()
+        // File manager needs broad storage access; MANAGE_EXTERNAL_STORAGE grants it
+        @Suppress("DEPRECATION")
         val root = Environment.getExternalStorageDirectory()
         val rootPath = root.absolutePath
 
@@ -113,7 +82,7 @@ object FileScanner {
 
             nodeMap[path] = DirectoryNode(
                 path = path,
-                name = info.file.name,
+                name = if (path == rootPath) "Internal Storage" else info.file.name,
                 files = info.files.toList(),
                 children = childNodes.toMutableList(),
                 totalSize = totalSize,
@@ -124,7 +93,7 @@ object FileScanner {
 
         val rootNode = nodeMap[rootPath] ?: DirectoryNode(
             path = rootPath,
-            name = root.name,
+            name = "Internal Storage",
             files = emptyList(),
             totalSize = 0,
             totalFileCount = 0,
@@ -136,11 +105,20 @@ object FileScanner {
 
     fun fileToItem(file: File): FileItem = file.toFileItem()
 
+    // File manager needs broad storage access; MANAGE_EXTERNAL_STORAGE grants it
+    @Suppress("DEPRECATION")
+    private val downloadPath: String by lazy {
+        Environment.getExternalStoragePublicDirectory(
+            Environment.DIRECTORY_DOWNLOADS
+        ).absolutePath
+    }
+
     fun File.toFileItem(): FileItem {
         val ext = extension.lowercase()
         val rawCategory = FileCategory.fromExtension(ext)
+        // Only assign DOWNLOAD to unrecognized files in the actual Downloads folder
         val category = if (rawCategory == FileCategory.OTHER &&
-            absolutePath.contains("/Download/", ignoreCase = true)) FileCategory.DOWNLOAD
+            absolutePath.startsWith(downloadPath)) FileCategory.DOWNLOAD
         else rawCategory
 
         return FileItem(

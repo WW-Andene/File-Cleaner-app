@@ -9,10 +9,17 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import android.os.Environment
 import com.filecleaner.app.R
 import com.filecleaner.app.data.DirectoryNode
 
 object DirectoryPickerDialog {
+
+    // File manager needs broad storage path; MANAGE_EXTERNAL_STORAGE grants access
+    @Suppress("DEPRECATION")
+    private val storagePath: String by lazy {
+        Environment.getExternalStorageDirectory().absolutePath
+    }
 
     fun show(
         context: Context,
@@ -31,7 +38,7 @@ object DirectoryPickerDialog {
 
             // Current path display
             val pathLabel = TextView(context).apply {
-                text = currentNode.path.removePrefix("/storage/emulated/0")
+                text = currentNode.path.removePrefix(storagePath)
                     .ifEmpty { "/" }
                 setTextColor(ContextCompat.getColor(context, R.color.textSecondary))
                 textSize = 13f

@@ -26,6 +26,8 @@ object JunkFinder {
      */
     suspend fun findJunk(files: List<FileItem>): List<FileItem> = withContext(Dispatchers.IO) {
         val cutoff90Days = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(90)
+        // File manager needs broad storage access; MANAGE_EXTERNAL_STORAGE grants it
+        @Suppress("DEPRECATION")
         val downloadPath = Environment.getExternalStoragePublicDirectory(
             Environment.DIRECTORY_DOWNLOADS
         ).absolutePath

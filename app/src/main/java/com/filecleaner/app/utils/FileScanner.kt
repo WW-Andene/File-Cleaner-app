@@ -27,6 +27,8 @@ object FileScanner {
         onProgress: (Int) -> Unit = {}
     ): Pair<List<FileItem>, DirectoryNode> = withContext(Dispatchers.IO) {
         val results = mutableListOf<FileItem>()
+        // File manager needs broad storage access; MANAGE_EXTERNAL_STORAGE grants it
+        @Suppress("DEPRECATION")
         val root = Environment.getExternalStorageDirectory()
         val rootPath = root.absolutePath
 
@@ -105,6 +107,8 @@ object FileScanner {
 
     fun fileToItem(file: File): FileItem = file.toFileItem()
 
+    // File manager needs broad storage access; MANAGE_EXTERNAL_STORAGE grants it
+    @Suppress("DEPRECATION")
     private val downloadPath: String by lazy {
         Environment.getExternalStoragePublicDirectory(
             Environment.DIRECTORY_DOWNLOADS

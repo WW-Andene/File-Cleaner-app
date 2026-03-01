@@ -44,6 +44,8 @@ class BrowseFragment : Fragment() {
     private val handler = Handler(Looper.getMainLooper())
     private var searchRunnable: Runnable? = null
 
+    // File manager needs broad storage access; MANAGE_EXTERNAL_STORAGE grants it
+    @Suppress("DEPRECATION")
     private val storagePath: String by lazy {
         Environment.getExternalStorageDirectory().absolutePath
     }

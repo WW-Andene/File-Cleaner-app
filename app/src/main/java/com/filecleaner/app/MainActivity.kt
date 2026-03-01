@@ -51,6 +51,9 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Show version number in header
+        binding.tvVersion.text = "v${BuildConfig.VERSION_NAME}"
+
         // Navigation setup
         val navHost = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment

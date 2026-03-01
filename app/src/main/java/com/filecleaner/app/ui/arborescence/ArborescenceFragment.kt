@@ -48,6 +48,13 @@ class ArborescenceFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Restore expanded paths from config change (rotation)
+        if (savedExpandedPaths == null) {
+            savedInstanceState?.getStringArrayList(KEY_EXPANDED_PATHS)?.let {
+                savedExpandedPaths = it.toSet()
+            }
+        }
+
         // Wire file move callback with confirmation dialog
         binding.arborescenceView.onFileMoveRequested = { filePath, targetDirPath ->
             val fileName = File(filePath).name
@@ -295,9 +302,21 @@ class ArborescenceFragment : Fragment() {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        val paths = _binding?.arborescenceView?.getExpandedPaths() ?: savedExpandedPaths
+        if (paths != null) {
+            outState.putStringArrayList(KEY_EXPANDED_PATHS, ArrayList(paths))
+        }
+    }
+
     override fun onDestroyView() {
         savedExpandedPaths = binding.arborescenceView.getExpandedPaths()
         super.onDestroyView()
         _binding = null
+    }
+
+    companion object {
+        private const val KEY_EXPANDED_PATHS = "arborescence_expanded_paths"
     }
 }

@@ -62,14 +62,22 @@ class BrowseFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Restore view mode from config change
+        savedInstanceState?.getInt(KEY_VIEW_MODE, -1)?.let { ordinal ->
+            if (ordinal in ViewMode.entries.indices) {
+                currentViewMode = ViewMode.entries[ordinal]
+            }
+        }
+
         // RecyclerView with BrowseAdapter (supports folder headers)
         adapter = BrowseAdapter()
+        adapter.viewMode = currentViewMode
         adapter.onItemClick = { item -> FileOpener.open(requireContext(), item.file) }
         adapter.onItemLongClick = { item, anchor ->
             FileContextMenu.show(requireContext(), anchor, item, contextMenuCallback,
                 hasClipboard = vm.clipboardEntry.value != null)
         }
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        applyLayoutManager()
         binding.recyclerView.setHasFixedSize(true)
         binding.recyclerView.adapter = adapter
 
@@ -308,9 +316,18 @@ class BrowseFragment : Fragment() {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(KEY_VIEW_MODE, currentViewMode.ordinal)
+    }
+
     override fun onDestroyView() {
         searchRunnable?.let { handler.removeCallbacks(it) }
         super.onDestroyView()
         _binding = null
+    }
+
+    companion object {
+        private const val KEY_VIEW_MODE = "browse_view_mode"
     }
 }

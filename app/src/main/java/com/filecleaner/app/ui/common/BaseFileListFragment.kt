@@ -29,6 +29,7 @@ abstract class BaseFileListFragment : Fragment() {
 
     companion object {
         const val SEARCH_DEBOUNCE_MS = 300L
+        private const val KEY_SELECTED_PATHS = "base_selected_paths"
     }
 
     private var _binding: FragmentListActionBinding? = null
@@ -36,6 +37,7 @@ abstract class BaseFileListFragment : Fragment() {
     protected val vm: MainViewModel by activityViewModels()
     protected lateinit var adapter: FileAdapter
     private var selected = listOf<FileItem>()
+    private var pendingSelectionRestore: Set<String>? = null
 
     // Search state
     private var searchQuery = ""
@@ -121,9 +123,19 @@ abstract class BaseFileListFragment : Fragment() {
             }
         })
 
+        // Restore selection from config change
+        savedInstanceState?.getStringArrayList(KEY_SELECTED_PATHS)?.let { paths ->
+            pendingSelectionRestore = paths.toSet()
+        }
+
         liveData().observe(viewLifecycleOwner) { items ->
             rawItems = items
             applySearch()
+            // Restore selection after data arrives (adapter needs items to select)
+            pendingSelectionRestore?.let { paths ->
+                adapter.restoreSelection(paths)
+                pendingSelectionRestore = null
+            }
         }
 
         vm.deleteResult.observe(viewLifecycleOwner) { result ->
@@ -181,6 +193,13 @@ abstract class BaseFileListFragment : Fragment() {
             requireContext(), tree, excludePath = java.io.File(item.path).parent
         ) { targetDir ->
             vm.moveFile(item.path, targetDir)
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (::adapter.isInitialized) {
+            outState.putStringArrayList(KEY_SELECTED_PATHS, ArrayList(adapter.getSelectedPaths()))
         }
     }
 

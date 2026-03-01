@@ -184,4 +184,15 @@ class FileAdapter(
 
     fun getSelectedItems(): List<FileItem> = currentList.filter { it.path in selectedPaths }
 
+    /** Returns current selection for persistence across config changes. */
+    fun getSelectedPaths(): Set<String> = selectedPaths.toSet()
+
+    /** Restores selection state (e.g. after config change). */
+    fun restoreSelection(paths: Set<String>) {
+        selectedPaths.clear()
+        selectedPaths.addAll(paths)
+        notifyDataSetChanged()
+        notifySelectionChanged()
+    }
+
 }

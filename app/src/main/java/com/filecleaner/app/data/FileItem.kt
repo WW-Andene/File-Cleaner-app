@@ -2,6 +2,7 @@ package com.filecleaner.app.data
 
 import android.os.Parcelable
 import com.filecleaner.app.utils.UndoHelper
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import java.io.File
 
@@ -56,5 +57,6 @@ data class FileItem(
 
     val sizeReadable: String get() = UndoHelper.formatBytes(size)
 
-    val extension: String get() = name.substringAfterLast('.', "").lowercase()
+    @IgnoredOnParcel
+    val extension: String = name.substringAfterLast('.', "").lowercase()
 }

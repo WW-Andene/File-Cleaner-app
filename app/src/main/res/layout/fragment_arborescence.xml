@@ -193,7 +193,7 @@
             android:background="@drawable/bg_stats_overlay"
             android:paddingHorizontal="@dimen/spacing_lg"
             android:paddingVertical="@dimen/spacing_md"
-            android:textColor="@android:color/white"
+            android:textColor="@color/textOnPrimary"
             android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
             android:fontFamily="sans-serif-medium"
             android:maxLines="4"

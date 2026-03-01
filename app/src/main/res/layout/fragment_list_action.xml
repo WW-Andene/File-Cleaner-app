@@ -118,6 +118,7 @@
         android:orientation="vertical"
         android:gravity="center"
         android:padding="@dimen/spacing_4xl"
+        android:accessibilityLiveRegion="polite"
         android:visibility="gone">
 
         <ImageView
@@ -164,7 +165,7 @@
         android:paddingHorizontal="@dimen/spacing_3xl"
         android:text="@string/delete_selected"
         android:backgroundTint="@color/colorError"
-        android:textColor="@android:color/white"
+        android:textColor="@color/textOnPrimary"
         android:enabled="false"
         app:cornerRadius="@dimen/radius_btn"
         android:textAllCaps="false"

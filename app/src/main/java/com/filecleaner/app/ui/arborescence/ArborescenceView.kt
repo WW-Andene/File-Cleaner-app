@@ -29,6 +29,7 @@ class ArborescenceView @JvmOverloads constructor(
     init {
         isFocusable = true
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
+        contentDescription = context.getString(R.string.a11y_tree_view_default)
     }
 
     private val isDarkMode: Boolean
@@ -116,6 +117,17 @@ class ArborescenceView @JvmOverloads constructor(
         FileCategory.OTHER to ContextCompat.getColor(context, R.color.catOther)
     ) }
 
+    // ── Reusable draw objects (avoid allocations in onDraw) ──
+    private val selectionPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeWidth = 4f
+    }
+    private val glowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeWidth = 6f
+    }
+    private val tempPath = Path()
+
     // ── Node layout data ──
     data class NodeLayout(
         val node: DirectoryNode,
@@ -124,7 +136,8 @@ class ArborescenceView @JvmOverloads constructor(
         var w: Float = 0f,
         var h: Float = 0f,
         var expanded: Boolean = false,
-        var cachedFiles: List<FileItem> = emptyList()
+        var cachedFiles: List<FileItem> = emptyList(),
+        var dominantCategory: FileCategory = FileCategory.OTHER
     )
 
     private var rootNode: DirectoryNode? = null
@@ -335,12 +348,15 @@ class ArborescenceView @JvmOverloads constructor(
         val displayFiles = min(filtered.size, maxFiles)
         val h = headerHeight + displayFiles * fileLineHeight +
             (if (filtered.size > maxFiles) fileLineHeight else 0f) + 12f
+        val dominant = node.files.groupBy { it.category }
+            .maxByOrNull { it.value.size }?.key ?: FileCategory.OTHER
         layouts[node.path] = NodeLayout(
             node = node,
             w = blockWidth,
             h = max(blockMinHeight, h),
             expanded = expanded,
-            cachedFiles = filtered
+            cachedFiles = filtered,
+            dominantCategory = dominant
         )
         if (expanded) {
             for (child in node.children) {
@@ -511,6 +527,15 @@ class ArborescenceView @JvmOverloads constructor(
         super.onDraw(canvas)
         if (rootNode == null) return
 
+        // Set theme-aware paint colors once per frame (not per block)
+        filePaint.color = colorTextPrimary
+        fileSizePaint.color = colorTextSecondary
+        blockStrokePaint.color = colorBorder
+        linePaint.color = (colorPrimary and 0x00FFFFFF) or 0x66000000
+        expandPaint.color = colorPrimary
+        highlightPaint.color = colorAccent
+        highlightFillPaint.color = (colorAccent and 0x00FFFFFF) or 0x44000000
+
         canvas.save()
         canvas.concat(viewMatrix)
 
@@ -543,25 +568,15 @@ class ArborescenceView @JvmOverloads constructor(
         val endY = child.y + child.h / 2f
         val midX = (startX + endX) / 2f
 
-        val path = Path().apply {
-            moveTo(startX, startY)
-            cubicTo(midX, startY, midX, endY, endX, endY)
-        }
-        canvas.drawPath(path, linePaint)
+        tempPath.rewind()
+        tempPath.moveTo(startX, startY)
+        tempPath.cubicTo(midX, startY, midX, endY, endX, endY)
+        canvas.drawPath(tempPath, linePaint)
     }
 
     private fun drawBlock(canvas: Canvas, layout: NodeLayout, isSelected: Boolean, isDropTarget: Boolean) {
         val node = layout.node
         val rect = RectF(layout.x, layout.y, layout.x + layout.w, layout.y + layout.h)
-
-        // Theme-aware colors from resources
-        filePaint.color = colorTextPrimary
-        fileSizePaint.color = colorTextSecondary
-        blockStrokePaint.color = colorBorder
-        linePaint.color = (colorPrimary and 0x00FFFFFF) or 0x66000000
-        expandPaint.color = colorPrimary
-        highlightPaint.color = colorAccent
-        highlightFillPaint.color = (colorAccent and 0x00FFFFFF) or 0x44000000
 
         // Block background, semi-transparent if no matching files
         val hasMatchingFiles = layout.cachedFiles.isNotEmpty() ||
@@ -574,15 +589,12 @@ class ArborescenceView @JvmOverloads constructor(
 
         // Clip to rounded block bounds to prevent text overflow / superposition
         canvas.save()
-        val blockClipPath = Path().apply {
-            addRoundRect(rect, cornerRadius, cornerRadius, Path.Direction.CW)
-        }
-        canvas.clipPath(blockClipPath)
+        tempPath.rewind()
+        tempPath.addRoundRect(rect, cornerRadius, cornerRadius, Path.Direction.CW)
+        canvas.clipPath(tempPath)
 
-        // Header bar with category-based color
-        val dominant = node.files.groupBy { it.category }
-            .maxByOrNull { it.value.size }?.key ?: FileCategory.OTHER
-        headerPaint.color = categoryColors[dominant] ?: ContextCompat.getColor(context, R.color.catOther)
+        // Header bar with category-based color (dominant cached at layout build time)
+        headerPaint.color = categoryColors[layout.dominantCategory] ?: categoryColors[FileCategory.OTHER]!!
         val headerRect = RectF(layout.x, layout.y, layout.x + layout.w, layout.y + headerHeight)
         canvas.drawRoundRect(headerRect, cornerRadius, cornerRadius, headerPaint)
         // Square off bottom corners of header
@@ -679,33 +691,29 @@ class ArborescenceView @JvmOverloads constructor(
             canvas.drawRoundRect(rect, cornerRadius, cornerRadius, highlightPaint)
         }
 
-        // Selection highlight
+        // Selection highlight (reuse pre-allocated selectionPaint)
         if (isSelected) {
-            val selPaint = Paint(highlightPaint).apply { color = colorPrimary }
-            canvas.drawRoundRect(rect, cornerRadius, cornerRadius, selPaint)
+            selectionPaint.color = colorPrimary
+            canvas.drawRoundRect(rect, cornerRadius, cornerRadius, selectionPaint)
         }
 
         // Highlight glow + arrow (drawn outside clip so arrow extends left of block)
         if (highlightFileRowTop >= 0f) {
-            // Glow outline around the entire containing block
-            val blockGlowPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-            blockGlowPaint.style = Paint.Style.STROKE
-            blockGlowPaint.strokeWidth = 6f
-            blockGlowPaint.color = colorAccent
-            blockGlowPaint.setAlpha((160 * highlightAlpha).toInt())
-            canvas.drawRoundRect(rect, cornerRadius, cornerRadius, blockGlowPaint)
+            // Glow outline around the entire containing block (reuse pre-allocated glowPaint)
+            glowPaint.color = colorAccent
+            glowPaint.setAlpha((160 * highlightAlpha).toInt())
+            canvas.drawRoundRect(rect, cornerRadius, cornerRadius, glowPaint)
 
             // Large arrow indicator on the left edge
             highlightArrowPaint.color = colorAccent
             highlightArrowPaint.alpha = (255 * highlightAlpha).toInt()
-            val arrowPath = Path().apply {
-                val cy = highlightFileRowTop + fileLineHeight / 2f
-                moveTo(layout.x - 20f, cy - 12f)
-                lineTo(layout.x - 4f, cy)
-                lineTo(layout.x - 20f, cy + 12f)
-                close()
-            }
-            canvas.drawPath(arrowPath, highlightArrowPaint)
+            tempPath.rewind()
+            val cy = highlightFileRowTop + fileLineHeight / 2f
+            tempPath.moveTo(layout.x - 20f, cy - 12f)
+            tempPath.lineTo(layout.x - 4f, cy)
+            tempPath.lineTo(layout.x - 20f, cy + 12f)
+            tempPath.close()
+            canvas.drawPath(tempPath, highlightArrowPaint)
         }
     }
 

@@ -37,6 +37,24 @@ class FileAdapter(
         R.color.dupGroup3, R.color.dupGroup4, R.color.dupGroup5
     )
 
+    // Cached resolved colors (initialized on first bind, avoids repeated ContextCompat lookups)
+    private var colorSurface = 0
+    private var colorBorder = 0
+    private var colorSelectedBg = 0
+    private var colorSelectedBorder = 0
+    private var colorsResolved = false
+    private var resolvedDupColors: IntArray? = null
+
+    private fun resolveColors(ctx: android.content.Context) {
+        if (colorsResolved) return
+        colorSurface = ContextCompat.getColor(ctx, R.color.surfaceColor)
+        colorBorder = ContextCompat.getColor(ctx, R.color.borderDefault)
+        colorSelectedBg = ContextCompat.getColor(ctx, R.color.selectedBackground)
+        colorSelectedBorder = ContextCompat.getColor(ctx, R.color.selectedBorder)
+        resolvedDupColors = IntArray(DUPLICATE_GROUP_COLOR_RES.size) { ContextCompat.getColor(ctx, DUPLICATE_GROUP_COLOR_RES[it]) }
+        colorsResolved = true
+    }
+
     var viewMode: ViewMode = ViewMode.LIST
         set(value) {
             if (field != value) {
@@ -69,6 +87,8 @@ class FileAdapter(
     override fun onBindViewHolder(holder: FileVH, position: Int) {
         val item = getItem(position)
         val isSelected = item.path in selectedPaths
+        val ctx = holder.itemView.context
+        resolveColors(ctx)
 
         holder.name.text = item.name
 
@@ -87,27 +107,21 @@ class FileAdapter(
         // Visual state: duplicate group colouring → selection highlight → default
         val card = holder.itemView as? MaterialCardView
         if (item.duplicateGroup >= 0) {
-            val colorRes = DUPLICATE_GROUP_COLOR_RES[item.duplicateGroup % DUPLICATE_GROUP_COLOR_RES.size]
-            val color = ContextCompat.getColor(holder.itemView.context, colorRes)
+            val color = resolvedDupColors!![item.duplicateGroup % resolvedDupColors!!.size]
             card?.setCardBackgroundColor(color) ?: holder.itemView.setBackgroundColor(color)
-            card?.strokeColor = ContextCompat.getColor(holder.itemView.context, R.color.borderDefault)
+            card?.strokeColor = colorBorder
         } else if (isSelected) {
-            // §DP3: Selected state — primary character carrier, not just a checkbox
-            val selBg = ContextCompat.getColor(holder.itemView.context, R.color.selectedBackground)
-            val selBorder = ContextCompat.getColor(holder.itemView.context, R.color.selectedBorder)
-            card?.setCardBackgroundColor(selBg) ?: holder.itemView.setBackgroundColor(selBg)
-            card?.strokeColor = selBorder
+            card?.setCardBackgroundColor(colorSelectedBg) ?: holder.itemView.setBackgroundColor(colorSelectedBg)
+            card?.strokeColor = colorSelectedBorder
         } else {
-            val defaultColor = ContextCompat.getColor(holder.itemView.context, R.color.surfaceColor)
-            card?.setCardBackgroundColor(defaultColor) ?: holder.itemView.setBackgroundColor(0x00000000)
-            card?.strokeColor = ContextCompat.getColor(holder.itemView.context, R.color.borderDefault)
+            card?.setCardBackgroundColor(colorSurface) ?: holder.itemView.setBackgroundColor(0x00000000)
+            card?.strokeColor = colorBorder
         }
 
         // Meta line (only in list layouts that have it)
         holder.meta?.let { FileItemUtils.buildMeta(it, item) }
 
         // Checkbox + accessibility (F-033)
-        val ctx = holder.itemView.context
         if (selectable && holder.check != null) {
             holder.check.visibility = View.VISIBLE
             holder.check.isChecked = isSelected
@@ -122,11 +136,11 @@ class FileAdapter(
                 // Immediate card visual feedback for selection (§DP3)
                 if (item.duplicateGroup < 0) {
                     if (nowSelected) {
-                        card?.setCardBackgroundColor(ContextCompat.getColor(ctx, R.color.selectedBackground))
-                        card?.strokeColor = ContextCompat.getColor(ctx, R.color.selectedBorder)
+                        card?.setCardBackgroundColor(colorSelectedBg)
+                        card?.strokeColor = colorSelectedBorder
                     } else {
-                        card?.setCardBackgroundColor(ContextCompat.getColor(ctx, R.color.surfaceColor))
-                        card?.strokeColor = ContextCompat.getColor(ctx, R.color.borderDefault)
+                        card?.setCardBackgroundColor(colorSurface)
+                        card?.strokeColor = colorBorder
                     }
                 }
                 notifySelectionChanged()
@@ -169,8 +183,8 @@ class FileAdapter(
         val groups = currentList.filter { it.duplicateGroup >= 0 }.groupBy { it.duplicateGroup }
         for ((_, group) in groups) {
             // Keep the newest file (highest lastModified); select the rest for deletion
-            val sorted = group.sortedByDescending { it.lastModified }
-            sorted.drop(1).forEach { selectedPaths.add(it.path) }
+            val best = group.maxByOrNull { it.lastModified }
+            group.forEach { if (it !== best) selectedPaths.add(it.path) }
         }
         notifyDataSetChanged()
         notifySelectionChanged()

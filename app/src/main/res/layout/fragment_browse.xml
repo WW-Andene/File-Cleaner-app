@@ -72,7 +72,7 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="@dimen/icon_button"
             android:layout_height="@dimen/icon_button"
-            app:cardCornerRadius="@dimen/radius_md"
+            app:cardCornerRadius="@dimen/radius_btn"
             app:cardElevation="@dimen/elevation_none"
             app:cardBackgroundColor="@color/surfaceDim"
             app:strokeWidth="@dimen/stroke_none">

@@ -46,6 +46,18 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
     var onItemClick: ((FileItem) -> Unit)? = null
     var onItemLongClick: ((FileItem, View) -> Unit)? = null
 
+    // Cached resolved colors (initialized on first bind)
+    private var colorSurface = 0
+    private var colorBorder = 0
+    private var colorsResolved = false
+
+    private fun resolveColors(ctx: android.content.Context) {
+        if (colorsResolved) return
+        colorSurface = ContextCompat.getColor(ctx, R.color.surfaceColor)
+        colorBorder = ContextCompat.getColor(ctx, R.color.borderDefault)
+        colorsResolved = true
+    }
+
     fun getFileCount(): Int = currentList.count { it is Item.File }
 
     override fun getItemViewType(position: Int): Int = when (getItem(position)) {
@@ -83,6 +95,7 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
 
     private fun bindFile(holder: FileVH, item: FileItem) {
         holder.name.text = item.name
+        resolveColors(holder.itemView.context)
 
         if (viewMode == ViewMode.LIST_WITH_THUMBNAILS) {
             val lp = holder.icon.layoutParams
@@ -95,11 +108,10 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         val isGrid = viewMode != ViewMode.LIST && viewMode != ViewMode.LIST_WITH_THUMBNAILS
         FileItemUtils.loadThumbnail(holder.icon, item, isGrid)
 
-        // Default card colors
+        // Default card colors (using cached resolved colors)
         val card = holder.itemView as? com.google.android.material.card.MaterialCardView
-        val defaultColor = ContextCompat.getColor(holder.itemView.context, R.color.surfaceColor)
-        card?.setCardBackgroundColor(defaultColor)
-        card?.strokeColor = ContextCompat.getColor(holder.itemView.context, R.color.borderDefault)
+        card?.setCardBackgroundColor(colorSurface)
+        card?.strokeColor = colorBorder
 
         // Meta line
         holder.meta?.let { FileItemUtils.buildMeta(it, item) }

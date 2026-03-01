@@ -127,6 +127,7 @@
     <string name="a11y_file_info">%1$s, %2$s</string>
     <string name="a11y_sort_order">Sort order</string>
     <string name="a11y_tree_view">File tree view, %1$d files, %2$s total</string>
+    <string name="a11y_tree_view_default">File tree visualization</string>
     <string name="a11y_raccoon_bubble">Open tree view \u2014 tap to visualize your file structure</string>
     <string name="a11y_node_expanded">%1$s expanded, %2$d sub-folders</string>
     <string name="a11y_node_collapsed">%s collapsed</string>

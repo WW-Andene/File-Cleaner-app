@@ -43,8 +43,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private var scanJob: Job? = null
     private val stateMutex = Mutex()
 
-    private val _allFiles = MutableLiveData<List<FileItem>>(emptyList())
-
     private val _filesByCategory = MutableLiveData<Map<FileCategory, List<FileItem>>>(emptyMap())
     val filesByCategory: LiveData<Map<FileCategory, List<FileItem>>> = _filesByCategory
 
@@ -110,11 +108,22 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     init {
+        // Clean orphaned trash from previous sessions (crash/kill before confirm)
+        viewModelScope.launch(Dispatchers.IO) {
+            val dir = trashDir
+            if (dir.exists()) {
+                dir.listFiles()?.forEach { it.delete() }
+            }
+        }
+
         // Load cached scan results on startup
         viewModelScope.launch {
             val cached = ScanCache.load(getApplication())
             if (cached != null) {
                 val (files, tree) = cached
+                // If all cached files were deleted on disk, don't show stale Done state
+                if (files.isEmpty()) return@launch
+
                 stateMutex.withLock {
                     // Skip cache load if a scan has already started (user tapped scan
                     // before cache finished loading — the scan's results take priority)
@@ -122,7 +131,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
                     latestFiles = files
                     latestTree = tree
-                    _allFiles.postValue(files)
                     _directoryTree.postValue(tree)
                     _filesByCategory.postValue(files.groupBy { it.category })
 
@@ -151,6 +159,17 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        // Commit any pending trash — the undo window has expired since the UI is gone
+        if (pendingTrash.isNotEmpty()) {
+            for ((_, trashPath) in pendingTrash) {
+                File(trashPath).delete()
+            }
+            pendingTrash.clear()
+        }
+    }
+
     fun startScan(minLargeFileMb: Int = 50) {
         scanJob?.cancel()
         scanJob = viewModelScope.launch {
@@ -163,7 +182,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 stateMutex.withLock {
                     latestFiles = files
                     latestTree = tree
-                    _allFiles.postValue(files)
                     _directoryTree.postValue(tree)
                     _filesByCategory.postValue(files.groupBy { it.category })
 
@@ -261,7 +279,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 val deletedPaths = movedPaths.keys
                 val remaining = latestFiles.filter { it.path !in deletedPaths }
                 latestFiles = remaining
-                _allFiles.postValue(remaining)
                 _filesByCategory.postValue(remaining.groupBy { it.category })
 
                 // Filter deleted paths, then remove orphan groups (< 2 files remaining)
@@ -308,7 +325,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 stateMutex.withLock {
                     val updated = latestFiles + restored
                     latestFiles = updated
-                    _allFiles.postValue(updated)
                     _filesByCategory.postValue(updated.groupBy { it.category })
                     // Re-run classification for restored files
                     val dupes = DuplicateFinder.findDuplicates(updated)
@@ -498,7 +514,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 }
 
                 latestFiles = files
-                _allFiles.postValue(files)
                 _filesByCategory.postValue(files.groupBy { it.category })
                 val dupes = DuplicateFinder.findDuplicates(files)
                 val large = JunkFinder.findLargeFiles(files)

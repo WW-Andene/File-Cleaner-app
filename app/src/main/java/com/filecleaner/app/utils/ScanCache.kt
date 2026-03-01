@@ -14,10 +14,12 @@ import java.io.File
 object ScanCache {
 
     private const val CACHE_FILE = "scan_cache.json"
+    private const val CACHE_VERSION = 1
 
     suspend fun save(context: Context, files: List<FileItem>, tree: DirectoryNode) =
         withContext(Dispatchers.IO) {
             val root = JSONObject()
+            root.put("version", CACHE_VERSION)
 
             // Serialize file list
             val filesArray = JSONArray()
@@ -41,6 +43,13 @@ object ScanCache {
 
             try {
                 val root = JSONObject(cacheFile.readText())
+
+                // Version check — incompatible cache is discarded
+                val version = root.optInt("version", 0)
+                if (version != CACHE_VERSION) {
+                    cacheFile.delete()
+                    return@withContext null
+                }
 
                 val filesArray = root.getJSONArray("files")
                 val files = mutableListOf<FileItem>()

@@ -193,6 +193,8 @@
             android:textColor="@android:color/white"
             android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
             android:fontFamily="sans-serif-medium"
+            android:maxLines="4"
+            android:ellipsize="end"
             android:elevation="4dp"
             android:visibility="gone" />
 

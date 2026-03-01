@@ -201,6 +201,7 @@ class BrowseFragment : Fragment() {
         // Group files by parent folder and build list with section headers
         val browseItems = buildGroupedList(sorted)
         adapter.submitList(browseItems)
+        binding.recyclerView.scrollToPosition(0)
 
         val fileCount = adapter.getFileCount()
         if (fileCount == 0) {

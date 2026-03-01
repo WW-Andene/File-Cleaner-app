@@ -76,7 +76,9 @@
                     android:text="@string/scan_prompt"
                     android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
                     android:textColor="@color/scanBarText"
-                    android:fontFamily="sans-serif-medium" />
+                    android:fontFamily="sans-serif-medium"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
 
                 <ProgressBar
                     android:id="@+id/progress_bar"
@@ -111,24 +113,6 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/nav_graph" />
 
-    <!-- FAB scan button -->
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/fab_scan"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="80dp"
-        android:text="@string/scan_storage"
-        app:icon="@drawable/ic_scan"
-        android:backgroundTint="@color/colorPrimary"
-        android:textColor="@color/textOnPrimary"
-        app:iconTint="@color/textOnPrimary"
-        app:shapeAppearance="@style/ShapeMedium"
-        app:elevation="4dp" />
-
     <!-- Raccoon bubble: draggable floating toggle for tree view -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/raccoon_bubble_card"
@@ -139,9 +123,8 @@
         android:layout_marginBottom="80dp"
         app:cardCornerRadius="26dp"
         app:cardElevation="6dp"
-        app:cardBackgroundColor="@color/surfaceColor"
-        app:strokeWidth="2dp"
-        app:strokeColor="@color/colorPrimaryContainer">
+        app:cardBackgroundColor="@color/colorPrimary"
+        app:strokeWidth="0dp">
 
         <ImageView
             android:id="@+id/raccoon_bubble"
@@ -150,9 +133,27 @@
             android:layout_gravity="center"
             android:src="@drawable/ic_raccoon_logo"
             android:scaleType="centerCrop"
+            app:tint="@android:color/white"
             android:contentDescription="@string/open_arborescence"
             android:importantForAccessibility="yes" />
     </com.google.android.material.card.MaterialCardView>
+
+    <!-- FAB scan button — positioned next to raccoon bubble -->
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fab_scan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="76dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="84dp"
+        android:text="@string/scan_storage"
+        app:icon="@drawable/ic_scan"
+        android:backgroundTint="@color/colorPrimary"
+        android:textColor="@color/textOnPrimary"
+        app:iconTint="@color/textOnPrimary"
+        app:shapeAppearance="@style/ShapeMedium"
+        app:elevation="4dp" />
 
     <!-- Bottom nav -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

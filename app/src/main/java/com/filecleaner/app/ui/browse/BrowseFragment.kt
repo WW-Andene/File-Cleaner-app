@@ -182,7 +182,8 @@ class BrowseFragment : Fragment() {
         val searched = if (searchQuery.isEmpty()) {
             raw
         } else {
-            raw.filter { it.name.lowercase().contains(searchQuery.lowercase()) }
+            val lowerQuery = searchQuery.lowercase()
+            raw.filter { it.name.lowercase().contains(lowerQuery) }
         }
 
         // Build extension chips from searched file set

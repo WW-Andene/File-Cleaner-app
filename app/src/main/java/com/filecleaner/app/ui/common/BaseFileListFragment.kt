@@ -149,7 +149,10 @@ abstract class BaseFileListFragment : Fragment() {
 
     private fun applySearch() {
         val filtered = if (searchQuery.isEmpty()) rawItems
-        else rawItems.filter { it.name.lowercase().contains(searchQuery.lowercase()) }
+        else {
+            val lowerQuery = searchQuery.lowercase()
+            rawItems.filter { it.name.lowercase().contains(lowerQuery) }
+        }
 
         adapter.submitList(filtered)
         binding.tvSummary.text = if (rawItems.isEmpty()) emptySummary

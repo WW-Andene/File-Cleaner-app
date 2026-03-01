@@ -43,15 +43,15 @@ class ArborescenceView @JvmOverloads constructor(
     private val cornerRadius = 16f
     private val headerHeight = 48f
 
-    // ── Theme colors (resolved from resources) ──
-    private val colorPrimary get() = ContextCompat.getColor(context, R.color.colorPrimary)
-    private val colorAccent get() = ContextCompat.getColor(context, R.color.colorAccent)
-    private val colorSurface get() = ContextCompat.getColor(context, R.color.surfaceColor)
-    private val colorSurfaceDim get() = ContextCompat.getColor(context, R.color.surfaceDim)
-    private val colorBorder get() = ContextCompat.getColor(context, R.color.borderDefault)
-    private val colorTextPrimary get() = ContextCompat.getColor(context, R.color.textPrimary)
-    private val colorTextSecondary get() = ContextCompat.getColor(context, R.color.textSecondary)
-    private val colorTextTertiary get() = ContextCompat.getColor(context, R.color.textTertiary)
+    // ── Theme colors (resolved once — View is recreated on config change) ──
+    private val colorPrimary by lazy { ContextCompat.getColor(context, R.color.colorPrimary) }
+    private val colorAccent by lazy { ContextCompat.getColor(context, R.color.colorAccent) }
+    private val colorSurface by lazy { ContextCompat.getColor(context, R.color.surfaceColor) }
+    private val colorSurfaceDim by lazy { ContextCompat.getColor(context, R.color.surfaceDim) }
+    private val colorBorder by lazy { ContextCompat.getColor(context, R.color.borderDefault) }
+    private val colorTextPrimary by lazy { ContextCompat.getColor(context, R.color.textPrimary) }
+    private val colorTextSecondary by lazy { ContextCompat.getColor(context, R.color.textSecondary) }
+    private val colorTextTertiary by lazy { ContextCompat.getColor(context, R.color.textTertiary) }
 
 
     // ── Paints ──
@@ -99,11 +99,12 @@ class ArborescenceView @JvmOverloads constructor(
     private val highlightArrowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
     }
+    private val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var highlightAnimator: ValueAnimator? = null
     private var highlightAlpha = 1f
 
-    // ── Category colors (resolved from resources for theme support) ──
-    private val categoryColors: Map<FileCategory, Int> get() = mapOf(
+    // ── Category colors (resolved once — View is recreated on config change) ──
+    private val categoryColors: Map<FileCategory, Int> by lazy { mapOf(
         FileCategory.IMAGE to ContextCompat.getColor(context, R.color.catImage),
         FileCategory.VIDEO to ContextCompat.getColor(context, R.color.catVideo),
         FileCategory.AUDIO to ContextCompat.getColor(context, R.color.catAudio),
@@ -112,7 +113,7 @@ class ArborescenceView @JvmOverloads constructor(
         FileCategory.ARCHIVE to ContextCompat.getColor(context, R.color.catArchive),
         FileCategory.DOWNLOAD to ContextCompat.getColor(context, R.color.catDownload),
         FileCategory.OTHER to ContextCompat.getColor(context, R.color.catOther)
-    )
+    ) }
 
     // ── Node layout data ──
     data class NodeLayout(
@@ -617,9 +618,7 @@ class ArborescenceView @JvmOverloads constructor(
             val fy = layout.y + headerHeight + i * fileLineHeight + 20f
 
             // Category dot
-            val dotColor = categoryColors[file.category] ?: ContextCompat.getColor(context, R.color.catOther)
-            val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-            dotPaint.color = dotColor
+            dotPaint.color = categoryColors[file.category] ?: categoryColors[FileCategory.OTHER]!!
             canvas.drawCircle(layout.x + 16f, fy - 5f, 4f, dotPaint)
 
             // File name (truncated to fit before file size)
@@ -709,11 +708,18 @@ class ArborescenceView @JvmOverloads constructor(
     private fun ellipsizeText(text: String, paint: Paint, maxWidth: Float): String {
         if (maxWidth <= 0f) return "\u2026"
         if (paint.measureText(text) <= maxWidth) return text
-        for (i in text.length - 1 downTo 1) {
-            val truncated = text.substring(0, i) + "\u2026"
-            if (paint.measureText(truncated) <= maxWidth) return truncated
+        // Binary search for the longest prefix that fits (O(log n) measureText calls)
+        var lo = 1
+        var hi = text.length - 1
+        while (lo < hi) {
+            val mid = (lo + hi + 1) / 2
+            if (paint.measureText(text, 0, mid) + paint.measureText("\u2026") <= maxWidth) {
+                lo = mid
+            } else {
+                hi = mid - 1
+            }
         }
-        return "\u2026"
+        return if (lo > 0) text.substring(0, lo) + "\u2026" else "\u2026"
     }
 
     private fun drawDragGhost(canvas: Canvas) {

@@ -25,6 +25,11 @@ class ArborescenceView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
 ) : View(context, attrs, defStyle) {
 
+    init {
+        isFocusable = true
+        importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
+    }
+
     private val isDarkMode: Boolean
         get() = (context.resources.configuration.uiMode and
                 Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
@@ -389,9 +394,13 @@ class ArborescenceView @JvmOverloads constructor(
                     buildLayout(child, expanded = false, expandChildren = false)
                 }
             }
+            announceForAccessibility(context.getString(
+                R.string.a11y_node_expanded, node.name, node.children.size))
         } else {
             // Remove all descendant layouts
             removeDescendantLayouts(node)
+            announceForAccessibility(context.getString(
+                R.string.a11y_node_collapsed, node.name))
         }
 
         computePositions()

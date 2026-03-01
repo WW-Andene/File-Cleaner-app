@@ -15,6 +15,7 @@ import com.filecleaner.app.data.DirectoryNode
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.databinding.FragmentArborescenceBinding
+import com.filecleaner.app.ui.common.DirectoryPickerDialog
 import com.filecleaner.app.ui.common.FileContextMenu
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.google.android.material.chip.Chip
@@ -100,7 +101,7 @@ class ArborescenceFragment : Fragment() {
                 category = category
             )
             FileContextMenu.show(requireContext(), binding.arborescenceView, item, contextMenuCallback,
-                hasCutFile = vm.clipboardItem.value != null)
+                hasClipboard = vm.clipboardEntry.value != null)
         }
 
         // Tree search
@@ -281,7 +282,15 @@ class ArborescenceFragment : Fragment() {
 
     private val contextMenuCallback by lazy {
         FileContextMenu.defaultCallback(vm,
-            onOpenInTree = { binding.arborescenceView.highlightFilePath(it.path) })
+            onOpenInTree = { binding.arborescenceView.highlightFilePath(it.path) },
+            onMoveTo = { item -> showDirectoryPicker(item) })
+    }
+
+    private fun showDirectoryPicker(item: FileItem) {
+        val tree = vm.directoryTree.value ?: return
+        DirectoryPickerDialog.show(requireContext(), tree, excludePath = File(item.path).parent) { targetDir ->
+            vm.moveFile(item.path, targetDir)
+        }
     }
 
     override fun onDestroyView() {

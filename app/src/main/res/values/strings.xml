@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Raccoon File Cleaner</string>
+    <string name="app_name">Raccoon File Manager</string>
 
     <!-- Scan -->
     <string name="scan_storage">Scan Storage</string>
@@ -40,7 +40,7 @@
     <string name="storage_access_message">Raccoon needs permission to scan your files. Your data stays on-device \u2014 nothing is uploaded.\n\nPlease grant \'Allow access to manage all files\' on the next screen.</string>
     <string name="open_settings">Open Settings</string>
     <string name="permission_required">Permission required</string>
-    <string name="permission_required_message">Storage permission is needed to scan files. Please grant it in Settings so Raccoon can help clean up your storage.</string>
+    <string name="permission_required_message">Storage permission is needed to scan files. Please grant it in Settings so Raccoon can help manage your storage.</string>
     <string name="settings">Settings</string>
 
     <!-- Browse -->
@@ -135,9 +135,14 @@
     <string name="ctx_delete">Delete</string>
     <string name="ctx_rename">Rename</string>
     <string name="ctx_share">Share</string>
+    <string name="ctx_copy">Copy</string>
     <string name="ctx_cut">Cut</string>
     <string name="ctx_paste_here">Paste here</string>
+    <string name="ctx_move_to">Move to\u2026</string>
+    <string name="copy_hint">%s copied \u2014 long-press a file to paste into its folder</string>
     <string name="cut_hint">%s cut \u2014 long-press a file to paste into its folder</string>
+    <string name="move_to_title">Move to\u2026</string>
+    <string name="select_directory">Select this folder</string>
     <string name="ctx_compress">Compress</string>
     <string name="ctx_extract">Extract</string>
     <string name="ctx_open_in_tree">Show in Tree</string>

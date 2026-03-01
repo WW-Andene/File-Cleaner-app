@@ -299,12 +299,40 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         pendingTrash.clear()
     }
 
-    // ── Clipboard for cut/paste (moved from FileContextMenu static state) ──
-    private val _clipboardItem = MutableLiveData<FileItem?>(null)
-    val clipboardItem: LiveData<FileItem?> = _clipboardItem
+    // ── Clipboard for cut/copy/paste ──
+    enum class ClipboardMode { CUT, COPY }
 
-    fun setCutFile(item: FileItem) { _clipboardItem.value = item }
-    fun clearClipboard() { _clipboardItem.value = null }
+    data class ClipboardEntry(val item: FileItem, val mode: ClipboardMode)
+
+    private val _clipboardEntry = MutableLiveData<ClipboardEntry?>(null)
+    val clipboardEntry: LiveData<ClipboardEntry?> = _clipboardEntry
+
+    fun setCutFile(item: FileItem) { _clipboardEntry.value = ClipboardEntry(item, ClipboardMode.CUT) }
+    fun setCopyFile(item: FileItem) { _clipboardEntry.value = ClipboardEntry(item, ClipboardMode.COPY) }
+    fun clearClipboard() { _clipboardEntry.value = null }
+
+    /** Copy a file to a target directory (for paste after copy). */
+    fun copyFile(filePath: String, targetDirPath: String) {
+        viewModelScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                val src = File(filePath)
+                val dst = File(targetDirPath, src.name)
+                if (!src.exists()) return@withContext MoveResult(false, "Source file not found")
+                if (dst.exists()) return@withContext MoveResult(false, "File already exists in target")
+                try {
+                    src.copyTo(dst)
+                    MoveResult(true, "Copied ${src.name}")
+                } catch (e: Exception) {
+                    MoveResult(false, "Copy failed: ${e.message}")
+                }
+            }
+            _moveResult.postValue(result)
+            if (result.success) {
+                val dst = File(targetDirPath, File(filePath).name)
+                refreshAfterFileChange(addedFile = dst)
+            }
+        }
+    }
 
     // ── Navigate to tree highlight ──
     private val _navigateToTree = MutableLiveData<String?>()

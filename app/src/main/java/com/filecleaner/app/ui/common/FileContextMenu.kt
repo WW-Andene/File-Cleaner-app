@@ -25,17 +25,20 @@ object FileContextMenu {
         fun onExtract(item: FileItem)
         fun onOpenInTree(item: FileItem)
         fun onCut(item: FileItem) {}
+        fun onCopy(item: FileItem) {}
         fun onPaste(targetDirPath: String) {}
+        fun onMoveTo(item: FileItem) {}
         fun onRefresh()
     }
 
     /**
      * Creates the standard Callback wired to ViewModel operations.
-     * Override [onOpenInTree] and [onRefresh] for fragment-specific behavior.
+     * [onMoveTo] must be provided by the fragment to show the directory picker.
      */
     fun defaultCallback(
         vm: MainViewModel,
         onOpenInTree: (FileItem) -> Unit = { vm.requestTreeHighlight(it.path) },
+        onMoveTo: (FileItem) -> Unit = {},
         onRefresh: () -> Unit = {}
     ): Callback = object : Callback {
         override fun onDelete(item: FileItem) { vm.deleteFiles(listOf(item)) }
@@ -44,34 +47,46 @@ object FileContextMenu {
         override fun onExtract(item: FileItem) { vm.extractArchive(item.path) }
         override fun onOpenInTree(item: FileItem) { onOpenInTree(item) }
         override fun onCut(item: FileItem) { vm.setCutFile(item) }
+        override fun onCopy(item: FileItem) { vm.setCopyFile(item) }
         override fun onPaste(targetDirPath: String) {
-            vm.clipboardItem.value?.let { cut ->
-                vm.moveFile(cut.path, targetDirPath)
-                vm.clearClipboard()
+            val entry = vm.clipboardEntry.value ?: return
+            when (entry.mode) {
+                MainViewModel.ClipboardMode.CUT -> {
+                    vm.moveFile(entry.item.path, targetDirPath)
+                    vm.clearClipboard()
+                }
+                MainViewModel.ClipboardMode.COPY -> {
+                    vm.copyFile(entry.item.path, targetDirPath)
+                    // Don't clear clipboard on copy — allows pasting multiple times
+                }
             }
         }
+        override fun onMoveTo(item: FileItem) { onMoveTo(item) }
         override fun onRefresh() { onRefresh() }
     }
 
-    fun show(context: Context, anchor: View, item: FileItem, callback: Callback, hasCutFile: Boolean = false) {
+    fun show(context: Context, anchor: View, item: FileItem, callback: Callback, hasClipboard: Boolean = false) {
         val popup = PopupMenu(context, anchor)
+        var order = 0
         popup.menu.apply {
-            add(0, 1, 0, context.getString(R.string.ctx_open))
-            add(0, 2, 1, context.getString(R.string.ctx_delete))
-            add(0, 3, 2, context.getString(R.string.ctx_rename))
-            add(0, 4, 3, context.getString(R.string.ctx_share))
-            add(0, 5, 4, context.getString(R.string.ctx_cut))
-            if (hasCutFile) {
+            add(0, 1, order++, context.getString(R.string.ctx_open))
+            add(0, 10, order++, context.getString(R.string.ctx_copy))
+            add(0, 5, order++, context.getString(R.string.ctx_cut))
+            if (hasClipboard) {
                 val targetDir = File(item.path).parent
                 if (targetDir != null) {
-                    add(0, 9, 5, context.getString(R.string.ctx_paste_here))
+                    add(0, 9, order++, context.getString(R.string.ctx_paste_here))
                 }
             }
-            add(0, 6, 6, context.getString(R.string.ctx_compress))
+            add(0, 11, order++, context.getString(R.string.ctx_move_to))
+            add(0, 3, order++, context.getString(R.string.ctx_rename))
+            add(0, 4, order++, context.getString(R.string.ctx_share))
+            add(0, 6, order++, context.getString(R.string.ctx_compress))
             if (item.category == FileCategory.ARCHIVE) {
-                add(0, 7, 7, context.getString(R.string.ctx_extract))
+                add(0, 7, order++, context.getString(R.string.ctx_extract))
             }
-            add(0, 8, 8, context.getString(R.string.ctx_open_in_tree))
+            add(0, 2, order++, context.getString(R.string.ctx_delete))
+            add(0, 8, order++, context.getString(R.string.ctx_open_in_tree))
         }
 
         popup.setOnMenuItemClickListener { menuItem ->
@@ -123,7 +138,7 @@ object FileContextMenu {
                     context.startActivity(Intent.createChooser(shareIntent, context.getString(R.string.ctx_share)))
                     true
                 }
-                5 -> { // Cut — delegate to callback (clipboard lives in ViewModel)
+                5 -> { // Cut
                     callback.onCut(item)
                     Toast.makeText(context,
                         context.getString(R.string.cut_hint, item.name),
@@ -138,7 +153,7 @@ object FileContextMenu {
                     callback.onExtract(item)
                     true
                 }
-                8 -> { // Open in Raccoon Tab
+                8 -> { // Show in Tree
                     callback.onOpenInTree(item)
                     true
                 }
@@ -147,6 +162,17 @@ object FileContextMenu {
                     if (targetDir != null) {
                         callback.onPaste(targetDir)
                     }
+                    true
+                }
+                10 -> { // Copy
+                    callback.onCopy(item)
+                    Toast.makeText(context,
+                        context.getString(R.string.copy_hint, item.name),
+                        Toast.LENGTH_SHORT).show()
+                    true
+                }
+                11 -> { // Move to...
+                    callback.onMoveTo(item)
                     true
                 }
                 else -> false

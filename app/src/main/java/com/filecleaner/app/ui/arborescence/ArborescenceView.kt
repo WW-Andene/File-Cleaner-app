@@ -536,6 +536,9 @@ class ArborescenceView @JvmOverloads constructor(
         val node = layout.node
         val rect = RectF(layout.x, layout.y, layout.x + layout.w, layout.y + layout.h)
 
+        // Save canvas state and clip to block bounds (prevent text overflow / superposition)
+        canvas.save()
+
         // Theme-aware colors from resources
         filePaint.color = colorTextPrimary
         fileSizePaint.color = colorTextSecondary
@@ -591,25 +594,30 @@ class ArborescenceView @JvmOverloads constructor(
             canvas.drawText(indicator, layout.x + layout.w - 28f, layout.y + 30f, expandPaint)
         }
 
-        // File list (filtered)
+        // File list (filtered) — clip to block bounds to prevent text overflow
         val filtered = filteredFiles(node)
         val maxFiles = 5
         val files = filtered.take(maxFiles)
+        canvas.save()
+        canvas.clipRect(layout.x, layout.y + headerHeight, layout.x + layout.w, layout.y + layout.h)
         for ((i, file) in files.withIndex()) {
             val fy = layout.y + headerHeight + i * fileLineHeight + 20f
 
             // Category dot
             val dotColor = categoryColors[file.category] ?: 0xFF78909C.toInt()
-            val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = dotColor }
+            val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+            dotPaint.color = dotColor
             canvas.drawCircle(layout.x + 16f, fy - 5f, 4f, dotPaint)
 
-            // File name (truncated)
-            val fname = if (file.name.length > 22) file.name.take(20) + "\u2026" else file.name
+            // File name (truncated to fit before file size)
+            val fsz = formatSize(file.size)
+            val fszWidth = fileSizePaint.measureText(fsz)
+            val maxNameWidth = layout.w - 28f - fszWidth - 16f
+            val fname = ellipsizeText(file.name, filePaint, maxNameWidth)
             canvas.drawText(fname, layout.x + 28f, fy, filePaint)
 
             // File size
-            val fsz = formatSize(file.size)
-            canvas.drawText(fsz, layout.x + layout.w - fileSizePaint.measureText(fsz) - 8f, fy, fileSizePaint)
+            canvas.drawText(fsz, layout.x + layout.w - fszWidth - 8f, fy, fileSizePaint)
 
             // Highlight matched file with prominent indicator
             if (file.path == highlightedFilePath) {
@@ -620,21 +628,22 @@ class ArborescenceView @JvmOverloads constructor(
                 )
 
                 // Glow outline around the entire containing block
-                val blockGlowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                    style = Paint.Style.STROKE
-                    strokeWidth = 6f
-                    color = colorAccent
-                    alpha = (160 * highlightAlpha).toInt()
-                }
+                val blockGlowPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+                blockGlowPaint.style = Paint.Style.STROKE
+                blockGlowPaint.strokeWidth = 6f
+                blockGlowPaint.color = colorAccent
+                blockGlowPaint.setAlpha((160 * highlightAlpha).toInt())
                 canvas.drawRoundRect(rect, cornerRadius, cornerRadius, blockGlowPaint)
 
                 // Strong fill + border on the file row
                 highlightFillPaint.color = colorAccent
-                highlightFillPaint.alpha = (180 * highlightAlpha).toInt()
+                highlightFillPaint.setAlpha((180 * highlightAlpha).toInt())
+                val savedStrokeWidth = highlightPaint.strokeWidth
                 highlightPaint.strokeWidth = 3f
-                highlightPaint.alpha = (255 * highlightAlpha).toInt()
+                highlightPaint.setAlpha((255 * highlightAlpha).toInt())
                 canvas.drawRoundRect(highlightRect, 6f, 6f, highlightFillPaint)
                 canvas.drawRoundRect(highlightRect, 6f, 6f, highlightPaint)
+                highlightPaint.strokeWidth = savedStrokeWidth
 
                 // Large arrow indicator on the left edge
                 highlightArrowPaint.color = colorAccent
@@ -660,8 +669,22 @@ class ArborescenceView @JvmOverloads constructor(
             fileSizePaint.color = savedColor
         }
 
+        canvas.restore() // Restore from file list clip
+
         // Border
         canvas.drawRoundRect(rect, cornerRadius, cornerRadius, blockStrokePaint)
+
+        canvas.restore() // Restore from block-level save
+    }
+
+    private fun ellipsizeText(text: String, paint: Paint, maxWidth: Float): String {
+        if (maxWidth <= 0f) return "\u2026"
+        if (paint.measureText(text) <= maxWidth) return text
+        for (i in text.length - 1 downTo 1) {
+            val truncated = text.substring(0, i) + "\u2026"
+            if (paint.measureText(truncated) <= maxWidth) return truncated
+        }
+        return "\u2026"
     }
 
     private fun drawDragGhost(canvas: Canvas) {
@@ -769,9 +792,9 @@ class ArborescenceView @JvmOverloads constructor(
             layout.y + layout.h / 2f
         }
 
-        // Use a scale that shows the block comfortably — slightly zoomed in
-        val targetScale = min(cw / (layout.w + 80f), ch / (layout.h + 80f))
-            .coerceIn(1.0f, 2.5f)
+        // Use a scale that shows the block comfortably — zoomed out enough to see context
+        val targetScale = min(cw / (layout.w + 200f), ch / (layout.h + 200f))
+            .coerceIn(0.5f, 1.2f)
         scaleFactor = targetScale
         viewMatrix.reset()
         viewMatrix.postScale(scaleFactor, scaleFactor)

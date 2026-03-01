@@ -61,7 +61,7 @@ class BrowseFragment : Fragment() {
         adapter.onItemClick = { item -> FileOpener.open(requireContext(), item.file) }
         adapter.onItemLongClick = { item, anchor ->
             FileContextMenu.show(requireContext(), anchor, item, contextMenuCallback,
-                hasCutFile = vm.clipboardItem.value != null)
+                hasClipboard = vm.clipboardEntry.value != null)
         }
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
@@ -241,7 +241,18 @@ class BrowseFragment : Fragment() {
     }
 
     private val contextMenuCallback by lazy {
-        FileContextMenu.defaultCallback(vm, onRefresh = ::refresh)
+        FileContextMenu.defaultCallback(vm,
+            onMoveTo = { item -> showDirectoryPicker(item) },
+            onRefresh = ::refresh)
+    }
+
+    private fun showDirectoryPicker(item: com.filecleaner.app.data.FileItem) {
+        val tree = vm.directoryTree.value ?: return
+        com.filecleaner.app.ui.common.DirectoryPickerDialog.show(
+            requireContext(), tree, excludePath = java.io.File(item.path).parent
+        ) { targetDir ->
+            vm.moveFile(item.path, targetDir)
+        }
     }
 
     override fun onDestroyView() {

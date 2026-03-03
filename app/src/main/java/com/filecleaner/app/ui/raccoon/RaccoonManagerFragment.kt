@@ -96,6 +96,15 @@ class RaccoonManagerFragment : Fragment() {
             }
         }
 
+        // Optimize Storage — rule-based file organization
+        binding.cardOptimize.setOnClickListener {
+            if (hasScanData()) {
+                findNavController().navigate(R.id.optimizeFragment, null, navAnimOptions)
+            } else {
+                showScanNeeded()
+            }
+        }
+
         // Janitor — deep clean (navigate to duplicates tab for comprehensive review)
         binding.cardJanitor.setOnClickListener {
             if (!hasScanData()) {
@@ -135,6 +144,7 @@ class RaccoonManagerFragment : Fragment() {
             binding.cardAnalysis.alpha = alpha
             binding.cardQuickClean.alpha = alpha
             binding.cardArborescence.alpha = alpha
+            binding.cardOptimize.alpha = alpha
             binding.cardJanitor.alpha = alpha
             // Show scan phase on card descriptions during active scan
             val scanPhaseText = if (state is ScanState.Scanning) when (state.phase) {

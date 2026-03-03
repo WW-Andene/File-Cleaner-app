@@ -396,4 +396,24 @@
     <string name="raccoon_greeting_pre_scan">Ready to tidy up? Tap Scan to get started.</string>
     <string name="raccoon_greeting_post_scan">Looking good! %s free on your device.</string>
     <string name="dashboard_scan_stats_empty">Scan your storage to see a summary here.</string>
+
+    <!-- Storage Optimizer -->
+    <string name="optimize_title">Optimize Storage</string>
+    <string name="optimize_desc">Reorganize files into tidy folders by type and date</string>
+    <string name="optimize_empty">Everything looks well-organized already!</string>
+    <string name="optimize_apply">Apply Changes</string>
+    <plurals name="optimize_summary">
+        <item quantity="one">%d suggestion</item>
+        <item quantity="other">%d suggestions</item>
+    </plurals>
+    <string name="optimize_confirm_title">Apply Optimization?</string>
+    <plurals name="optimize_confirm_message">
+        <item quantity="one">Move %d file to its suggested location?</item>
+        <item quantity="other">Move %d files to their suggested locations?</item>
+    </plurals>
+    <plurals name="optimize_applied">
+        <item quantity="one">Moved %d file successfully</item>
+        <item quantity="other">Moved %d files successfully</item>
+    </plurals>
+    <string name="optimize_none_selected">No suggestions selected</string>
 </resources>

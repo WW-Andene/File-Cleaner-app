@@ -243,6 +243,16 @@ object FileContextMenu {
         addItem(context.getString(R.string.ctx_compress), R.drawable.ic_archive) {
             callback.onCompress(item)
         }
+        if (item.category == FileCategory.IMAGE || item.extension == "pdf") {
+            addItem(context.getString(R.string.ctx_convert), R.drawable.ic_file) {
+                ConvertDialog.show(context, item) { result ->
+                    val msg = if (result.success) result.message
+                    else context.getString(R.string.convert_failed, result.message)
+                    Snackbar.make(anchor, msg, Snackbar.LENGTH_SHORT).show()
+                    if (result.success) callback.onRefresh()
+                }
+            }
+        }
         if (item.category == FileCategory.ARCHIVE) {
             addItem(context.getString(R.string.ctx_extract), R.drawable.ic_archive) {
                 callback.onExtract(item)

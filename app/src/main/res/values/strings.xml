@@ -193,6 +193,10 @@
     <string name="ctx_extract">Extract</string>
     <string name="ctx_open_in_tree">Show in Tree</string>
     <string name="ctx_browse_folder">Browse folder</string>
+    <string name="ctx_convert">Convert to\u2026</string>
+    <string name="convert_title">Convert to</string>
+    <string name="convert_unsupported">No conversions available for this file type</string>
+    <string name="convert_failed">Conversion failed: %s</string>
     <string name="ctx_properties">Properties</string>
     <string name="ctx_preview">Preview</string>
     <string name="preview_error">Cannot preview: %s</string>

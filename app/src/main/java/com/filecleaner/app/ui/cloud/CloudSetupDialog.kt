@@ -77,27 +77,47 @@ object CloudSetupDialog {
         }
         container.addView(passInput)
 
-        AlertDialog.Builder(context)
+        val dialog = AlertDialog.Builder(context)
             .setTitle(context.getString(R.string.cloud_add_connection))
             .setView(container)
-            .setPositiveButton(context.getString(R.string.cloud_connect)) { _, _ ->
-                val displayName = nameInput.text.toString().trim().ifEmpty { "My Server" }
-                val host = hostInput.text.toString().trim()
-                val port = portInput.text.toString().toIntOrNull() ?: 22
-                val username = userInput.text.toString().trim()
-                val password = passInput.text.toString()
-
-                val connection = when (typeSpinner.selectedItemPosition) {
-                    0 -> CloudConnection.sftp(displayName, host, port, username).copy(authToken = password)
-                    1 -> CloudConnection.webdav(displayName, host, username, password)
-                    2 -> CloudConnection.googleDrive(displayName, password)
-                    else -> return@setPositiveButton
-                }
-
-                CloudConnectionStore.saveConnection(connection)
-                onAdded(connection)
-            }
+            .setPositiveButton(context.getString(R.string.cloud_connect), null)
             .setNegativeButton(context.getString(R.string.cancel), null)
             .show()
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val displayName = nameInput.text.toString().trim().ifEmpty { "My Server" }
+            val host = hostInput.text.toString().trim()
+            val port = portInput.text.toString().toIntOrNull() ?: -1
+            val username = userInput.text.toString().trim()
+            val password = passInput.text.toString()
+            val selectedType = typeSpinner.selectedItemPosition
+
+            // P4-B3-03: Validate inputs
+            var valid = true
+            if (selectedType != 2 && host.isBlank()) {
+                hostInput.error = "Host is required"
+                valid = false
+            }
+            if (port !in 1..65535) {
+                portInput.error = "Port must be 1-65535"
+                valid = false
+            }
+            if (selectedType in 0..1 && username.isBlank()) {
+                userInput.error = "Username is required"
+                valid = false
+            }
+            if (!valid) return@setOnClickListener
+
+            val connection = when (selectedType) {
+                0 -> CloudConnection.sftp(displayName, host, port, username).copy(authToken = password)
+                1 -> CloudConnection.webdav(displayName, host, username, password)
+                2 -> CloudConnection.googleDrive(displayName, password)
+                else -> return@setOnClickListener
+            }
+
+            CloudConnectionStore.saveConnection(connection)
+            onAdded(connection)
+            dialog.dismiss()
+        }
     }
 }

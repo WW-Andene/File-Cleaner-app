@@ -89,7 +89,7 @@ object FileScanner {
                 path = path,
                 name = if (path == rootPath) storageName else info.file.name,
                 files = info.files.toList(),
-                children = childNodes.toMutableList(),
+                children = childNodes,
                 totalSize = totalSize,
                 totalFileCount = totalFileCount,
                 depth = info.depth

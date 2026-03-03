@@ -24,7 +24,6 @@ object SignatureScanner {
 
     /** Known malware file hashes (MD5). In production, load from updatable DB. */
     private val KNOWN_MALWARE_MD5 = setOf(
-        "d41d8cd98f00b204e9800998ecf8427e", // Empty file (placeholder)
         "44d88612fea8a8f36de82e1278abb02f", // EICAR test file
         "e1105070ba828007508566e28a2b8d4c", // Known Android malware sample
         "3395856ce81f2b7382dee72602f798b6"  // Suspicious payload
@@ -32,7 +31,6 @@ object SignatureScanner {
 
     /** Known malware SHA-256 hashes */
     private val KNOWN_MALWARE_SHA256 = setOf(
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", // Empty file
         "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f"  // EICAR SHA-256
     )
 
@@ -350,12 +348,22 @@ object SignatureScanner {
     private fun checkArchiveBomb(item: FileItem, results: MutableList<ThreatResult>) {
         val ext = item.extension.lowercase()
         if (ext !in setOf("zip", "gz", "bz2", "xz", "7z", "rar")) return
-        // Extremely small archives (<100 bytes) are suspicious — could be zip bombs or corrupt
-        if (item.size in 1..99) {
+        // Minimum valid archive sizes: .gz=20B, .zip=22B, .bz2=14B
+        // Archives smaller than the minimum for their format are likely corrupt, not bombs.
+        val minValidSize = when (ext) {
+            "gz" -> 20L
+            "zip" -> 22L
+            "bz2" -> 14L
+            "xz" -> 32L
+            "7z" -> 32L
+            "rar" -> 20L
+            else -> 20L
+        }
+        if (item.size in 1 until minValidSize) {
             results.add(
                 ThreatResult(
                     name = "Suspicious Archive",
-                    description = "Archive \"${item.name}\" is only ${item.size} bytes. Very small archives may be zip bombs (files that expand to enormous sizes when extracted).",
+                    description = "Archive \"${item.name}\" is only ${item.size} bytes, below the minimum valid size for .${ext} format. This file is likely corrupt.",
                     severity = ThreatResult.Severity.LOW,
                     source = ThreatResult.ScannerSource.FILE_SIGNATURE,
                     filePath = item.path,

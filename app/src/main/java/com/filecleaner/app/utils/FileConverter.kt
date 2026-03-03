@@ -86,14 +86,19 @@ object FileConverter {
     private fun writeBmp(bitmap: Bitmap, outputFile: File) {
         val w = bitmap.width
         val h = bitmap.height
-        val rowSize = ((24 * w + 31) / 32) * 4
+        val rowSize = ((24L * w + 31) / 32) * 4
         val imageSize = rowSize * h
         val fileSize = 54 + imageSize
+
+        // P2-A1-06: Guard against integer overflow for very large bitmaps
+        if (fileSize > Int.MAX_VALUE) {
+            throw IllegalArgumentException("Image too large for BMP format (${w}x${h})")
+        }
 
         outputFile.outputStream().buffered().use { out ->
             // BMP header
             out.write(byteArrayOf('B'.code.toByte(), 'M'.code.toByte()))
-            out.write(intToBytes(fileSize))
+            out.write(intToBytes(fileSize.toInt()))
             out.write(intToBytes(0)) // reserved
             out.write(intToBytes(54)) // offset
 
@@ -104,14 +109,14 @@ object FileConverter {
             out.write(shortToBytes(1)) // planes
             out.write(shortToBytes(24)) // bits per pixel
             out.write(intToBytes(0)) // compression
-            out.write(intToBytes(imageSize))
+            out.write(intToBytes(imageSize.toInt()))
             out.write(intToBytes(2835)) // h resolution
             out.write(intToBytes(2835)) // v resolution
             out.write(intToBytes(0)) // colors
             out.write(intToBytes(0)) // important colors
 
             // Pixel data (bottom-up)
-            val row = ByteArray(rowSize)
+            val row = ByteArray(rowSize.toInt())
             for (y in h - 1 downTo 0) {
                 row.fill(0)
                 for (x in 0 until w) {
@@ -303,7 +308,7 @@ object FileConverter {
 
             File(outputPath).outputStream().buffered().use { doc.writeTo(it) }
 
-            ConvertResult(true, outputPath, "Created ${File(outputPath).name} ($pageNum pages)")
+            ConvertResult(true, outputPath, "Created ${File(outputPath).name} (${pageNum - 1} pages)")
         } catch (e: Exception) {
             ConvertResult(false, "", "Text to PDF failed: ${e.localizedMessage}")
         } finally {

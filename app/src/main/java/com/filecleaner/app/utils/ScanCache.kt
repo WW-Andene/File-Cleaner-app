@@ -39,7 +39,13 @@ object ScanCache {
 
             // Write to file
             val cacheFile = File(context.filesDir, CACHE_FILE)
-            cacheFile.writeText(root.toString())
+            val tempFile = File(context.filesDir, "$CACHE_FILE.tmp")
+            tempFile.writeText(root.toString())
+            if (!tempFile.renameTo(cacheFile)) {
+                // Fallback: copy content if rename fails (cross-filesystem)
+                tempFile.copyTo(cacheFile, overwrite = true)
+                tempFile.delete()
+            }
         }
 
     suspend fun load(context: Context): Pair<List<FileItem>, DirectoryNode>? =
@@ -85,7 +91,7 @@ object ScanCache {
      */
     private fun pruneTreeByPaths(node: DirectoryNode, validPaths: Set<String>): DirectoryNode {
         val validFiles = node.files.filter { it.path in validPaths }
-        val prunedChildren = node.children.map { pruneTreeByPaths(it, validPaths) }.toMutableList()
+        val prunedChildren = node.children.map { pruneTreeByPaths(it, validPaths) }
 
         val ownFileSize = validFiles.sumOf { it.size }
         val ownFileCount = validFiles.size
@@ -149,13 +155,14 @@ object ScanCache {
             files.add(jsonToFileItem(filesArray.getJSONObject(i)))
         }
 
-        val children = mutableListOf<DirectoryNode>()
         // C3: Stop recursion beyond MAX_TREE_DEPTH to prevent stack overflow
-        if (depth < MAX_TREE_DEPTH) {
+        val children = if (depth < MAX_TREE_DEPTH) {
             val childrenArray = json.getJSONArray("children")
-            for (i in 0 until childrenArray.length()) {
-                children.add(jsonToDirectoryNode(childrenArray.getJSONObject(i), depth + 1))
+            (0 until childrenArray.length()).map { i ->
+                jsonToDirectoryNode(childrenArray.getJSONObject(i), depth + 1)
             }
+        } else {
+            emptyList()
         }
 
         return DirectoryNode(

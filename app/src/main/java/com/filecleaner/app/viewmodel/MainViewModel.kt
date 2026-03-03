@@ -22,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -124,8 +125,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     // D5: Debounce cache writes — at most once per 3 seconds
     private var saveCacheJob: Job? = null
+    private val cacheLock = Any()
 
-    val isScanning: Boolean get() = _scanState.value is ScanState.Scanning
+    @Volatile
+    private var _isScanning = false
+    val isScanning: Boolean get() = _isScanning
 
     private fun str(@StringRes id: Int): String = getApplication<Application>().getString(id)
     private fun str(@StringRes id: Int, vararg args: Any): String =
@@ -136,6 +140,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         scanJob = null
         // B1: Use postValue for thread-safety (cancelScan can be called from any thread)
         _scanState.postValue(ScanState.Cancelled)
+        _isScanning = false
     }
 
     init {
@@ -177,7 +182,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                         }
                     _duplicates.postValue(dupes)
 
-                    val large = JunkFinder.findLargeFiles(files)
+                    val minLargeFileMb = try { UserPreferences.largeFileThresholdMb } catch (_: Exception) { 50 }
+                    val maxLargeFileCount = try { UserPreferences.maxLargeFiles } catch (_: Exception) { 200 }
+                    val large = JunkFinder.findLargeFiles(files, minLargeFileMb * 1024L * 1024L, maxLargeFileCount)
                     _largeFiles.postValue(large)
 
                     val junk = JunkFinder.findJunk(files)
@@ -190,10 +197,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                         duplicateSize = dupes.sumOf { it.size },
                         largeSize     = large.sumOf { it.size }
                     ))
-                }
-                // Only transition to Done if no scan superseded the cache load
-                if (_scanState.value is ScanState.Idle) {
+                    // P2-A4-02: Transition to Done inside mutex to prevent race with startScan()
                     _scanState.postValue(ScanState.Done)
+                    _isScanning = false
                 }
             }
         }
@@ -201,9 +207,19 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     override fun onCleared() {
         super.onCleared()
-        // Snapshot mutable state on the Main Thread (safe — all mutations dispatch to Main)
-        val trashSnapshot = pendingTrash.toMap()
-        pendingTrash.clear()
+        // P2-A6-01: Acquire trashMutex to prevent racing with deleteFiles()/undoDelete()
+        val trashSnapshot: Map<String, String>
+        if (trashMutex.tryLock()) {
+            try {
+                trashSnapshot = pendingTrash.toMap()
+                pendingTrash.clear()
+            } finally {
+                trashMutex.unlock()
+            }
+        } else {
+            // Lock held by another coroutine; take a defensive snapshot
+            trashSnapshot = pendingTrash.toMap()
+        }
         val files = latestFiles
         val tree = latestTree
 
@@ -225,6 +241,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         scanJob?.cancel()
         scanJob = viewModelScope.launch {
             _scanState.value = ScanState.Scanning(0)
+            _isScanning = true
             // B1: Reset derived state so stale data from previous scan isn't visible
             _duplicates.value = emptyList()
             _largeFiles.value = emptyList()
@@ -249,7 +266,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     _duplicates.postValue(dupes)
 
                     _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.ANALYZING))
-                    val large = JunkFinder.findLargeFiles(files, minLargeFileMb * 1024L * 1024L)
+                    val maxLargeFileCount = try { UserPreferences.maxLargeFiles } catch (_: Exception) { 200 }
+                    val large = JunkFinder.findLargeFiles(files, minLargeFileMb * 1024L * 1024L, maxLargeFileCount)
                     _largeFiles.postValue(large)
 
                     _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.JUNK))
@@ -267,9 +285,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     ))
                 }
 
+                ensureActive() // P2-A4-01: Check cancellation before transitioning to Done
                 _scanState.postValue(ScanState.Done)
+                _isScanning = false
             }.onFailure { e ->
                 if (e is kotlinx.coroutines.CancellationException) throw e
+                _isScanning = false
                 _scanState.postValue(ScanState.Error(e.localizedMessage ?: str(R.string.op_scan_failed)))
             }
 
@@ -665,14 +686,16 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private fun saveCache() {
         val files = latestFiles.ifEmpty { return }
         val tree = latestTree ?: return
-        saveCacheJob?.cancel()
-        saveCacheJob = viewModelScope.launch {
-            delay(SAVE_CACHE_DEBOUNCE_MS)
-            withContext(NonCancellable + Dispatchers.IO) {
-                try {
-                    ScanCache.save(getApplication(), files, tree)
-                } catch (_: Exception) {
-                    // Non-critical — cache will be rebuilt on next scan
+        synchronized(cacheLock) {
+            saveCacheJob?.cancel()
+            saveCacheJob = viewModelScope.launch {
+                delay(SAVE_CACHE_DEBOUNCE_MS)
+                withContext(NonCancellable + Dispatchers.IO) {
+                    try {
+                        ScanCache.save(getApplication(), files, tree)
+                    } catch (_: Exception) {
+                        // Non-critical — cache will be rebuilt on next scan
+                    }
                 }
             }
         }
@@ -682,12 +705,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private fun saveCacheNow() {
         val files = latestFiles.ifEmpty { return }
         val tree = latestTree ?: return
-        saveCacheJob?.cancel()
-        saveCacheJob = viewModelScope.launch {
-            withContext(NonCancellable + Dispatchers.IO) {
-                try {
-                    ScanCache.save(getApplication(), files, tree)
-                } catch (_: Exception) { }
+        synchronized(cacheLock) {
+            saveCacheJob?.cancel()
+            saveCacheJob = viewModelScope.launch {
+                withContext(NonCancellable + Dispatchers.IO) {
+                    try {
+                        ScanCache.save(getApplication(), files, tree)
+                    } catch (_: Exception) { }
+                }
             }
         }
     }

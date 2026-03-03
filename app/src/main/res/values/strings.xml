@@ -463,4 +463,40 @@
     <string name="cloud_port_hint">Port (default: 22)</string>
     <string name="cloud_username_hint">Username</string>
     <string name="cloud_password_hint">Password / Access Token</string>
+
+    <!-- Antivirus / Security Scanner -->
+    <string name="av_title">Security Scanner</string>
+    <string name="av_desc">Scan for malware, root, and privacy risks</string>
+    <string name="av_ready">Ready to scan your device for threats.</string>
+    <string name="av_start_scan">Start Security Scan</string>
+    <string name="av_scanning">Scanning\u2026</string>
+    <string name="av_scan_again">Scan Again</string>
+    <string name="av_all_clear">All clear! No threats detected.</string>
+    <string name="av_threats">Threats</string>
+    <string name="av_clean">Clean</string>
+    <plurals name="av_found_threats">
+        <item quantity="one">Found %d issue</item>
+        <item quantity="other">Found %d issues</item>
+    </plurals>
+    <string name="av_phase_integrity">Phase 1: App Integrity</string>
+    <string name="av_phase_integrity_desc">Checking for root, debugger, emulator, and malicious apps\u2026</string>
+    <string name="av_phase_signature">Phase 2: File Signatures</string>
+    <string name="av_phase_signature_desc">Scanning files for malware signatures\u2026</string>
+    <string name="av_phase_privacy">Phase 3: Privacy Audit</string>
+    <string name="av_phase_privacy_desc">Auditing installed apps for dangerous permissions\u2026</string>
+    <string name="av_source_integrity">App Integrity Check</string>
+    <string name="av_source_signature">File Signature Scan</string>
+    <string name="av_source_privacy">Privacy Audit</string>
+    <string name="av_critical">CRITICAL</string>
+    <string name="av_high">HIGH</string>
+    <string name="av_medium">MEDIUM</string>
+    <string name="av_low">LOW</string>
+    <string name="av_info">INFO</string>
+    <string name="av_quarantine">Quarantine</string>
+    <string name="av_quarantined">Quarantined</string>
+    <string name="av_quarantined_msg">Quarantined %s</string>
+    <string name="av_uninstall">Uninstall</string>
+    <string name="av_uninstall_failed">Could not open uninstall dialog</string>
+    <string name="av_confirm_delete">Permanently delete %s?</string>
+    <string name="av_deleted">Deleted %s</string>
 </resources>

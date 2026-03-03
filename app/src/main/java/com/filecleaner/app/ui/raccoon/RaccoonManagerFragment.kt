@@ -115,6 +115,11 @@ class RaccoonManagerFragment : Fragment() {
             findNavController().navigate(R.id.cloudBrowserFragment, null, navAnimOptions)
         }
 
+        // Antivirus — hybrid security scanner (no scan required for app integrity/privacy)
+        binding.cardAntivirus.setOnClickListener {
+            findNavController().navigate(R.id.antivirusFragment, null, navAnimOptions)
+        }
+
         // Janitor — deep clean (navigate to duplicates tab for comprehensive review)
         binding.cardJanitor.setOnClickListener {
             if (!hasScanData()) {

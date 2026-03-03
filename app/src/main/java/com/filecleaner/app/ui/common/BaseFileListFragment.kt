@@ -127,14 +127,14 @@ abstract class BaseFileListFragment : Fragment() {
         else summaryText(rawItems.size, UndoHelper.totalSize(rawItems))
 
         if (filtered.isEmpty()) {
-            binding.tvEmpty.visibility = View.VISIBLE
-            binding.tvEmptyText.text = when {
+            binding.emptyState.tvEmpty.visibility = View.VISIBLE
+            binding.emptyState.tvEmptyText.text = when {
                 searchQuery.isNotEmpty() -> getString(com.filecleaner.app.R.string.empty_search_results, searchQuery)
                 vm.scanState.value is ScanState.Done -> emptyPostScan
                 else -> emptyPreScan
             }
         } else {
-            binding.tvEmpty.visibility = View.GONE
+            binding.emptyState.tvEmpty.visibility = View.GONE
         }
     }
 

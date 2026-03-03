@@ -211,14 +211,14 @@ class BrowseFragment : Fragment() {
         adapter.submitList(sorted)
 
         if (sorted.isEmpty()) {
-            binding.tvEmpty.visibility = View.VISIBLE
-            binding.tvEmptyText.text = when {
+            binding.emptyState.tvEmpty.visibility = View.VISIBLE
+            binding.emptyState.tvEmptyText.text = when {
                 searchQuery.isNotEmpty() -> getString(R.string.empty_search_results, searchQuery)
                 vm.scanState.value is ScanState.Done -> getString(R.string.empty_browse_post_scan)
                 else -> getString(R.string.empty_browse_pre_scan)
             }
         } else {
-            binding.tvEmpty.visibility = View.GONE
+            binding.emptyState.tvEmpty.visibility = View.GONE
         }
         binding.tvCount.text = getString(R.string.n_files, sorted.size)
     }

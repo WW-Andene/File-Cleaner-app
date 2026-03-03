@@ -201,7 +201,7 @@ class MainActivity : AppCompatActivity() {
                     val stats = viewModel.storageStats.value
                     if (stats != null) {
                         val durationText = if (stats.scanDurationMs > 0) {
-                            " in %.1fs".format(stats.scanDurationMs / 1000.0)
+                            getString(R.string.scan_duration_suffix, stats.scanDurationMs / 1000.0)
                         } else ""
                         binding.tvScanStatus.text = resources.getQuantityString(
                             R.plurals.scan_complete,

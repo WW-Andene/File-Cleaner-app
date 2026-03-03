@@ -2,6 +2,7 @@ package com.filecleaner.app.utils.antivirus
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.filecleaner.app.R
 import org.json.JSONArray
 import org.json.JSONObject
 import java.text.SimpleDateFormat
@@ -82,7 +83,7 @@ object ScanHistoryManager {
     fun getLastScanTimeFormatted(context: Context): String? {
         val ts = getLastScanTime(context)
         if (ts == 0L) return null
-        return formatTimestamp(ts)
+        return formatRelativeTime(context, ts)
     }
 
     fun getHistory(context: Context): List<ScanRecord> {
@@ -128,16 +129,15 @@ object ScanHistoryManager {
             .apply()
     }
 
-    internal fun formatTimestamp(ts: Long): String {
-        val now = System.currentTimeMillis()
-        val diff = now - ts
+    internal fun formatRelativeTime(context: Context, timestampMs: Long): String {
+        val diff = System.currentTimeMillis() - timestampMs
 
         return when {
-            diff < 60_000 -> "Just now"
-            diff < 3_600_000 -> "${diff / 60_000}m ago"
-            diff < 86_400_000 -> "${diff / 3_600_000}h ago"
-            diff < 172_800_000 -> "Yesterday"
-            else -> SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(ts))
+            diff < 60_000 -> context.getString(R.string.time_just_now)
+            diff < 3_600_000 -> context.getString(R.string.time_minutes_ago, (diff / 60_000).toInt())
+            diff < 86_400_000 -> context.getString(R.string.time_hours_ago, (diff / 3_600_000).toInt())
+            diff < 172_800_000 -> context.getString(R.string.time_yesterday)
+            else -> SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(timestampMs))
         }
     }
 
@@ -151,6 +151,6 @@ object ScanHistoryManager {
         val low: Int,
         val info: Int
     ) {
-        val formattedTime: String get() = ScanHistoryManager.formatTimestamp(timestamp)
+        fun formattedTime(context: Context): String = ScanHistoryManager.formatRelativeTime(context, timestamp)
     }
 }

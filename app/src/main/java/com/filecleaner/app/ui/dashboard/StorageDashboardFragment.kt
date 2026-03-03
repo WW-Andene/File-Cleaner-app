@@ -52,7 +52,8 @@ class StorageDashboardFragment : Fragment() {
             val entries = catMap.entries.sortedByDescending { it.value.sumOf { f -> f.size } }
             val lines = entries.joinToString("\n") { (cat, files) ->
                 val totalSize = files.sumOf { it.size }
-                "${cat.emoji} ${getString(cat.displayNameRes)}: ${files.size} files (${UndoHelper.formatBytes(totalSize)})"
+                val countAndSize = resources.getQuantityString(R.plurals.n_files_with_size, files.size, files.size, UndoHelper.formatBytes(totalSize))
+                "${cat.emoji} ${getString(cat.displayNameRes)}: $countAndSize"
             }
             binding.tvCategoryBreakdown.text = when {
                 lines.isNotEmpty() -> lines

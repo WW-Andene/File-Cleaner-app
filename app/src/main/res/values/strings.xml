@@ -204,6 +204,17 @@
     <string name="convert_unsupported">No conversions available for this file type</string>
     <string name="convert_failed">Conversion failed: %s</string>
     <string name="convert_progress">Converting\u2026</string>
+    <!-- Conversion action labels (N1 audit) -->
+    <string name="convert_format_with_ext">%1$s (.%2$s)</string>
+    <string name="convert_pdf">PDF (.pdf)</string>
+    <string name="convert_format_per_page">%1$s (one per page)</string>
+    <string name="convert_png_thumbnail">PNG thumbnail</string>
+    <string name="convert_jpg_thumbnail">JPG thumbnail</string>
+    <string name="convert_extract_10_frames_jpg">Extract 10 frames (JPG)</string>
+    <string name="convert_extract_20_frames_png">Extract 20 frames (PNG)</string>
+    <string name="convert_extract_album_art_png">Extract album art (PNG)</string>
+    <string name="convert_extract_album_art_jpg">Extract album art (JPG)</string>
+    <string name="convert_formatted_table_txt">Formatted table (.txt)</string>
     <string name="ctx_properties">Properties</string>
     <string name="ctx_preview">Preview</string>
     <string name="preview_error">Cannot preview: %s</string>
@@ -250,6 +261,7 @@
     <string name="op_too_many_entries">This archive has too many files to extract safely (limit: %d).</string>
     <string name="op_archive_too_large">Archive too large (exceeds 2 GB extracted)</string>
     <string name="op_invalid_path">Path is outside accessible storage</string>
+    <string name="error_no_files_to_compress">No files to compress</string>
     <string name="op_scan_failed">Scan failed</string>
 
     <!-- Undo / Delete feedback -->
@@ -258,7 +270,14 @@
     <string name="delete_partial_failure">%1$d deleted, %2$d failed \u2014 some files may be in use</string>
 
     <!-- Post-scan summary -->
+    <string name="scan_duration_suffix"> in %1$.1fs</string>
     <string name="scan_summary">Found %1$d files (%2$s) \u2014 %3$d duplicates, %4$d junk, %5$d large</string>
+
+    <!-- Relative time -->
+    <string name="time_just_now">Just now</string>
+    <string name="time_minutes_ago">%dm ago</string>
+    <string name="time_hours_ago">%dh ago</string>
+    <string name="time_yesterday">Yesterday</string>
 
     <!-- Date format -->
     <string name="unknown_date">Unknown date</string>
@@ -359,6 +378,10 @@
     <string name="dashboard_scan_stats">Scan Summary</string>
     <string name="dashboard_stats_detail">%1$d files scanned\nDuplicates: %2$s\nJunk: %3$s\nLarge files: %4$s</string>
     <string name="dashboard_category_title">By Category</string>
+    <plurals name="n_files_with_size">
+        <item quantity="one">%1$d file (%2$s)</item>
+        <item quantity="other">%1$d files (%2$s)</item>
+    </plurals>
     <string name="dashboard_no_scan">Run a scan to see category breakdown.</string>
     <string name="dashboard_scanning">Scanning\u2026 Results will appear when complete.</string>
 
@@ -460,6 +483,10 @@
     <string name="cloud_empty_dir">This folder is empty</string>
     <string name="cloud_connected">Connected to %s</string>
     <string name="cloud_connection_failed">Failed to connect to %s</string>
+    <string name="cloud_no_network">No internet connection</string>
+    <string name="cloud_auth_failed">Authentication failed. Check your credentials.</string>
+    <string name="cloud_timeout">Connection timed out. Try again.</string>
+    <string name="cloud_host_not_found">Server not found. Check the hostname.</string>
     <string name="cloud_added">Added %s</string>
     <string name="cloud_download">Download</string>
     <string name="cloud_upload">Upload</string>
@@ -473,6 +500,13 @@
     <string name="cloud_port_hint">Port (default: 22)</string>
     <string name="cloud_username_hint">Username</string>
     <string name="cloud_password_hint">Password / Access Token</string>
+    <string name="cloud_type_sftp">SFTP</string>
+    <string name="cloud_type_webdav">WebDAV</string>
+    <string name="cloud_type_google_drive">Google Drive</string>
+    <string name="cloud_default_server_name">My Server</string>
+    <string name="cloud_error_host_required">Host is required</string>
+    <string name="cloud_error_port_range">Port must be 1\u201365535</string>
+    <string name="cloud_error_username_required">Username is required</string>
 
     <!-- Antivirus / Security Scanner -->
     <string name="av_title">Security Scanner</string>
@@ -542,10 +576,37 @@
     <string name="av_detail_package">Package Name</string>
     <string name="av_detail_category">Category</string>
 
+    <!-- Threat category labels -->
+    <string name="threat_category_general">General</string>
+    <string name="threat_category_malware">Malware</string>
+    <string name="threat_category_root_tampering">Root / Tampering</string>
+    <string name="threat_category_privacy">Privacy</string>
+    <string name="threat_category_network">Network Security</string>
+    <string name="threat_category_sideload">Sideloaded App</string>
+    <string name="threat_category_accessibility_abuse">Accessibility Abuse</string>
+    <string name="threat_category_device_admin">Device Admin</string>
+    <string name="threat_category_suspicious_file">Suspicious File</string>
+    <string name="threat_category_debug_risk">Debug / Dev Risk</string>
+
     <!-- Scan history -->
     <string name="av_history">Scan History</string>
     <string name="av_no_history">No scan history yet.</string>
     <string name="av_clear_history">Clear History</string>
+    <string name="av_scan_history_summary">%1$d findings (%2$dC %3$dH %4$dM)</string>
+
+    <!-- Fix all plurals -->
+    <plurals name="av_fix_quarantine">
+        <item quantity="one">%d file to quarantine</item>
+        <item quantity="other">%d files to quarantine</item>
+    </plurals>
+    <plurals name="av_fix_delete">
+        <item quantity="one">%d file to delete</item>
+        <item quantity="other">%d files to delete</item>
+    </plurals>
+    <plurals name="av_fix_uninstall">
+        <item quantity="one">%d app to uninstall</item>
+        <item quantity="other">%d apps to uninstall</item>
+    </plurals>
 
     <!-- Clear All Data (P3 Security) -->
     <string name="settings_clear_data">Clear All Data</string>
@@ -558,4 +619,28 @@
     <string name="privacy_notice_title">Privacy &amp; Data Usage</string>
     <string name="privacy_notice_message">Raccoon File Manager processes your data locally on your device:\n\n\u2022 File scanning indexes file names, sizes, and paths to find duplicates, junk, and large files. This data is cached locally and auto-deleted after 30 days.\n\n\u2022 Security scanning checks installed apps and their permissions to detect threats. No app data leaves your device.\n\n\u2022 Cloud connections store your credentials securely using Android encrypted storage. Credentials are cleared from memory after connecting.\n\n\u2022 No data is ever sent to external servers, analytics services, or third parties.\n\nYou can clear all stored data at any time from Settings.</string>
     <string name="privacy_notice_accept">I Understand</string>
+
+    <!-- SignatureScanner threat names (N1 audit) -->
+    <string name="threat_suspicious_filename">Suspicious Filename</string>
+    <string name="threat_apk_unusual_location">APK in Unusual Location</string>
+    <string name="threat_known_malware">Known Malware Detected</string>
+    <string name="threat_elf_binary">ELF Binary in Storage</string>
+    <string name="threat_loose_dex">Loose DEX File</string>
+    <string name="threat_dangerous_script">Dangerous Script</string>
+    <string name="threat_hidden_executable">Hidden Executable</string>
+    <string name="threat_large_apk">Unusually Large APK</string>
+    <string name="threat_suspicious_archive">Suspicious Archive</string>
+
+    <!-- SignatureScanner threat descriptions (N1 audit) -->
+    <string name="threat_desc_suspicious_extension">File \"%1$s\" has a suspicious extension (.%2$s).</string>
+    <string name="threat_desc_suspicious_filename">File \"%1$s\" matches a known malware filename pattern.</string>
+    <string name="threat_desc_apk_unusual_location">APK file found in %1$s. APKs outside standard install locations may be side-loaded malware.</string>
+    <string name="threat_desc_known_malware_md5">File \"%1$s\" matches known malware signature (MD5: %2$s).</string>
+    <string name="threat_desc_known_malware_sha256">File \"%1$s\" matches known malware signature (SHA-256).</string>
+    <string name="threat_desc_elf_binary">Linux executable binary \"%1$s\" found in user storage. This could be a hacking tool, exploit, or backdoor.</string>
+    <string name="threat_desc_loose_dex">Android bytecode file \"%1$s\" found outside app directories. This may be a dynamically loaded malware payload.</string>
+    <string name="threat_desc_dangerous_script">Script \"%1$s\" contains suspicious commands that could compromise device security (pattern: %2$s).</string>
+    <string name="threat_desc_hidden_executable">Hidden file \"%1$s\" (.%2$s) found at %3$s. Malware often uses hidden files to evade detection.</string>
+    <string name="threat_desc_large_apk">APK \"%1$s\" is %2$dMB. Unusually large APKs may contain packed malware or stolen data.</string>
+    <string name="threat_desc_suspicious_archive">Archive \"%1$s\" is only %2$d bytes, below the minimum valid size for .%3$s format. This file is likely corrupt.</string>
 </resources>

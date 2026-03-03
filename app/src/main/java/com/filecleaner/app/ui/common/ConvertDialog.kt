@@ -30,7 +30,7 @@ object ConvertDialog {
     data class ConvertAction(val label: String, val action: () -> FileConverter.ConvertResult)
 
     fun show(context: Context, item: FileItem, onResult: (FileConverter.ConvertResult) -> Unit) {
-        val actions = buildActions(item)
+        val actions = buildActions(context, item)
         if (actions.isEmpty()) {
             AlertDialog.Builder(context)
                 .setTitle(context.getString(R.string.convert_title))
@@ -91,7 +91,7 @@ object ConvertDialog {
         "gradle", "groovy", "scala"
     )
 
-    private fun buildActions(item: FileItem): List<ConvertAction> {
+    private fun buildActions(context: Context, item: FileItem): List<ConvertAction> {
         val actions = mutableListOf<ConvertAction>()
         val ext = item.extension
 
@@ -106,13 +106,13 @@ object ConvertDialog {
                     // Don't show duplicate webp entries
                     if (fmt == FileConverter.ImageFormat.WEBP && ext == "webp") continue
                     if (fmt == FileConverter.ImageFormat.WEBP_LOSSLESS && ext == "webp") continue
-                    actions.add(ConvertAction("${fmt.label} (.${fmt.extension})") {
+                    actions.add(ConvertAction(context.getString(R.string.convert_format_with_ext, fmt.label, fmt.extension)) {
                         FileConverter.convertImage(item.path, fmt)
                     })
                 }
             }
             // Image -> PDF
-            actions.add(ConvertAction("PDF (.pdf)") {
+            actions.add(ConvertAction(context.getString(R.string.convert_pdf)) {
                 val outputPath = "${item.file.parent}/${item.file.nameWithoutExtension}.pdf"
                 FileConverter.imagesToPdf(listOf(item.path), outputPath)
             })
@@ -123,7 +123,7 @@ object ConvertDialog {
         // =====================================================================
         if (ext == "pdf") {
             for (fmt in FileConverter.PdfImageFormat.entries) {
-                actions.add(ConvertAction("${fmt.label} (one per page)") {
+                actions.add(ConvertAction(context.getString(R.string.convert_format_per_page, fmt.label)) {
                     val outputDir = "${item.file.parent}/${item.file.nameWithoutExtension}_pages"
                     FileConverter.pdfToImages(item.path, outputDir, fmt)
                 })
@@ -135,18 +135,18 @@ object ConvertDialog {
         // =====================================================================
         if (item.category == FileCategory.VIDEO) {
             // Thumbnail extraction
-            actions.add(ConvertAction("PNG thumbnail") {
+            actions.add(ConvertAction(context.getString(R.string.convert_png_thumbnail)) {
                 FileConverter.videoToThumbnail(item.path, FileConverter.ImageFormat.PNG)
             })
-            actions.add(ConvertAction("JPG thumbnail") {
+            actions.add(ConvertAction(context.getString(R.string.convert_jpg_thumbnail)) {
                 FileConverter.videoToThumbnail(item.path, FileConverter.ImageFormat.JPG, quality = 85)
             })
             // Frame series
-            actions.add(ConvertAction("Extract 10 frames (JPG)") {
+            actions.add(ConvertAction(context.getString(R.string.convert_extract_10_frames_jpg)) {
                 val outputDir = "${item.file.parent}/${item.file.nameWithoutExtension}_frames"
                 FileConverter.videoToFrames(item.path, outputDir, 10, FileConverter.ImageFormat.JPG)
             })
-            actions.add(ConvertAction("Extract 20 frames (PNG)") {
+            actions.add(ConvertAction(context.getString(R.string.convert_extract_20_frames_png)) {
                 val outputDir = "${item.file.parent}/${item.file.nameWithoutExtension}_frames"
                 FileConverter.videoToFrames(item.path, outputDir, 20, FileConverter.ImageFormat.PNG)
             })
@@ -157,10 +157,10 @@ object ConvertDialog {
         // =====================================================================
         if (item.category == FileCategory.AUDIO) {
             // Extract album art
-            actions.add(ConvertAction("Extract album art (PNG)") {
+            actions.add(ConvertAction(context.getString(R.string.convert_extract_album_art_png)) {
                 FileConverter.audioToAlbumArt(item.path, FileConverter.ImageFormat.PNG)
             })
-            actions.add(ConvertAction("Extract album art (JPG)") {
+            actions.add(ConvertAction(context.getString(R.string.convert_extract_album_art_jpg)) {
                 FileConverter.audioToAlbumArt(item.path, FileConverter.ImageFormat.JPG, quality = 90)
             })
         }
@@ -169,7 +169,7 @@ object ConvertDialog {
         // TEXT / CODE / DOCUMENT -> PDF
         // =====================================================================
         if (ext in TEXT_CONVERTIBLE) {
-            actions.add(ConvertAction("PDF (.pdf)") {
+            actions.add(ConvertAction(context.getString(R.string.convert_pdf)) {
                 val outputPath = "${item.file.parent}/${item.file.nameWithoutExtension}.pdf"
                 FileConverter.textToPdf(item.path, outputPath)
             })
@@ -177,7 +177,7 @@ object ConvertDialog {
 
         // HTML -> PDF
         if (ext == "html" || ext == "htm") {
-            actions.add(ConvertAction("PDF (.pdf)") {
+            actions.add(ConvertAction(context.getString(R.string.convert_pdf)) {
                 val outputPath = "${item.file.parent}/${item.file.nameWithoutExtension}.pdf"
                 FileConverter.textToPdf(item.path, outputPath)
             })
@@ -185,7 +185,7 @@ object ConvertDialog {
 
         // Markdown -> PDF
         if (ext == "md" || ext == "markdown" || ext == "mdown" || ext == "mkd") {
-            actions.add(ConvertAction("PDF (.pdf)") {
+            actions.add(ConvertAction(context.getString(R.string.convert_pdf)) {
                 val outputPath = "${item.file.parent}/${item.file.nameWithoutExtension}.pdf"
                 FileConverter.textToPdf(item.path, outputPath)
             })
@@ -193,7 +193,7 @@ object ConvertDialog {
 
         // CSV -> Formatted text table
         if (ext == "csv") {
-            actions.add(ConvertAction("Formatted table (.txt)") {
+            actions.add(ConvertAction(context.getString(R.string.convert_formatted_table_txt)) {
                 val outputPath = "${item.file.parent}/${item.file.nameWithoutExtension}_table.txt"
                 FileConverter.csvToText(item.path, outputPath)
             })

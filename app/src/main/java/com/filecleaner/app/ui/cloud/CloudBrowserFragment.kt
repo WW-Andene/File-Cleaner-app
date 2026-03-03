@@ -1,7 +1,10 @@
 package com.filecleaner.app.ui.cloud
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.os.Environment
 import android.view.LayoutInflater
@@ -28,12 +31,15 @@ import com.filecleaner.app.databinding.FragmentCloudBrowserBinding
 import com.filecleaner.app.ui.dualpane.PaneAdapter
 import com.filecleaner.app.utils.UndoHelper
 import com.google.android.material.snackbar.Snackbar
+import com.jcraft.jsch.JSchException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
 /**
  * Cloud/network file browser fragment.
@@ -152,6 +158,21 @@ class CloudBrowserFragment : Fragment() {
 
     private fun connectTo(connection: CloudConnection) {
         val ctx = context ?: return
+
+        // H4-03: Pre-flight network connectivity check
+        val cm = ctx.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork = cm.activeNetwork
+        val capabilities = cm.getNetworkCapabilities(activeNetwork)
+        val isConnected = capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+        if (!isConnected) {
+            _binding?.root?.let { root ->
+                Snackbar.make(root,
+                    getString(R.string.cloud_no_network),
+                    Snackbar.LENGTH_LONG).show()
+            }
+            return
+        }
+
         val provider = createProvider(connection, ctx)
         currentProvider = provider
 
@@ -159,22 +180,44 @@ class CloudBrowserFragment : Fragment() {
         _binding?.recyclerFiles?.visibility = View.GONE
 
         viewLifecycleOwner.lifecycleScope.launch {
-            val success = provider.connect()
-            _binding?.progress?.visibility = View.GONE
+            try {
+                val success = provider.connect()
+                _binding?.progress?.visibility = View.GONE
 
-            if (success) {
-                _binding?.root?.let { root ->
-                    Snackbar.make(root,
-                        getString(R.string.cloud_connected, connection.displayName),
-                        Snackbar.LENGTH_SHORT).show()
+                if (success) {
+                    _binding?.root?.let { root ->
+                        Snackbar.make(root,
+                            getString(R.string.cloud_connected, connection.displayName),
+                            Snackbar.LENGTH_SHORT).show()
+                    }
+                    currentPath = "/"
+                    loadDirectory("/")
+                } else {
+                    _binding?.root?.let { root ->
+                        Snackbar.make(root,
+                            getString(R.string.cloud_connection_failed, connection.displayName),
+                            Snackbar.LENGTH_LONG).show()
+                    }
                 }
-                currentPath = "/"
-                loadDirectory("/")
-            } else {
+            } catch (e: Exception) {
+                // H4-04: Differentiated error messages based on failure type
+                _binding?.progress?.visibility = View.GONE
+                val message = when {
+                    e is SocketTimeoutException ->
+                        getString(R.string.cloud_timeout)
+                    e is UnknownHostException ->
+                        getString(R.string.cloud_host_not_found)
+                    e is JSchException && e.message?.contains("Auth", ignoreCase = true) == true ->
+                        getString(R.string.cloud_auth_failed)
+                    e is java.io.IOException && e.message?.let { msg ->
+                        msg.contains("HTTP 401") || msg.contains("HTTP 403")
+                    } == true ->
+                        getString(R.string.cloud_auth_failed)
+                    else ->
+                        getString(R.string.cloud_connection_failed, connection.displayName)
+                }
                 _binding?.root?.let { root ->
-                    Snackbar.make(root,
-                        getString(R.string.cloud_connection_failed, connection.displayName),
-                        Snackbar.LENGTH_LONG).show()
+                    Snackbar.make(root, message, Snackbar.LENGTH_LONG).show()
                 }
             }
         }

@@ -335,9 +335,9 @@ class AntivirusFragment : Fragment() {
         val uninstall = actionable.filter { it.action == ThreatResult.ThreatAction.UNINSTALL }
 
         val summary = buildString {
-            if (quarantine.isNotEmpty()) append("${quarantine.size} files to quarantine\n")
-            if (delete.isNotEmpty()) append("${delete.size} files to delete\n")
-            if (uninstall.isNotEmpty()) append("${uninstall.size} apps to uninstall")
+            if (quarantine.isNotEmpty()) append(resources.getQuantityString(R.plurals.av_fix_quarantine, quarantine.size, quarantine.size) + "\n")
+            if (delete.isNotEmpty()) append(resources.getQuantityString(R.plurals.av_fix_delete, delete.size, delete.size) + "\n")
+            if (uninstall.isNotEmpty()) append(resources.getQuantityString(R.plurals.av_fix_uninstall, uninstall.size, uninstall.size))
         }.trim()
 
         AlertDialog.Builder(ctx)
@@ -435,7 +435,7 @@ class AntivirusFragment : Fragment() {
         }
 
         // Category
-        tvCategory.text = categoryLabel(threat.category)
+        tvCategory.text = categoryLabel(ctx, threat.category)
 
         val dialog = AlertDialog.Builder(ctx)
             .setView(dialogView)
@@ -563,18 +563,18 @@ class AntivirusFragment : Fragment() {
         }
     }
 
-    private fun categoryLabel(category: ThreatResult.ThreatCategory): String {
+    private fun categoryLabel(ctx: android.content.Context, category: ThreatResult.ThreatCategory): String {
         return when (category) {
-            ThreatResult.ThreatCategory.GENERAL -> "General"
-            ThreatResult.ThreatCategory.MALWARE -> "Malware"
-            ThreatResult.ThreatCategory.ROOT_TAMPERING -> "Root / Tampering"
-            ThreatResult.ThreatCategory.PRIVACY -> "Privacy"
-            ThreatResult.ThreatCategory.NETWORK -> "Network Security"
-            ThreatResult.ThreatCategory.SIDELOAD -> "Sideloaded App"
-            ThreatResult.ThreatCategory.ACCESSIBILITY_ABUSE -> "Accessibility Abuse"
-            ThreatResult.ThreatCategory.DEVICE_ADMIN -> "Device Admin"
-            ThreatResult.ThreatCategory.SUSPICIOUS_FILE -> "Suspicious File"
-            ThreatResult.ThreatCategory.DEBUG_RISK -> "Debug / Dev Risk"
+            ThreatResult.ThreatCategory.GENERAL -> ctx.getString(R.string.threat_category_general)
+            ThreatResult.ThreatCategory.MALWARE -> ctx.getString(R.string.threat_category_malware)
+            ThreatResult.ThreatCategory.ROOT_TAMPERING -> ctx.getString(R.string.threat_category_root_tampering)
+            ThreatResult.ThreatCategory.PRIVACY -> ctx.getString(R.string.threat_category_privacy)
+            ThreatResult.ThreatCategory.NETWORK -> ctx.getString(R.string.threat_category_network)
+            ThreatResult.ThreatCategory.SIDELOAD -> ctx.getString(R.string.threat_category_sideload)
+            ThreatResult.ThreatCategory.ACCESSIBILITY_ABUSE -> ctx.getString(R.string.threat_category_accessibility_abuse)
+            ThreatResult.ThreatCategory.DEVICE_ADMIN -> ctx.getString(R.string.threat_category_device_admin)
+            ThreatResult.ThreatCategory.SUSPICIOUS_FILE -> ctx.getString(R.string.threat_category_suspicious_file)
+            ThreatResult.ThreatCategory.DEBUG_RISK -> ctx.getString(R.string.threat_category_debug_risk)
         }
     }
 
@@ -700,8 +700,8 @@ class AntivirusFragment : Fragment() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val record = items[position]
-            holder.time.text = record.formattedTime
-            holder.summary.text = "${record.totalFindings} findings (${record.critical}C ${record.high}H ${record.medium}M)"
+            holder.time.text = record.formattedTime(holder.itemView.context)
+            holder.summary.text = holder.itemView.context.getString(R.string.av_scan_history_summary, record.totalFindings, record.critical, record.high, record.medium)
             holder.threatCount.text = record.threatCount.toString()
             holder.threatCount.setTextColor(
                 ContextCompat.getColor(

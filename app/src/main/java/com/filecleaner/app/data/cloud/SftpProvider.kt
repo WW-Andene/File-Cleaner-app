@@ -1,5 +1,6 @@
 package com.filecleaner.app.data.cloud
 
+import com.filecleaner.app.utils.retryOnNetworkError
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
@@ -33,37 +34,41 @@ class SftpProvider(private var connection: CloudConnection, private val context:
     override suspend fun connect(): Boolean = withContext(Dispatchers.IO) {
         synchronized(lock) {
             try {
-                val jsch = JSch()
-                // If authToken contains a private key path, use key-based auth
-                if (connection.authToken.isNotEmpty() && connection.authToken.startsWith("/")) {
-                    jsch.addIdentity(connection.authToken)
-                }
+                retryOnNetworkError {
+                    val jsch = JSch()
+                    // If authToken contains a private key path, use key-based auth
+                    if (connection.authToken.isNotEmpty() && connection.authToken.startsWith("/")) {
+                        jsch.addIdentity(connection.authToken)
+                    }
 
-                val s = jsch.getSession(connection.username, connection.host, connection.port)
-                // If authToken is not a path, treat as password
-                if (connection.authToken.isNotEmpty() && !connection.authToken.startsWith("/")) {
-                    s.setPassword(connection.authToken)
-                }
-                // TOFU (Trust On First Use): persist host keys, reject changed keys
-                val knownHostsFile = File(context.filesDir, "sftp_known_hosts")
-                if (!knownHostsFile.exists()) knownHostsFile.createNewFile()
-                jsch.setKnownHosts(knownHostsFile.absolutePath)
-                s.setConfig("StrictHostKeyChecking", "ask")
-                s.userInfo = object : UserInfo {
-                    override fun getPassphrase(): String? = null
-                    override fun getPassword(): String? = null
-                    override fun promptPassword(message: String?): Boolean = false
-                    override fun promptPassphrase(message: String?): Boolean = false
-                    override fun promptYesNo(message: String?): Boolean = true
-                    override fun showMessage(message: String?) {}
-                }
-                s.connect(15000)
+                    val s = jsch.getSession(connection.username, connection.host, connection.port)
+                    // If authToken is not a path, treat as password
+                    if (connection.authToken.isNotEmpty() && !connection.authToken.startsWith("/")) {
+                        s.setPassword(connection.authToken)
+                    }
+                    // TOFU (Trust On First Use): persist host keys, reject changed keys
+                    val knownHostsFile = File(context.filesDir, "sftp_known_hosts")
+                    if (!knownHostsFile.exists()) knownHostsFile.createNewFile()
+                    jsch.setKnownHosts(knownHostsFile.absolutePath)
+                    s.setConfig("StrictHostKeyChecking", "ask")
+                    s.userInfo = object : UserInfo {
+                        override fun getPassphrase(): String? = null
+                        override fun getPassword(): String? = null
+                        override fun promptPassword(message: String?): Boolean = false
+                        override fun promptPassphrase(message: String?): Boolean = false
+                        override fun promptYesNo(message: String?): Boolean = true
+                        override fun showMessage(message: String?) {}
+                    }
+                    s.connect(15000)
+                    // H4-01: Set read timeout (30s) on the underlying socket for data transfers
+                    s.setTimeout(30000)
 
-                val ch = s.openChannel("sftp") as ChannelSftp
-                ch.connect(10000)
+                    val ch = s.openChannel("sftp") as ChannelSftp
+                    ch.connect(10000)
 
-                session = s
-                channel = ch
+                    session = s
+                    channel = ch
+                }
                 // F-C3-02: Drop credential reference after auth completes
                 connection = connection.copy(authToken = "")
                 true
@@ -72,7 +77,7 @@ class SftpProvider(private var connection: CloudConnection, private val context:
                 try { session?.disconnect() } catch (_: Exception) {}
                 channel = null
                 session = null
-                false
+                throw e
             }
         }
     }
@@ -91,23 +96,25 @@ class SftpProvider(private var connection: CloudConnection, private val context:
         synchronized(lock) {
             val ch = channel ?: return@synchronized emptyList()
             try {
-                @Suppress("UNCHECKED_CAST")
-                val entries = ch.ls(remotePath) as Vector<ChannelSftp.LsEntry>
-                entries
-                    .filter { it.filename != "." && it.filename != ".." }
-                    .map { entry ->
-                        val attrs = entry.attrs
-                        CloudFile(
-                            name = entry.filename,
-                            remotePath = if (remotePath.endsWith("/")) "$remotePath${entry.filename}"
-                            else "$remotePath/${entry.filename}",
-                            isDirectory = attrs.isDir,
-                            size = attrs.size,
-                            lastModified = attrs.mTime.toLong() * 1000L,
-                            mimeType = ""
-                        )
-                    }
-                    .sortedWith(compareBy<CloudFile> { !it.isDirectory }.thenBy { it.name.lowercase() })
+                retryOnNetworkError {
+                    @Suppress("UNCHECKED_CAST")
+                    val entries = ch.ls(remotePath) as Vector<ChannelSftp.LsEntry>
+                    entries
+                        .filter { it.filename != "." && it.filename != ".." }
+                        .map { entry ->
+                            val attrs = entry.attrs
+                            CloudFile(
+                                name = entry.filename,
+                                remotePath = if (remotePath.endsWith("/")) "$remotePath${entry.filename}"
+                                else "$remotePath/${entry.filename}",
+                                isDirectory = attrs.isDir,
+                                size = attrs.size,
+                                lastModified = attrs.mTime.toLong() * 1000L,
+                                mimeType = ""
+                            )
+                        }
+                        .sortedWith(compareBy<CloudFile> { !it.isDirectory }.thenBy { it.name.lowercase() })
+                }
             } catch (e: Exception) {
                 emptyList()
             }
@@ -117,7 +124,9 @@ class SftpProvider(private var connection: CloudConnection, private val context:
     override suspend fun download(remotePath: String, output: OutputStream) = withContext(Dispatchers.IO) {
         synchronized(lock) {
             val ch = channel ?: throw IllegalStateException("Not connected")
-            ch.get(remotePath, output)
+            retryOnNetworkError {
+                ch.get(remotePath, output)
+            }
         }
         Unit
     }
@@ -128,7 +137,9 @@ class SftpProvider(private var connection: CloudConnection, private val context:
                 val ch = channel ?: throw IllegalStateException("Not connected")
                 val fullPath = if (remotePath.endsWith("/")) "$remotePath$fileName"
                 else "$remotePath/$fileName"
-                ch.put(input, fullPath)
+                retryOnNetworkError {
+                    ch.put(input, fullPath)
+                }
             }
             Unit
         }

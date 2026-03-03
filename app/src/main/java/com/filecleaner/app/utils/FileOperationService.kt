@@ -117,7 +117,7 @@ class FileOperationService(private val app: Application, private val storagePath
         onProgress: ((current: Int, total: Int) -> Unit)? = null
     ): OpResult {
         return try {
-            if (filePaths.isEmpty()) return OpResult(false, "No files to compress")
+            if (filePaths.isEmpty()) return OpResult(false, str(R.string.error_no_files_to_compress))
             val firstFile = File(filePaths.first())
             val parentDir = firstFile.parent
                 ?: return OpResult(false, str(R.string.op_no_parent_dir))

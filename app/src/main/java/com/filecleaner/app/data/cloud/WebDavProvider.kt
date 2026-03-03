@@ -2,6 +2,7 @@ package com.filecleaner.app.data.cloud
 
 import android.util.Base64
 import android.util.Xml
+import com.filecleaner.app.utils.retryOnNetworkError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser
@@ -43,19 +44,28 @@ class WebDavProvider(private var connection: CloudConnection) : CloudProvider {
     override val isConnected: Boolean get() = connected
 
     override suspend fun connect(): Boolean = withContext(Dispatchers.IO) {
-        var conn: HttpURLConnection? = null
         try {
-            val url = URL("$baseUrl/")
-            conn = (url.openConnection() as HttpURLConnection).apply {
-                requestMethod = "PROPFIND"
-                setRequestProperty("Authorization", authHeader())
-                setRequestProperty("Depth", "0")
-                setRequestProperty("Content-Type", "application/xml; charset=utf-8")
-                connectTimeout = 15000
-                readTimeout = 15000
+            retryOnNetworkError {
+                var conn: HttpURLConnection? = null
+                try {
+                    val url = URL("$baseUrl/")
+                    conn = (url.openConnection() as HttpURLConnection).apply {
+                        requestMethod = "PROPFIND"
+                        setRequestProperty("Authorization", authHeader())
+                        setRequestProperty("Depth", "0")
+                        setRequestProperty("Content-Type", "application/xml; charset=utf-8")
+                        connectTimeout = 15000
+                        readTimeout = 15000
+                    }
+                    val code = conn.responseCode
+                    connected = code in 200..299 || code == 207
+                    if (!connected) {
+                        throw java.io.IOException("HTTP $code")
+                    }
+                } finally {
+                    conn?.disconnect()
+                }
             }
-            val code = conn.responseCode
-            connected = code in 200..299 || code == 207
             if (connected) {
                 // F-C3-02: Cache auth header and drop credential reference
                 cachedAuthHeader = authHeader()
@@ -64,9 +74,7 @@ class WebDavProvider(private var connection: CloudConnection) : CloudProvider {
             connected
         } catch (e: Exception) {
             connected = false
-            false
-        } finally {
-            conn?.disconnect()
+            throw e
         }
     }
 
@@ -76,118 +84,130 @@ class WebDavProvider(private var connection: CloudConnection) : CloudProvider {
     }
 
     override suspend fun listFiles(remotePath: String): List<CloudFile> = withContext(Dispatchers.IO) {
-        var conn: HttpURLConnection? = null
         try {
-            val path = remotePath.trimEnd('/') + "/"
-            val url = URL("$baseUrl$path")
-            conn = (url.openConnection() as HttpURLConnection).apply {
-                requestMethod = "PROPFIND"
-                setRequestProperty("Authorization", authHeader())
-                setRequestProperty("Depth", "1")
-                setRequestProperty("Content-Type", "application/xml; charset=utf-8")
-                connectTimeout = 15000
-                readTimeout = 15000
-                doOutput = true
-            }
-            conn.outputStream.use { out ->
-                out.write(PROPFIND_BODY.toByteArray(Charsets.UTF_8))
-            }
+            retryOnNetworkError {
+                var conn: HttpURLConnection? = null
+                try {
+                    val path = remotePath.trimEnd('/') + "/"
+                    val url = URL("$baseUrl$path")
+                    conn = (url.openConnection() as HttpURLConnection).apply {
+                        requestMethod = "PROPFIND"
+                        setRequestProperty("Authorization", authHeader())
+                        setRequestProperty("Depth", "1")
+                        setRequestProperty("Content-Type", "application/xml; charset=utf-8")
+                        connectTimeout = 15000
+                        readTimeout = 15000
+                        doOutput = true
+                    }
+                    conn.outputStream.use { out ->
+                        out.write(PROPFIND_BODY.toByteArray(Charsets.UTF_8))
+                    }
 
-            val code = conn.responseCode
-            if (code !in 200..299 && code != 207) {
-                return@withContext emptyList()
-            }
+                    val code = conn.responseCode
+                    if (code !in 200..299 && code != 207) {
+                        return@retryOnNetworkError emptyList()
+                    }
 
-            val responseBody = conn.inputStream.bufferedReader().readText()
-            parseMultiStatus(responseBody, path)
-                .sortedWith(compareBy<CloudFile> { !it.isDirectory }.thenBy { it.name.lowercase() })
+                    val responseBody = conn.inputStream.bufferedReader().readText()
+                    parseMultiStatus(responseBody, path)
+                        .sortedWith(compareBy<CloudFile> { !it.isDirectory }.thenBy { it.name.lowercase() })
+                } finally {
+                    conn?.disconnect()
+                }
+            }
         } catch (e: Exception) {
             emptyList()
-        } finally {
-            conn?.disconnect()
         }
     }
 
     override suspend fun download(remotePath: String, output: OutputStream) = withContext(Dispatchers.IO) {
-        var conn: HttpURLConnection? = null
-        try {
-            val url = URL("$baseUrl$remotePath")
-            conn = (url.openConnection() as HttpURLConnection).apply {
-                requestMethod = "GET"
-                setRequestProperty("Authorization", authHeader())
-                connectTimeout = 15000
-                readTimeout = 30000
+        retryOnNetworkError {
+            var conn: HttpURLConnection? = null
+            try {
+                val url = URL("$baseUrl$remotePath")
+                conn = (url.openConnection() as HttpURLConnection).apply {
+                    requestMethod = "GET"
+                    setRequestProperty("Authorization", authHeader())
+                    connectTimeout = 15000
+                    readTimeout = 30000
+                }
+                val code = conn.responseCode
+                if (code !in 200..299) {
+                    throw java.io.IOException("Download failed with HTTP $code")
+                }
+                conn.inputStream.use { it.copyTo(output) }
+            } finally {
+                conn?.disconnect()
             }
-            val code = conn.responseCode
-            if (code !in 200..299) {
-                throw java.io.IOException("Download failed with HTTP $code")
-            }
-            conn.inputStream.use { it.copyTo(output) }
-        } finally {
-            conn?.disconnect()
         }
         Unit
     }
 
     override suspend fun upload(remotePath: String, input: InputStream, fileName: String, mimeType: String) =
         withContext(Dispatchers.IO) {
-            var conn: HttpURLConnection? = null
-            try {
-                val path = remotePath.trimEnd('/') + "/$fileName"
-                val url = URL("$baseUrl$path")
-                conn = (url.openConnection() as HttpURLConnection).apply {
-                    requestMethod = "PUT"
-                    setRequestProperty("Authorization", authHeader())
-                    setRequestProperty("Content-Type", mimeType)
-                    connectTimeout = 15000
-                    readTimeout = 30000
-                    doOutput = true
+            retryOnNetworkError {
+                var conn: HttpURLConnection? = null
+                try {
+                    val path = remotePath.trimEnd('/') + "/$fileName"
+                    val url = URL("$baseUrl$path")
+                    conn = (url.openConnection() as HttpURLConnection).apply {
+                        requestMethod = "PUT"
+                        setRequestProperty("Authorization", authHeader())
+                        setRequestProperty("Content-Type", mimeType)
+                        connectTimeout = 15000
+                        readTimeout = 30000
+                        doOutput = true
+                    }
+                    conn.outputStream.use { out -> input.copyTo(out) }
+                    val code = conn.responseCode
+                    if (code !in 200..299) {
+                        throw java.io.IOException("Upload failed with HTTP $code")
+                    }
+                } finally {
+                    conn?.disconnect()
                 }
-                conn.outputStream.use { out -> input.copyTo(out) }
-                val code = conn.responseCode
-                if (code !in 200..299) {
-                    throw java.io.IOException("Upload failed with HTTP $code")
-                }
-            } finally {
-                conn?.disconnect()
             }
             Unit
         }
 
     override suspend fun delete(remotePath: String) = withContext(Dispatchers.IO) {
-        var conn: HttpURLConnection? = null
-        try {
-            val url = URL("$baseUrl$remotePath")
-            conn = (url.openConnection() as HttpURLConnection).apply {
-                requestMethod = "DELETE"
-                setRequestProperty("Authorization", authHeader())
-                connectTimeout = 15000
+        retryOnNetworkError {
+            var conn: HttpURLConnection? = null
+            try {
+                val url = URL("$baseUrl$remotePath")
+                conn = (url.openConnection() as HttpURLConnection).apply {
+                    requestMethod = "DELETE"
+                    setRequestProperty("Authorization", authHeader())
+                    connectTimeout = 15000
+                }
+                val code = conn.responseCode
+                if (code !in 200..299) {
+                    throw java.io.IOException("Delete failed with HTTP $code")
+                }
+            } finally {
+                conn?.disconnect()
             }
-            val code = conn.responseCode
-            if (code !in 200..299) {
-                throw java.io.IOException("Delete failed with HTTP $code")
-            }
-        } finally {
-            conn?.disconnect()
         }
         Unit
     }
 
     override suspend fun createDirectory(remotePath: String) = withContext(Dispatchers.IO) {
-        var conn: HttpURLConnection? = null
-        try {
-            val url = URL("$baseUrl$remotePath")
-            conn = (url.openConnection() as HttpURLConnection).apply {
-                requestMethod = "MKCOL"
-                setRequestProperty("Authorization", authHeader())
-                connectTimeout = 15000
+        retryOnNetworkError {
+            var conn: HttpURLConnection? = null
+            try {
+                val url = URL("$baseUrl$remotePath")
+                conn = (url.openConnection() as HttpURLConnection).apply {
+                    requestMethod = "MKCOL"
+                    setRequestProperty("Authorization", authHeader())
+                    connectTimeout = 15000
+                }
+                val code = conn.responseCode
+                if (code !in 200..299) {
+                    throw java.io.IOException("Create directory failed with HTTP $code")
+                }
+            } finally {
+                conn?.disconnect()
             }
-            val code = conn.responseCode
-            if (code !in 200..299) {
-                throw java.io.IOException("Create directory failed with HTTP $code")
-            }
-        } finally {
-            conn?.disconnect()
         }
         Unit
     }

@@ -32,7 +32,11 @@ object CloudSetupDialog {
         val typeLabel = TextView(context).apply { text = context.getString(R.string.cloud_provider_type) }
         container.addView(typeLabel)
 
-        val types = listOf("SFTP", "WebDAV", "Google Drive")
+        val types = listOf(
+            context.getString(R.string.cloud_type_sftp),
+            context.getString(R.string.cloud_type_webdav),
+            context.getString(R.string.cloud_type_google_drive)
+        )
         val typeSpinner = Spinner(context).apply {
             adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, types)
             layoutParams = ViewGroup.LayoutParams(
@@ -85,7 +89,7 @@ object CloudSetupDialog {
             .show()
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-            val displayName = nameInput.text.toString().trim().ifEmpty { "My Server" }
+            val displayName = nameInput.text.toString().trim().ifEmpty { context.getString(R.string.cloud_default_server_name) }
             val host = hostInput.text.toString().trim()
             val port = portInput.text.toString().toIntOrNull() ?: -1
             val username = userInput.text.toString().trim()
@@ -95,15 +99,15 @@ object CloudSetupDialog {
             // P4-B3-03: Validate inputs
             var valid = true
             if (selectedType != 2 && host.isBlank()) {
-                hostInput.error = "Host is required"
+                hostInput.error = context.getString(R.string.cloud_error_host_required)
                 valid = false
             }
             if (port !in 1..65535) {
-                portInput.error = "Port must be 1-65535"
+                portInput.error = context.getString(R.string.cloud_error_port_range)
                 valid = false
             }
             if (selectedType in 0..1 && username.isBlank()) {
-                userInput.error = "Username is required"
+                userInput.error = context.getString(R.string.cloud_error_username_required)
                 valid = false
             }
             if (!valid) return@setOnClickListener

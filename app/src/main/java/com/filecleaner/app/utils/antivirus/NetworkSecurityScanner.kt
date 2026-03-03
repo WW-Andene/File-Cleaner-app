@@ -290,7 +290,7 @@ object NetworkSecurityScanner {
 
         // Check if ADB over TCP is active (port 5555)
         try {
-            val prop = Runtime.getRuntime().exec(arrayOf("getprop", "service.adb.tcp.port"))
+            val prop = ProcessBuilder("getprop", "service.adb.tcp.port").redirectErrorStream(true).start()
             val output = prop.inputStream.bufferedReader().readText().trim()
             prop.waitFor()
             if (output.isNotEmpty() && output != "-1" && output != "0") {

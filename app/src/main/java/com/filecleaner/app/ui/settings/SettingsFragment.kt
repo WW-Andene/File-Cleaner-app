@@ -5,11 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import com.filecleaner.app.R
 import com.filecleaner.app.data.UserPreferences
+import com.filecleaner.app.data.cloud.CloudConnectionStore
 import com.filecleaner.app.databinding.FragmentSettingsBinding
+import com.google.android.material.snackbar.Snackbar
+import java.io.File
 
 /**
  * Settings screen (P14) — configurable thresholds and display preferences.
@@ -102,6 +106,32 @@ class SettingsFragment : Fragment() {
 
         // Note: Settings take effect on next scan
         binding.tvSettingsNote.text = getString(R.string.settings_rescan_note)
+
+        // Clear All Data (P3 Security: GDPR data erasure)
+        val clearButton = com.google.android.material.button.MaterialButton(requireContext()).apply {
+            text = getString(R.string.settings_clear_data)
+            setBackgroundColor(android.graphics.Color.parseColor("#B00020"))
+            setTextColor(android.graphics.Color.WHITE)
+            val lp = android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            val margin = resources.getDimensionPixelSize(R.dimen.spacing_lg)
+            lp.setMargins(margin, margin * 2, margin, margin)
+            layoutParams = lp
+        }
+        clearButton.setOnClickListener {
+            AlertDialog.Builder(requireContext())
+                .setTitle(getString(R.string.settings_clear_data_confirm_title))
+                .setMessage(getString(R.string.settings_clear_data_confirm_message))
+                .setPositiveButton(getString(R.string.delete)) { _, _ ->
+                    clearAllData()
+                }
+                .setNegativeButton(getString(R.string.cancel), null)
+                .show()
+        }
+        // Add to the root scrollable container
+        (binding.root as? android.view.ViewGroup)?.addView(clearButton)
     }
 
     private fun updateLargeFileLabel() {
@@ -114,6 +144,35 @@ class SettingsFragment : Fragment() {
 
     private fun updateUndoLabel() {
         binding.tvUndoValue.text = getString(R.string.settings_undo_value, UserPreferences.undoTimeoutMs / 1000)
+    }
+
+    private fun clearAllData() {
+        val ctx = requireContext()
+        // Clear scan cache
+        File(ctx.filesDir, "scan_cache.json").delete()
+        File(ctx.filesDir, "scan_cache.json.tmp").delete()
+        // Clear SFTP known hosts
+        File(ctx.filesDir, "sftp_known_hosts").delete()
+        // Clear cloud connections
+        CloudConnectionStore.init(ctx)
+        for (conn in CloudConnectionStore.getConnections()) {
+            CloudConnectionStore.removeConnection(conn.id)
+        }
+        // Clear scan history
+        ctx.getSharedPreferences("av_scan_history", android.content.Context.MODE_PRIVATE)
+            .edit().clear().apply()
+        // Reset user preferences
+        ctx.getSharedPreferences("raccoon_prefs", android.content.Context.MODE_PRIVATE)
+            .edit().clear().apply()
+        // Clear encrypted cloud prefs
+        try {
+            ctx.getSharedPreferences("cloud_connections", android.content.Context.MODE_PRIVATE)
+                .edit().clear().apply()
+            ctx.getSharedPreferences("cloud_connections_plain", android.content.Context.MODE_PRIVATE)
+                .edit().clear().apply()
+        } catch (_: Exception) {}
+
+        Snackbar.make(binding.root, getString(R.string.settings_clear_data_done), Snackbar.LENGTH_LONG).show()
     }
 
     // B5: Remove listeners to prevent callbacks on destroyed binding

@@ -212,7 +212,7 @@ object AppIntegrityScanner {
 
         // Check for rw mount on /system
         try {
-            val process = Runtime.getRuntime().exec(arrayOf("mount"))
+            val process = ProcessBuilder("mount").redirectErrorStream(true).start()
             val reader = BufferedReader(InputStreamReader(process.inputStream))
             reader.useLines { lines ->
                 lines.forEach { line ->
@@ -236,7 +236,7 @@ object AppIntegrityScanner {
 
         // Check for Magisk hide props
         try {
-            val process = Runtime.getRuntime().exec(arrayOf("getprop", "ro.boot.vbmeta.device_state"))
+            val process = ProcessBuilder("getprop", "ro.boot.vbmeta.device_state").redirectErrorStream(true).start()
             val output = process.inputStream.bufferedReader().readText().trim()
             process.waitFor()
             if (output == "unlocked") {
@@ -415,7 +415,7 @@ object AppIntegrityScanner {
                 "ro.product.device" to "generic"
             )
             for ((prop, indicator) in props) {
-                val process = Runtime.getRuntime().exec(arrayOf("getprop", prop))
+                val process = ProcessBuilder("getprop", prop).redirectErrorStream(true).start()
                 val value = process.inputStream.bufferedReader().readText().trim()
                 process.waitFor()
                 if (value.contains(indicator, ignoreCase = true) && !isEmulator) {

@@ -3,6 +3,8 @@ package com.filecleaner.app.data.cloud
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
+import com.jcraft.jsch.UserInfo
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.InputStream
@@ -13,7 +15,7 @@ import java.util.Vector
  * SFTP cloud provider using JSch library.
  * Connects to remote servers via SSH/SFTP protocol.
  */
-class SftpProvider(private val connection: CloudConnection) : CloudProvider {
+class SftpProvider(private val connection: CloudConnection, private val context: android.content.Context) : CloudProvider {
 
     override val displayName: String = connection.displayName
     override val type: ProviderType = ProviderType.SFTP
@@ -42,7 +44,19 @@ class SftpProvider(private val connection: CloudConnection) : CloudProvider {
                 if (connection.authToken.isNotEmpty() && !connection.authToken.startsWith("/")) {
                     s.setPassword(connection.authToken)
                 }
-                s.setConfig("StrictHostKeyChecking", "no")
+                // TOFU (Trust On First Use): persist host keys, reject changed keys
+                val knownHostsFile = File(context.filesDir, "sftp_known_hosts")
+                if (!knownHostsFile.exists()) knownHostsFile.createNewFile()
+                jsch.setKnownHosts(knownHostsFile.absolutePath)
+                s.setConfig("StrictHostKeyChecking", "ask")
+                s.userInfo = object : UserInfo {
+                    override fun getPassphrase(): String? = null
+                    override fun getPassword(): String? = null
+                    override fun promptPassword(message: String?): Boolean = false
+                    override fun promptPassphrase(message: String?): Boolean = false
+                    override fun promptYesNo(message: String?): Boolean = true
+                    override fun showMessage(message: String?) {}
+                }
                 s.connect(15000)
 
                 val ch = s.openChannel("sftp") as ChannelSftp

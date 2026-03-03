@@ -25,7 +25,17 @@ class WebDavProvider(private val connection: CloudConnection) : CloudProvider {
 
     // Base URL must end without trailing slash
     private val baseUrl: String
-        get() = connection.host.trimEnd('/')
+        get() {
+            val raw = connection.host.trimEnd('/')
+            // Enforce HTTPS for Basic Auth credential safety
+            return if (raw.startsWith("http://", ignoreCase = true)) {
+                "https://" + raw.removePrefix("http://").removePrefix("HTTP://")
+            } else if (!raw.startsWith("https://", ignoreCase = true)) {
+                "https://$raw"
+            } else {
+                raw
+            }
+        }
 
     override val isConnected: Boolean get() = connected
 

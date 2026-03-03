@@ -20,6 +20,9 @@ import com.filecleaner.app.data.FileItem
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.FutureTask
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 /**
  * Enhanced batch rename dialog (P5).
@@ -144,7 +147,7 @@ object BatchRenameDialog {
                     val nameNoExt = file.name.substringBeforeLast('.', file.name)
                     val ext = file.extension
                     val newName = if (regexCheck.isChecked) {
-                        try { nameNoExt.replace(Regex(find), replace) } catch (_: Exception) { nameNoExt }
+                        safeRegexReplace(nameNoExt, find, replace) ?: nameNoExt
                     } else {
                         nameNoExt.replace(find, replace)
                     }
@@ -248,6 +251,21 @@ object BatchRenameDialog {
             }
             .setNegativeButton(context.getString(R.string.cancel), null)
             .show()
+    }
+
+    /** Apply regex with a timeout to prevent ReDoS from catastrophic backtracking */
+    private fun safeRegexReplace(input: String, pattern: String, replacement: String): String? {
+        return try {
+            val task = FutureTask { input.replace(Regex(pattern), replacement) }
+            val thread = Thread(task)
+            thread.isDaemon = true
+            thread.start()
+            task.get(500, TimeUnit.MILLISECONDS)
+        } catch (_: TimeoutException) {
+            null
+        } catch (_: Exception) {
+            null
+        }
     }
 
     private fun applyPattern(file: FileItem, pattern: String, num: Int, padWidth: Int): String {

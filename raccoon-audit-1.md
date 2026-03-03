@@ -964,37 +964,37 @@ Persistence paths:
 
 ## P3 SUMMARY TABLE
 
-| ID | Severity | Category | Finding |
-|---|---|---|---|
-| F-C1-01 | CRITICAL | C1/C3 | Cloud credentials stored plaintext in SharedPreferences |
-| F-C1-02 | CRITICAL | C1 | SFTP host key checking disabled (`StrictHostKeyChecking=no`) |
-| F-C4-01 | HIGH | C4 | JSch 0.1.55 is abandoned, has CVE-2023-48795 (Terrapin) |
-| F-C1-03 | HIGH | C1 | WebDAV Basic Auth with no HTTPS enforcement |
-| F-C6-01 | HIGH | C6 | No privacy policy or data disclosure mechanism |
-| F-C1-04 | MEDIUM | C1 | No TLS certificate pinning, no network_security_config.xml |
-| F-C2-01 | MEDIUM | C2 | Regex injection (ReDoS) in batch rename Find & Replace |
-| F-C2-05 | MEDIUM | C2 | Cloud download filename not validated for path traversal |
-| F-C3-02 | MEDIUM | C3 | Credentials kept as immutable Strings in heap (no purging) |
-| F-C5-01 | MEDIUM | C5 | Full file system inventory stored persistently |
-| F-C5-02 | MEDIUM | C5 | Antivirus enumerates all installed packages with permissions |
-| F-C6-02 | MEDIUM | C6 | MANAGE_EXTERNAL_STORAGE requires Play Store policy justification |
-| F-C6-03 | MEDIUM | C6 | No bulk data erasure mechanism (GDPR right to erasure) |
-| F-C6-06 | MEDIUM | C6 | No network_security_config.xml defined |
-| F-C6-07 | MEDIUM | C6 | Shell command execution in antivirus (may trigger Play flags) |
-| F-C2-02 | LOW | C2 | ZIP extraction path traversal mitigations — well implemented |
-| F-C2-03 | LOW | C2 | Path confinement via canonical path validation — well implemented |
-| F-C3-03 | LOW | C3 | No hardcoded API keys or secrets — positive |
-| F-C3-04 | LOW | C5 | Scan cache reveals file inventory if sandbox compromised |
-| F-C4-02 | LOW | C4 | AndroidX/Gradle dependencies mildly outdated |
-| F-C4-03 | LOW | C4 | Only trusted repositories (google, mavenCentral) — positive |
-| F-C5-03 | LOW | C5 | No telemetry/analytics — strong privacy posture |
-| F-C5-04 | LOW | C5 | Cloud upload is user-initiated, no hidden data transmission |
-| F-C6-04 | LOW | C6 | `allowBackup="false"` correctly set — positive |
-| F-C6-05 | LOW | C6 | Proguard keeps data class internals, easing reverse engineering |
-| F-C2-04 | INFO | C2 | No SQL database — SQL injection not applicable |
-| F-C5-05 | INFO | C5 | No third-party data sharing |
+| ID | Severity | Category | Finding | Status |
+|---|---|---|---|---|
+| F-C1-01 | CRITICAL | C1/C3 | Cloud credentials stored plaintext in SharedPreferences | FIXED (P2/P4: EncryptedSharedPreferences) |
+| F-C1-02 | CRITICAL | C1 | SFTP host key checking disabled (`StrictHostKeyChecking=no`) | FIXED (P3: TOFU with known_hosts) |
+| F-C4-01 | HIGH | C4 | JSch 0.1.55 is abandoned, has CVE-2023-48795 (Terrapin) | FIXED (P3: migrated to mwiede/jsch 0.2.21) |
+| F-C1-03 | HIGH | C1 | WebDAV Basic Auth with no HTTPS enforcement | FIXED (P3: HTTPS enforced in baseUrl) |
+| F-C6-01 | HIGH | C6 | No privacy policy or data disclosure mechanism | OPEN (requires legal/product decision) |
+| F-C1-04 | MEDIUM | C1 | No TLS certificate pinning, no network_security_config.xml | FIXED (P3: network_security_config.xml added) |
+| F-C2-01 | MEDIUM | C2 | Regex injection (ReDoS) in batch rename Find & Replace | FIXED (P3: timeout-guarded regex execution) |
+| F-C2-05 | MEDIUM | C2 | Cloud download filename not validated for path traversal | FIXED (P3: filename sanitization + canonical path check) |
+| F-C3-02 | MEDIUM | C3 | Credentials kept as immutable Strings in heap (no purging) | OPEN (Kotlin String immutability limitation) |
+| F-C5-01 | MEDIUM | C5 | Full file system inventory stored persistently | OPEN (by design for scan cache) |
+| F-C5-02 | MEDIUM | C5 | Antivirus enumerates all installed packages with permissions | OPEN (required for security scanning) |
+| F-C6-02 | MEDIUM | C6 | MANAGE_EXTERNAL_STORAGE requires Play Store policy justification | OPEN (requires Play Store submission) |
+| F-C6-03 | MEDIUM | C6 | No bulk data erasure mechanism (GDPR right to erasure) | FIXED (P3: Clear All Data in Settings) |
+| F-C6-06 | MEDIUM | C6 | No network_security_config.xml defined | FIXED (P3: config added, cleartext blocked) |
+| F-C6-07 | MEDIUM | C6 | Shell command execution in antivirus (may trigger Play flags) | FIXED (P3: migrated to ProcessBuilder) |
+| F-C2-02 | LOW | C2 | ZIP extraction path traversal mitigations — well implemented | OK |
+| F-C2-03 | LOW | C2 | Path confinement via canonical path validation — well implemented | OK |
+| F-C3-03 | LOW | C3 | No hardcoded API keys or secrets — positive | OK |
+| F-C3-04 | LOW | C5 | Scan cache reveals file inventory if sandbox compromised | OPEN |
+| F-C4-02 | LOW | C4 | AndroidX/Gradle dependencies mildly outdated | OPEN |
+| F-C4-03 | LOW | C4 | Only trusted repositories (google, mavenCentral) — positive | OK |
+| F-C5-03 | LOW | C5 | No telemetry/analytics — strong privacy posture | OK |
+| F-C5-04 | LOW | C5 | Cloud upload is user-initiated, no hidden data transmission | OK |
+| F-C6-04 | LOW | C6 | `allowBackup="false"` correctly set — positive | OK |
+| F-C6-05 | LOW | C6 | Proguard keeps data class internals, easing reverse engineering | FIXED (P3: scoped to specific classes) |
+| F-C2-04 | INFO | C2 | No SQL database — SQL injection not applicable | OK |
+| F-C5-05 | INFO | C5 | No third-party data sharing | OK |
 
-**CRITICAL: 2** | **HIGH: 3** | **MEDIUM: 11** | **LOW: 10** | **INFO: 2**
+**CRITICAL: 2 (2 FIXED)** | **HIGH: 3 (2 FIXED, 1 OPEN)** | **MEDIUM: 11 (7 FIXED, 4 OPEN)** | **LOW: 10 (1 FIXED)** | **INFO: 2**
 
 
 ---

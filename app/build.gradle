@@ -69,8 +69,8 @@ dependencies {
     // AndroidX Security – EncryptedSharedPreferences
     implementation 'androidx.security:security-crypto:1.0.0'
 
-    // SFTP (SSH) for cloud/network file browsing
-    implementation 'com.jcraft:jsch:0.1.55'
+    // SFTP (SSH) – maintained JSch fork with Terrapin (CVE-2023-48795) fix
+    implementation 'com.github.mwiede:jsch:0.2.21'
 
     // Testing
     testImplementation 'junit:junit:4.13.2'

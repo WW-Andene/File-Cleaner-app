@@ -180,7 +180,7 @@ class CloudBrowserFragment : Fragment() {
 
     private fun createProvider(connection: CloudConnection, ctx: android.content.Context): CloudProvider {
         return when (connection.type) {
-            ProviderType.SFTP -> SftpProvider(connection)
+            ProviderType.SFTP -> SftpProvider(connection, ctx)
             ProviderType.WEBDAV -> WebDavProvider(connection)
             ProviderType.GOOGLE_DRIVE -> GoogleDriveProvider(connection, ctx)
         }
@@ -285,7 +285,20 @@ class CloudBrowserFragment : Fragment() {
             for (item in selected) {
                 if (item.cloudFile.isDirectory) continue
                 try {
-                    val targetFile = File(downloadDir, item.cloudFile.name)
+                    // Sanitize remote filename to prevent path traversal
+                    val safeName = item.cloudFile.name
+                        .replace("..", "_")
+                        .replace("/", "_")
+                        .replace("\\", "_")
+                        .replace("\u0000", "")
+                        .trim()
+                        .ifBlank { "download_${System.currentTimeMillis()}" }
+                    val targetFile = File(downloadDir, safeName)
+                    // Verify the resolved path is still within downloadDir
+                    if (!targetFile.canonicalPath.startsWith(File(downloadDir).canonicalPath)) {
+                        failed++
+                        continue
+                    }
                     withContext(Dispatchers.IO) {
                         targetFile.outputStream().use { out ->
                             provider.download(item.cloudFile.remotePath, out)

@@ -540,4 +540,11 @@
     <string name="av_history">Scan History</string>
     <string name="av_no_history">No scan history yet.</string>
     <string name="av_clear_history">Clear History</string>
+
+    <!-- Clear All Data (P3 Security) -->
+    <string name="settings_clear_data">Clear All Data</string>
+    <string name="settings_clear_data_desc">Remove scan cache, cloud connections, preferences, and scan history</string>
+    <string name="settings_clear_data_confirm_title">Clear All Data?</string>
+    <string name="settings_clear_data_confirm_message">This will delete all scan data, cloud connection credentials, scan history, and reset preferences to defaults.\n\nThis cannot be undone.</string>
+    <string name="settings_clear_data_done">All app data cleared</string>
 </resources>

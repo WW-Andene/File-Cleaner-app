@@ -196,6 +196,11 @@
     <string name="ctx_properties">Properties</string>
     <string name="ctx_preview">Preview</string>
     <string name="preview_error">Cannot preview: %s</string>
+    <string name="viewer_title">File Viewer</string>
+    <string name="viewer_file_info">%1$s  \u2022  %2$s</string>
+    <string name="viewer_pdf_page">Page %1$d of %2$d</string>
+    <string name="viewer_unsupported">No built-in viewer for .%s files</string>
+    <string name="viewer_open_fullscreen">View fullscreen</string>
     <string name="ctx_star">Star</string>
     <string name="ctx_unstar">Unstar</string>
     <string name="ctx_protect">Exclude from cleanup</string>

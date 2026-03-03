@@ -2,23 +2,29 @@ package com.filecleaner.app.ui.common
 
 import android.content.Context
 import android.graphics.Typeface
+import android.os.Bundle
 import android.util.TypedValue
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.navigation.findNavController
 import com.bumptech.glide.Glide
 import com.filecleaner.app.R
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
+import com.filecleaner.app.ui.viewer.FileViewerFragment
 import com.filecleaner.app.utils.FileOpener
 
 /**
  * Quick preview dialog for files (P8).
  * - Images: full-size preview via Glide
  * - Text files: first 10KB in monospace
+ * - PDF: opens fullscreen viewer directly
  * - Others: fallback to external open
+ *
+ * All previews include a "View fullscreen" button to open FileViewerFragment.
  */
 object FilePreviewDialog {
 
@@ -33,12 +39,21 @@ object FilePreviewDialog {
 
     fun show(context: Context, item: FileItem) {
         when {
+            item.extension == "pdf" -> navigateToViewer(context, item)
             item.category == FileCategory.IMAGE -> showImagePreview(context, item)
             item.extension in TEXT_EXTENSIONS -> showTextPreview(context, item)
-            else -> {
-                // Fallback: open with external app
-                FileOpener.open(context, item.file)
-            }
+            else -> FileOpener.open(context, item.file)
+        }
+    }
+
+    private fun navigateToViewer(context: Context, item: FileItem) {
+        try {
+            val activity = context as? android.app.Activity ?: return
+            val navController = activity.findNavController(R.id.nav_host_fragment)
+            val args = Bundle().apply { putString(FileViewerFragment.ARG_FILE_PATH, item.path) }
+            navController.navigate(R.id.fileViewerFragment, args)
+        } catch (_: Exception) {
+            FileOpener.open(context, item.file)
         }
     }
 
@@ -60,7 +75,10 @@ object FilePreviewDialog {
             .setTitle(item.name)
             .setView(imageView)
             .setPositiveButton(android.R.string.ok, null)
-            .setNeutralButton(context.getString(R.string.ctx_open)) { _, _ ->
+            .setNeutralButton(context.getString(R.string.viewer_open_fullscreen)) { _, _ ->
+                navigateToViewer(context, item)
+            }
+            .setNegativeButton(context.getString(R.string.ctx_open)) { _, _ ->
                 FileOpener.open(context, item.file)
             }
             .show()
@@ -71,7 +89,7 @@ object FilePreviewDialog {
             val bytes = item.file.inputStream().use { it.readNBytes(MAX_TEXT_BYTES) }
             val text = String(bytes, Charsets.UTF_8)
             if (item.file.length() > MAX_TEXT_BYTES) {
-                text + "\n\n… [truncated at 10 KB]"
+                text + "\n\n\u2026 [truncated at 10 KB]"
             } else {
                 text
             }
@@ -100,7 +118,10 @@ object FilePreviewDialog {
             .setTitle(item.name)
             .setView(scrollView)
             .setPositiveButton(android.R.string.ok, null)
-            .setNeutralButton(context.getString(R.string.ctx_open)) { _, _ ->
+            .setNeutralButton(context.getString(R.string.viewer_open_fullscreen)) { _, _ ->
+                navigateToViewer(context, item)
+            }
+            .setNegativeButton(context.getString(R.string.ctx_open)) { _, _ ->
                 FileOpener.open(context, item.file)
             }
             .show()

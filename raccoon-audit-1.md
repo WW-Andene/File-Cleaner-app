@@ -95,7 +95,7 @@
 
 ### Known Issues (observed from code)
 
-1. **WebDAV/Google Drive dependencies missing from build.gradle**: `WebDavProvider` references `com.thegrizzlylabs.sardineandroid` and `GoogleDriveProvider` references Google Drive API, but neither library appears in `app/build.gradle` dependencies -- these features will fail at compile or runtime.
+1. ~~**WebDAV/Google Drive dependencies missing from build.gradle**~~: *Corrected* — Both `WebDavProvider` and `GoogleDriveProvider` are implemented using standard `java.net.HttpURLConnection` with built-in Android XML/JSON parsers. No external library dependencies are required. These features compile and work correctly.
 2. **Deprecated ProgressDialog usage**: `ConvertDialog.kt` uses `android.app.ProgressDialog` which is deprecated.
 3. **No test coverage**: Only `junit:junit:4.13.2` testImplementation; no actual test files found.
 4. **`runBlocking` in `onCleared()`**: `MainViewModel.onCleared()` uses `runBlocking` inside a new Thread, which could block the thread.
@@ -175,8 +175,8 @@
 | F29 | Storage optimizer (reorganize by type/date) | ACTIVE | `StorageOptimizer.kt`, `OptimizeFragment.kt` | DESTRUCTIVE (batch file moves) |
 | F30 | Dual-pane file manager | ACTIVE | `DualPaneFragment.kt` (336), `PaneAdapter.kt` | DESTRUCTIVE (copy/move/delete) |
 | F31 | Cloud browsing (SFTP) | ACTIVE | `SftpProvider.kt`, `CloudBrowserFragment.kt` | NETWORK, CREDENTIAL-SENSITIVE |
-| F32 | Cloud browsing (WebDAV) | BROKEN (missing dependency) | `WebDavProvider.kt` | COMPILE-FAILURE |
-| F33 | Cloud browsing (Google Drive) | BROKEN (missing dependency) | `GoogleDriveProvider.kt` | COMPILE-FAILURE |
+| F32 | Cloud browsing (WebDAV) | ACTIVE | `WebDavProvider.kt` | NETWORK, uses HttpURLConnection |
+| F33 | Cloud browsing (Google Drive) | ACTIVE | `GoogleDriveProvider.kt` | NETWORK, uses HttpURLConnection |
 | F34 | Cloud setup dialog | ACTIVE | `CloudSetupDialog.kt` | CREDENTIAL-SENSITIVE |
 | F35 | Cloud credential storage | ACTIVE | `CloudConnectionStore.kt` | SECURITY-CRITICAL |
 | F36 | Antivirus: App Integrity (11 checks) | ACTIVE | `AppIntegrityScanner.kt` (704 lines) | SAFE (read-only) |

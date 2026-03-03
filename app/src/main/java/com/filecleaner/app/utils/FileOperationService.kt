@@ -50,8 +50,16 @@ class FileOperationService(private val app: Application, private val storagePath
         }
         if (!src.exists()) return OpResult(false, str(R.string.op_source_not_found))
         if (dst.exists()) return OpResult(false, str(R.string.op_file_exists_in_target))
-        return if (src.renameTo(dst)) OpResult(true, str(R.string.op_moved, src.name))
-        else OpResult(false, str(R.string.op_move_failed))
+        if (src.renameTo(dst)) return OpResult(true, str(R.string.op_moved, src.name))
+        // Fallback: copy + delete (handles cross-filesystem moves)
+        return try {
+            src.copyTo(dst, overwrite = false)
+            src.delete()
+            OpResult(true, str(R.string.op_moved, src.name))
+        } catch (e: Exception) {
+            dst.delete() // Clean up partial copy
+            OpResult(false, str(R.string.op_move_failed))
+        }
     }
 
     /** Copy a file to a target directory. Must be called on IO thread. */
@@ -82,8 +90,16 @@ class FileOperationService(private val app: Application, private val storagePath
             ?: return OpResult(false, str(R.string.op_no_parent_dir))
         val dst = File(parentDir, newName)
         if (dst.exists()) return OpResult(false, str(R.string.op_name_exists))
-        return if (src.renameTo(dst)) OpResult(true, str(R.string.op_renamed, newName))
-        else OpResult(false, str(R.string.op_rename_failed))
+        if (src.renameTo(dst)) return OpResult(true, str(R.string.op_renamed, newName))
+        // Fallback: copy + delete (handles cross-filesystem renames)
+        return try {
+            src.copyTo(dst, overwrite = false)
+            src.delete()
+            OpResult(true, str(R.string.op_renamed, newName))
+        } catch (e: Exception) {
+            dst.delete() // Clean up partial copy
+            OpResult(false, str(R.string.op_rename_failed))
+        }
     }
 
     /** Compress a file into a ZIP. Must be called on IO thread. */

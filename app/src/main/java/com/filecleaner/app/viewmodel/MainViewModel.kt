@@ -23,7 +23,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -208,19 +207,18 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val files = latestFiles
         val tree = latestTree
 
-        // Run I/O on a background thread to avoid blocking Main Thread (ANR risk).
-        // If the process dies before completion, the init{} block cleans orphaned
-        // trash on next launch, so no data is permanently lost.
-        Thread {
+        // Use a standalone coroutine instead of Thread + runBlocking.
+        // NonCancellable ensures completion even after scope cancellation.
+        kotlinx.coroutines.CoroutineScope(Dispatchers.IO + NonCancellable).launch {
             for ((_, trashPath) in trashSnapshot) {
                 File(trashPath).delete()
             }
             if (files.isNotEmpty() && tree != null) {
                 try {
-                    runBlocking { ScanCache.save(getApplication(), files, tree) }
+                    ScanCache.save(getApplication(), files, tree)
                 } catch (_: Exception) { }
             }
-        }.start()
+        }
     }
 
     fun startScan(minLargeFileMb: Int = try { UserPreferences.largeFileThresholdMb } catch (_: Exception) { 50 }) {
@@ -330,7 +328,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 for (item in safeToDelete) {
                     val src = File(item.path)
                     val dst = File(dir, "${System.nanoTime()}_${src.name}")
-                    if (src.renameTo(dst)) {
+                    if (safeMove(src, dst)) {
                         moved[item.path] = dst.absolutePath
                         freed += item.size
                     }
@@ -391,7 +389,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 for ((origPath, trashPath) in snapshot) {
                     val trashFile = File(trashPath)
                     val origFile = File(origPath)
-                    if (trashFile.renameTo(origFile)) {
+                    if (safeMove(trashFile, origFile)) {
                         items.add(FileScanner.fileToItem(origFile))
                     }
                 }
@@ -434,6 +432,20 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             File(trashPath).delete()
         }
         pendingTrash.clear()
+    }
+
+    /** Move file via rename; falls back to copy+delete across filesystem boundaries. */
+    private fun safeMove(src: File, dst: File): Boolean {
+        if (src.renameTo(dst)) return true
+        // Fallback: copy + delete (handles cross-filesystem moves)
+        return try {
+            src.copyTo(dst, overwrite = false)
+            src.delete()
+            true
+        } catch (_: Exception) {
+            dst.delete() // Clean up partial copy
+            false
+        }
     }
 
     // ── Clipboard for cut/copy/paste ──
@@ -516,7 +528,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                         failed++
                         continue
                     }
-                    if (src.renameTo(dst)) success++ else failed++
+                    if (safeMove(src, dst)) success++ else failed++
                 }
                 success to failed
             }

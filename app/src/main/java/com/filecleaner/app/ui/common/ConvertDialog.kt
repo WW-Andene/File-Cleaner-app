@@ -1,6 +1,6 @@
 package com.filecleaner.app.ui.common
 
-import android.app.ProgressDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import android.content.Context
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
@@ -47,18 +47,29 @@ object ConvertDialog {
             .setTitle(context.getString(R.string.convert_title))
             .setAdapter(adapter) { _, which ->
                 // Run conversion on background thread to avoid ANR
-                @Suppress("DEPRECATION")
-                val progress = ProgressDialog(context).apply {
-                    setMessage(context.getString(R.string.convert_progress))
+                val progressBar = android.widget.ProgressBar(context).apply {
                     isIndeterminate = true
-                    setCancelable(false)
-                    show()
                 }
+                val container = android.widget.LinearLayout(context).apply {
+                    orientation = android.widget.LinearLayout.VERTICAL
+                    val dp16 = (16 * context.resources.displayMetrics.density).toInt()
+                    val dp24 = (24 * context.resources.displayMetrics.density).toInt()
+                    setPadding(dp24, dp16, dp24, dp16)
+                    addView(android.widget.TextView(context).apply {
+                        text = context.getString(R.string.convert_progress)
+                        setPadding(0, 0, 0, dp16)
+                    })
+                    addView(progressBar)
+                }
+                val progressDialog = MaterialAlertDialogBuilder(context)
+                    .setView(container)
+                    .setCancelable(false)
+                    .show()
                 CoroutineScope(Dispatchers.Main).launch {
                     val result = withContext(Dispatchers.IO) {
                         actions[which].action()
                     }
-                    progress.dismiss()
+                    progressDialog.dismiss()
                     onResult(result)
                 }
             }

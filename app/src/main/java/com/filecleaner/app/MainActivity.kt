@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         UserPreferences.init(applicationContext)
+        com.filecleaner.app.data.cloud.CloudConnectionStore.init(applicationContext)
 
         // Apply saved theme before inflating views
         AppCompatDelegate.setDefaultNightMode(

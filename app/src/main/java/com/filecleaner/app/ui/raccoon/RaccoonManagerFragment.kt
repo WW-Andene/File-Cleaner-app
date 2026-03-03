@@ -110,6 +110,11 @@ class RaccoonManagerFragment : Fragment() {
             findNavController().navigate(R.id.dualPaneFragment, null, navAnimOptions)
         }
 
+        // Cloud / Network — remote file browsing (no scan required)
+        binding.cardCloud.setOnClickListener {
+            findNavController().navigate(R.id.cloudBrowserFragment, null, navAnimOptions)
+        }
+
         // Janitor — deep clean (navigate to duplicates tab for comprehensive review)
         binding.cardJanitor.setOnClickListener {
             if (!hasScanData()) {

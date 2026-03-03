@@ -435,4 +435,32 @@
         <item quantity="one">%2$s %1$d file to %3$s?</item>
         <item quantity="other">%2$s %1$d files to %3$s?</item>
     </plurals>
+
+    <!-- Cloud / Network -->
+    <string name="cloud_title">Cloud &amp; Network</string>
+    <string name="cloud_desc">Browse and transfer files on Google Drive, SFTP, WebDAV</string>
+    <string name="cloud_add">Add</string>
+    <string name="cloud_add_connection">Add Connection</string>
+    <string name="cloud_connect">Connect</string>
+    <string name="cloud_disconnect">Disconnect</string>
+    <string name="cloud_disconnected">Disconnected</string>
+    <string name="cloud_remove">Remove Connection</string>
+    <string name="cloud_remove_confirm">Remove connection \"%s\"? This cannot be undone.</string>
+    <string name="cloud_empty">No cloud connections yet.\nAdd one to browse remote files.</string>
+    <string name="cloud_empty_dir">This folder is empty</string>
+    <string name="cloud_connected">Connected to %s</string>
+    <string name="cloud_connection_failed">Failed to connect to %s</string>
+    <string name="cloud_added">Added %s</string>
+    <string name="cloud_download">Download</string>
+    <string name="cloud_upload">Upload</string>
+    <string name="cloud_download_result">Downloaded %1$d files, %2$d failed</string>
+    <string name="cloud_upload_success">Uploaded %s</string>
+    <string name="cloud_upload_failed">Upload failed: %s</string>
+    <string name="cloud_directory">Directory</string>
+    <string name="cloud_provider_type">Provider type</string>
+    <string name="cloud_display_name">Connection name</string>
+    <string name="cloud_host_hint">Host / URL (e.g. 192.168.1.10 or https://cloud.example.com/remote.php/webdav)</string>
+    <string name="cloud_port_hint">Port (default: 22)</string>
+    <string name="cloud_username_hint">Username</string>
+    <string name="cloud_password_hint">Password / Access Token</string>
 </resources>

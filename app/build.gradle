@@ -66,6 +66,9 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     kapt 'com.github.bumptech.glide:compiler:4.16.0'
 
+    // SFTP (SSH) for cloud/network file browsing
+    implementation 'com.jcraft:jsch:0.1.55'
+
     // Testing
     testImplementation 'junit:junit:4.13.2'
 }

@@ -88,19 +88,44 @@ class FileOperationService(private val app: Application, private val storagePath
 
     /** Compress a file into a ZIP. Must be called on IO thread. */
     fun compressFile(filePath: String): OpResult {
+        return compressFiles(listOf(filePath), null)
+    }
+
+    /**
+     * Compress one or more files into a ZIP archive.
+     * [outputName] overrides the default archive name. [onProgress] reports (currentIndex, total).
+     */
+    fun compressFiles(
+        filePaths: List<String>,
+        outputName: String? = null,
+        onProgress: ((current: Int, total: Int) -> Unit)? = null
+    ): OpResult {
         return try {
-            if (!isPathWithinStorage(filePath)) {
-                return OpResult(false, str(R.string.op_invalid_path))
-            }
-            val src = File(filePath)
-            if (!src.exists()) return OpResult(false, str(R.string.op_file_not_found))
-            val parentDir = src.parent
+            if (filePaths.isEmpty()) return OpResult(false, "No files to compress")
+            val firstFile = File(filePaths.first())
+            val parentDir = firstFile.parent
                 ?: return OpResult(false, str(R.string.op_no_parent_dir))
-            val zipFile = File(parentDir, "${src.nameWithoutExtension}.zip")
+
+            for (path in filePaths) {
+                if (!isPathWithinStorage(path)) return OpResult(false, str(R.string.op_invalid_path))
+                if (!File(path).exists()) return OpResult(false, str(R.string.op_file_not_found))
+            }
+
+            val archiveName = outputName ?: if (filePaths.size == 1) {
+                "${firstFile.nameWithoutExtension}.zip"
+            } else {
+                "archive_${System.currentTimeMillis()}.zip"
+            }
+            val zipFile = File(parentDir, archiveName)
+
             ZipOutputStream(zipFile.outputStream().buffered()).use { zos ->
-                zos.putNextEntry(ZipEntry(src.name))
-                src.inputStream().buffered().use { it.copyTo(zos) }
-                zos.closeEntry()
+                for ((index, path) in filePaths.withIndex()) {
+                    val src = File(path)
+                    zos.putNextEntry(ZipEntry(src.name))
+                    src.inputStream().buffered().use { it.copyTo(zos) }
+                    zos.closeEntry()
+                    onProgress?.invoke(index + 1, filePaths.size)
+                }
             }
             OpResult(true, str(R.string.op_compressed, zipFile.name))
         } catch (e: Exception) {

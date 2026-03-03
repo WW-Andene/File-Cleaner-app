@@ -227,6 +227,12 @@
     <string name="op_renamed">Renamed to %s</string>
     <string name="op_rename_failed">Rename failed</string>
     <string name="op_compressed">Compressed to %s</string>
+    <string name="compress_title">Create ZIP archive</string>
+    <string name="compress_name_hint">Archive name</string>
+    <plurals name="compress_summary">
+        <item quantity="one">%d file to compress</item>
+        <item quantity="other">%d files to compress</item>
+    </plurals>
     <string name="op_compress_failed">Compression failed: %s</string>
     <string name="op_extracted">Extracted to %s</string>
     <string name="op_extract_failed">Extraction failed: %s</string>

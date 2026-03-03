@@ -116,6 +116,7 @@ abstract class BaseFileListFragment : Fragment() {
             binding.btnAction.isEnabled = sel.isNotEmpty()
             binding.btnAction.text = actionLabel(sel.size, UndoHelper.totalSize(sel))
             binding.btnBatchRename.visibility = if (sel.size >= 2) View.VISIBLE else View.GONE
+            binding.btnBatchCompress.visibility = if (sel.isNotEmpty()) View.VISIBLE else View.GONE
         }
         adapter.viewMode = currentViewMode
         adapter.onItemClick = { item -> FileOpener.open(requireContext(), item.file) }
@@ -138,6 +139,14 @@ abstract class BaseFileListFragment : Fragment() {
             if (selected.size >= 2) {
                 BatchRenameDialog.show(requireContext(), selected) { renames ->
                     vm.batchRename(renames)
+                    adapter.deselectAll()
+                }
+            }
+        }
+        binding.btnBatchCompress.setOnClickListener {
+            if (selected.isNotEmpty()) {
+                CompressDialog.show(requireContext(), selected) { archiveName, paths ->
+                    vm.compressFiles(paths, archiveName)
                     adapter.deselectAll()
                 }
             }

@@ -564,14 +564,21 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun compressFile(filePath: String) {
+        compressFiles(listOf(filePath), null)
+    }
+
+    fun compressFiles(filePaths: List<String>, archiveName: String?) {
         viewModelScope.launch {
-            val opResult = withContext(Dispatchers.IO) { fileOps.compressFile(filePath) }
+            val opResult = withContext(Dispatchers.IO) {
+                fileOps.compressFiles(filePaths, archiveName)
+            }
             val result = MoveResult(opResult.success, opResult.message)
             _operationResult.postValue(result)
             if (result.success) {
-                val src = File(filePath)
-                val parentDir = src.parent ?: return@launch
-                val zipFile = File(parentDir, "${src.nameWithoutExtension}.zip")
+                val firstFile = File(filePaths.first())
+                val parentDir = firstFile.parent ?: return@launch
+                val name = archiveName ?: "${firstFile.nameWithoutExtension}.zip"
+                val zipFile = File(parentDir, name)
                 refreshAfterFileChange(addedFile = zipFile)
             }
         }

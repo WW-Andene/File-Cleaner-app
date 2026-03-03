@@ -643,4 +643,57 @@
     <string name="threat_desc_hidden_executable">Hidden file \"%1$s\" (.%2$s) found at %3$s. Malware often uses hidden files to evade detection.</string>
     <string name="threat_desc_large_apk">APK \"%1$s\" is %2$dMB. Unusually large APKs may contain packed malware or stolen data.</string>
     <string name="threat_desc_suspicious_archive">Archive \"%1$s\" is only %2$d bytes, below the minimum valid size for .%3$s format. This file is likely corrupt.</string>
+
+    <!-- NetworkSecurityScanner threat names (N1 audit) -->
+    <string name="threat_net_cleartext_traffic">Cleartext Traffic Allowed</string>
+    <string name="threat_net_cleartext_traffic_desc">\"%1$s\" targets Android %2$d and may allow unencrypted HTTP traffic, exposing data to interception.</string>
+    <string name="threat_net_explicit_cleartext">Explicit Cleartext Traffic</string>
+    <string name="threat_net_explicit_cleartext_desc">\"%1$s\" explicitly enables cleartext HTTP traffic in its manifest.</string>
+    <string name="threat_net_data_exfiltration">Data Exfiltration Risk</string>
+    <string name="threat_net_data_exfiltration_desc">\"%1$s\" has internet access combined with %2$d sensitive permissions (%3$s). This combination could enable data exfiltration.</string>
+    <string name="threat_net_traffic_interception">Traffic Interception Tool</string>
+    <string name="threat_net_traffic_interception_desc">\"%1$s\" (%2$s) can intercept and inspect network traffic. This could be used to capture passwords, tokens, and private data.</string>
+    <string name="threat_net_network_attack">Network Attack Tool</string>
+    <string name="threat_net_network_attack_desc">\"%1$s\" (%2$s) is a network penetration/scanning tool. Its presence may indicate unauthorized network activity.</string>
+    <string name="threat_net_suspicious_port">Suspicious Listening Port</string>
+    <string name="threat_net_suspicious_port_desc">Port %1$d (%2$s) is listening on this device. This is unusual for a mobile device and may indicate a backdoor or misconfigured service.</string>
+    <string name="threat_net_adb_network">ADB Over Network Enabled</string>
+    <string name="threat_net_adb_network_desc">Android Debug Bridge is accessible over the network on port %1$s. Anyone on the same network can gain full device control.</string>
+
+    <!-- PrivacyAuditor permission category names (N1 audit) -->
+    <string name="threat_privacy_cat_sms_access">SMS Access</string>
+    <string name="threat_privacy_cat_call_log_access">Call Log Access</string>
+    <string name="threat_privacy_cat_contacts_access">Contacts Access</string>
+    <string name="threat_privacy_cat_camera_access">Camera Access</string>
+    <string name="threat_privacy_cat_microphone_access">Microphone Access</string>
+    <string name="threat_privacy_cat_location_access">Location Access</string>
+    <string name="threat_privacy_cat_phone_access">Phone Access</string>
+    <string name="threat_privacy_cat_storage_access">Storage Access</string>
+    <string name="threat_privacy_cat_body_sensors">Body Sensors</string>
+    <string name="threat_privacy_cat_calendar_access">Calendar Access</string>
+    <string name="threat_privacy_cat_nearby_devices">Nearby Devices</string>
+
+    <!-- PrivacyAuditor threat names and descriptions (N1 audit) -->
+    <string name="threat_privacy_excessive_permissions">Excessive Permissions</string>
+    <string name="threat_privacy_excessive_permissions_desc">\"%1$s\" requests %2$d dangerous permission categories: %3$s.</string>
+    <string name="threat_privacy_sms_access">SMS Access</string>
+    <string name="threat_privacy_sms_access_desc">\"%1$s\" can read/send SMS. This is a common malware capability used for premium SMS fraud and 2FA interception.</string>
+    <string name="threat_privacy_background_location">Background Location Tracking</string>
+    <string name="threat_privacy_background_location_desc">\"%1$s\" can track your location continuously, even when the app is not in use.</string>
+    <string name="threat_privacy_call_log_access">Call Log Access</string>
+    <string name="threat_privacy_call_log_access_desc">\"%1$s\" can read your call history, including who you called, when, and for how long.</string>
+    <string name="threat_privacy_camera_mic">Camera + Microphone Access</string>
+    <string name="threat_privacy_camera_mic_desc">\"%1$s\" has access to both camera and microphone. This combination enables secret audio/video recording.</string>
+    <string name="threat_privacy_can_install_apps">Can Install Apps</string>
+    <string name="threat_privacy_can_install_apps_desc">\"%1$s\" can install other applications. Malware uses this capability to download and install additional malicious apps (\"dropper\" behavior).</string>
+    <string name="threat_privacy_health_data">Health Data Network Access</string>
+    <string name="threat_privacy_health_data_desc">\"%1$s\" can read body sensors and send data over the network. Sensitive health data could be exfiltrated.</string>
+    <string name="threat_privacy_full_storage">Full Storage Access</string>
+    <string name="threat_privacy_full_storage_desc">\"%1$s\" has permission to read and modify all files on the device, including photos, documents, and app data.</string>
+    <string name="threat_privacy_notification_listener">Notification Listener</string>
+    <string name="threat_privacy_notification_listener_desc">\"%1$s\" can read ALL your notifications, including messages, emails, 2FA codes, and banking alerts.</string>
+    <string name="threat_privacy_usage_tracking">App Usage Tracking</string>
+    <string name="threat_privacy_usage_tracking_desc">\"%1$s\" can monitor which apps you use, when, and for how long. This is a significant privacy concern.</string>
+    <string name="threat_privacy_app_enumeration">App Enumeration</string>
+    <string name="threat_privacy_app_enumeration_desc">\"%1$s\" can see all installed apps on your device. This data can be used for fingerprinting and targeted advertising.</string>
 </resources>

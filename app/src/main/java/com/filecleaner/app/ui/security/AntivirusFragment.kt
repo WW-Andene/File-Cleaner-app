@@ -137,7 +137,7 @@ class AntivirusFragment : Fragment() {
             updatePhase(R.string.av_phase_signature, R.string.av_phase_signature_desc)
             val allFiles = vm.filesByCategory.value?.values?.flatten() ?: emptyList()
             if (allFiles.isNotEmpty()) {
-                val signatureResults = SignatureScanner.scan(allFiles) { scanned, total ->
+                val signatureResults = SignatureScanner.scan(ctx, allFiles) { scanned, total ->
                     val pct = if (total > 0) (scanned * 20 / total) + 20 else 20
                     _binding?.progress?.post { _binding?.progress?.progress = pct }
                 }

@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import com.filecleaner.app.R
 import com.filecleaner.app.data.UserPreferences
@@ -25,6 +26,28 @@ class SettingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Theme toggle (System / Light / Dark)
+        when (UserPreferences.themeMode) {
+            1 -> binding.rbThemeLight.isChecked = true
+            2 -> binding.rbThemeDark.isChecked = true
+            else -> binding.rbThemeSystem.isChecked = true
+        }
+        binding.rgTheme.setOnCheckedChangeListener { _, checkedId ->
+            val mode = when (checkedId) {
+                R.id.rb_theme_light -> 1
+                R.id.rb_theme_dark -> 2
+                else -> 0
+            }
+            UserPreferences.themeMode = mode
+            AppCompatDelegate.setDefaultNightMode(
+                when (mode) {
+                    1 -> AppCompatDelegate.MODE_NIGHT_NO
+                    2 -> AppCompatDelegate.MODE_NIGHT_YES
+                    else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                }
+            )
+        }
 
         // Large file threshold (10–500 MB)
         binding.seekLargeFile.max = 49 // 10 to 500 in steps of 10
@@ -95,6 +118,7 @@ class SettingsFragment : Fragment() {
 
     // B5: Remove listeners to prevent callbacks on destroyed binding
     override fun onDestroyView() {
+        binding.rgTheme.setOnCheckedChangeListener(null)
         binding.seekLargeFile.setOnSeekBarChangeListener(null)
         binding.seekStaleAge.setOnSeekBarChangeListener(null)
         binding.seekUndoTimeout.setOnSeekBarChangeListener(null)

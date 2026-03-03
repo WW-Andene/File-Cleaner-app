@@ -297,6 +297,11 @@
     <string name="settings_rescan_note">Changes apply on next scan.</string>
     <string name="settings_safety_section">Safety</string>
     <string name="settings_display_section">Display</string>
+    <string name="settings_appearance_section">Appearance</string>
+    <string name="settings_theme_label">Theme</string>
+    <string name="theme_system">System default</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
 
     <!-- Onboarding (P13) -->
     <string name="onboarding_step">Step %1$d of %2$d</string>

@@ -19,6 +19,51 @@
             android:textAppearance="@style/TextAppearance.FileCleaner.Title"
             android:layout_marginBottom="@dimen/spacing_lg" />
 
+        <!-- Appearance section -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_appearance_section"
+            android:textAppearance="@style/TextAppearance.FileCleaner.Body"
+            android:textStyle="bold"
+            android:layout_marginBottom="@dimen/spacing_md" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_theme_label"
+            android:textAppearance="@style/TextAppearance.FileCleaner.Body" />
+
+        <RadioGroup
+            android:id="@+id/rg_theme"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:layout_marginBottom="@dimen/spacing_lg">
+
+            <RadioButton
+                android:id="@+id/rb_theme_system"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/theme_system" />
+
+            <RadioButton
+                android:id="@+id/rb_theme_light"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/theme_light" />
+
+            <RadioButton
+                android:id="@+id/rb_theme_dark"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/theme_dark" />
+        </RadioGroup>
+
         <!-- Scan Settings section -->
         <TextView
             android:layout_width="match_parent"

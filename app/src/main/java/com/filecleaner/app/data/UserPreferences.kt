@@ -85,6 +85,13 @@ object UserPreferences {
     fun isFavorite(path: String): Boolean = path in favoritePaths
     fun isProtected(path: String): Boolean = path in protectedPaths
 
+    // ── Appearance ──
+
+    /** 0 = System default, 1 = Light, 2 = Dark */
+    var themeMode: Int
+        get() = prefs.getInt("theme_mode", 0)
+        set(value) = prefs.edit().putInt("theme_mode", value).apply()
+
     // ── Onboarding ──
 
     var hasSeenOnboarding: Boolean

@@ -13,6 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.findNavController
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavOptions
@@ -50,6 +51,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         UserPreferences.init(applicationContext)
+
+        // Apply saved theme before inflating views
+        AppCompatDelegate.setDefaultNightMode(
+            when (UserPreferences.themeMode) {
+                1 -> AppCompatDelegate.MODE_NIGHT_NO
+                2 -> AppCompatDelegate.MODE_NIGHT_YES
+                else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            }
+        )
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 

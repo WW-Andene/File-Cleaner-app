@@ -145,7 +145,7 @@
             android:lineSpacingMultiplier="1.0" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Sort row -->
+    <!-- Collapsible filter toggle bar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -154,15 +154,26 @@
         android:layout_marginHorizontal="@dimen/spacing_lg"
         android:layout_marginTop="@dimen/spacing_sm">
 
-        <Spinner
-            android:id="@+id/spinner_sort"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_toggle_filters"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button_height_sm"
+            android:text="@string/filter_options"
+            android:textAllCaps="false"
+            android:textSize="@dimen/text_body_small"
+            android:textColor="@color/textSecondary"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:icon="@drawable/ic_arrow_down"
+            app:iconSize="16dp"
+            app:iconGravity="end"
+            app:iconTint="@color/textSecondary" />
+
+        <View
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@drawable/bg_spinner"
-            android:popupBackground="@drawable/bg_spinner_dropdown"
-            android:paddingHorizontal="@dimen/spacing_md"
-            android:contentDescription="@string/a11y_sort_order" />
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <ImageButton
             android:id="@+id/btn_view_mode"
@@ -173,8 +184,35 @@
             android:contentDescription="@string/a11y_view_mode"
             android:scaleType="centerInside"
             android:padding="@dimen/spacing_md"
-            app:tint="@color/textSecondary"
-            android:layout_marginStart="@dimen/spacing_sm" />
+            app:tint="@color/textSecondary" />
+    </LinearLayout>
+
+    <!-- Expandable filter panel -->
+    <LinearLayout
+        android:id="@+id/filter_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginHorizontal="@dimen/spacing_lg"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sort_by_label"
+            android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
+            android:textColor="@color/textTertiary"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:layout_marginBottom="@dimen/spacing_xs" />
+
+        <Spinner
+            android:id="@+id/spinner_sort"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_spinner"
+            android:popupBackground="@drawable/bg_spinner_dropdown"
+            android:paddingHorizontal="@dimen/spacing_md"
+            android:contentDescription="@string/a11y_sort_order" />
     </LinearLayout>
 
     <!-- F5: Scan progress indicator -->

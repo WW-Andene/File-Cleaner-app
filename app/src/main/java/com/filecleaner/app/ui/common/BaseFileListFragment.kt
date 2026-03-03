@@ -171,6 +171,9 @@ abstract class BaseFileListFragment : Fragment() {
             override fun onNothingSelected(p: AdapterView<*>?) {}
         }
 
+        // Collapsible filter panel toggle
+        binding.btnToggleFilters.setOnClickListener { toggleFilterPanel() }
+
         // View mode toggle
         binding.btnViewMode.setOnClickListener { cycleViewMode() }
         updateViewModeIcon()
@@ -291,6 +294,16 @@ abstract class BaseFileListFragment : Fragment() {
         }
     }
 
+    private var filtersExpanded = false
+
+    private fun toggleFilterPanel() {
+        filtersExpanded = !filtersExpanded
+        binding.filterPanel.visibility = if (filtersExpanded) View.VISIBLE else View.GONE
+        binding.btnToggleFilters.setIconResource(
+            if (filtersExpanded) R.drawable.ic_chevron_up else R.drawable.ic_arrow_down
+        )
+    }
+
     private fun cycleViewMode() {
         val modes = ViewMode.entries
         val nextIndex = (modes.indexOf(currentViewMode) + 1) % modes.size
@@ -315,7 +328,7 @@ abstract class BaseFileListFragment : Fragment() {
 
     private fun updateViewModeIcon() {
         val iconRes = when (currentViewMode) {
-            ViewMode.LIST, ViewMode.LIST_WITH_THUMBNAILS -> R.drawable.ic_view_list
+            ViewMode.LIST_COMPACT, ViewMode.LIST, ViewMode.LIST_WITH_THUMBNAILS -> R.drawable.ic_view_list
             ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE -> R.drawable.ic_view_grid
         }
         binding.btnViewMode.setImageResource(iconRes)

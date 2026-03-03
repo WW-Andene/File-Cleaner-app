@@ -33,6 +33,80 @@
             android:textAppearance="@style/TextAppearance.FileCleaner.Title" />
     </LinearLayout>
 
+    <!-- Explanatory card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_lg"
+        android:layout_marginTop="@dimen/spacing_sm"
+        app:cardCornerRadius="@dimen/radius_header"
+        app:cardElevation="@dimen/elevation_none"
+        app:cardBackgroundColor="@color/colorPrimaryContainer"
+        app:strokeWidth="@dimen/stroke_none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_lg">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/optimize_info_title"
+                android:textAppearance="@style/TextAppearance.FileCleaner.Subtitle"
+                android:textColor="@color/colorOnPrimaryContainer"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xs"
+                android:text="@string/optimize_info_body"
+                android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                android:textColor="@color/colorOnPrimaryContainer"
+                android:alpha="0.85" />
+
+            <!-- Select All / Deselect All -->
+            <LinearLayout
+                android:id="@+id/selection_controls"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_select_all"
+                    style="@style/Widget.FileCleaner.Button.Outlined"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/button_height_sm"
+                    android:text="@string/select_all"
+                    android:textSize="@dimen/text_body_small"
+                    android:layout_marginEnd="@dimen/spacing_sm"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:strokeColor="@color/colorOnPrimaryContainer"
+                    android:textColor="@color/colorOnPrimaryContainer"
+                    app:cornerRadius="@dimen/radius_pill" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_deselect_all"
+                    style="@style/Widget.FileCleaner.Button.Outlined"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/button_height_sm"
+                    android:text="@string/deselect_all"
+                    android:textSize="@dimen/text_body_small"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:strokeColor="@color/colorOnPrimaryContainer"
+                    android:textColor="@color/colorOnPrimaryContainer"
+                    app:cornerRadius="@dimen/radius_pill" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
     <!-- Summary -->
     <TextView
         android:id="@+id/tv_summary"

@@ -15,6 +15,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.filecleaner.app.R
+import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.databinding.FragmentOptimizeBinding
 import com.filecleaner.app.utils.StorageOptimizer
 import com.filecleaner.app.viewmodel.MainViewModel
@@ -59,16 +60,34 @@ class OptimizeFragment : Fragment() {
                 binding.tvEmpty.visibility = View.VISIBLE
                 binding.recyclerSuggestions.visibility = View.GONE
                 binding.btnApply.isEnabled = false
+                binding.selectionControls.visibility = View.GONE
             } else {
                 binding.tvEmpty.visibility = View.GONE
                 binding.recyclerSuggestions.visibility = View.VISIBLE
+                binding.selectionControls.visibility = View.VISIBLE
             }
 
-            binding.tvSummary.text = resources.getQuantityString(
-                R.plurals.optimize_summary, suggestions.size, suggestions.size
-            )
+            val accepted = suggestions.count { it.accepted }
+            binding.tvSummary.text = getString(R.string.optimize_summary_detail,
+                suggestions.size, accepted)
 
-            binding.recyclerSuggestions.adapter = SuggestionAdapter(suggestions, storagePath)
+            // Group suggestions by category and build a sectioned list
+            val grouped = buildGroupedList(suggestions)
+            binding.recyclerSuggestions.adapter = GroupedSuggestionAdapter(
+                grouped, storagePath
+            ) { updateSummary() }
+        }
+
+        binding.btnSelectAll.setOnClickListener {
+            suggestions.forEach { it.accepted = true }
+            binding.recyclerSuggestions.adapter?.notifyDataSetChanged()
+            updateSummary()
+        }
+
+        binding.btnDeselectAll.setOnClickListener {
+            suggestions.forEach { it.accepted = false }
+            binding.recyclerSuggestions.adapter?.notifyDataSetChanged()
+            updateSummary()
         }
 
         binding.btnApply.setOnClickListener { confirmApply() }
@@ -76,6 +95,37 @@ class OptimizeFragment : Fragment() {
         vm.operationResult.observe(viewLifecycleOwner) { result ->
             Snackbar.make(binding.root, result.message, Snackbar.LENGTH_SHORT).show()
         }
+    }
+
+    private fun updateSummary() {
+        val accepted = suggestions.count { it.accepted }
+        binding.tvSummary.text = getString(R.string.optimize_summary_detail,
+            suggestions.size, accepted)
+        binding.btnApply.isEnabled = accepted > 0
+    }
+
+    private fun buildGroupedList(items: List<StorageOptimizer.Suggestion>): List<Any> {
+        val result = mutableListOf<Any>()
+        val grouped = items.groupBy { it.file.category }
+
+        // Sort categories in a user-friendly order
+        val order = listOf(
+            FileCategory.IMAGE, FileCategory.VIDEO, FileCategory.AUDIO,
+            FileCategory.DOCUMENT, FileCategory.APK, FileCategory.DOWNLOAD
+        )
+        for (cat in order) {
+            val group = grouped[cat] ?: continue
+            result.add(CategoryHeader(cat, group.size))
+            result.addAll(group)
+        }
+        // Add any remaining categories not in the order list
+        for ((cat, group) in grouped) {
+            if (cat !in order) {
+                result.add(CategoryHeader(cat, group.size))
+                result.addAll(group)
+            }
+        }
+        return result
     }
 
     private fun confirmApply() {
@@ -108,37 +158,69 @@ class OptimizeFragment : Fragment() {
         _binding = null
     }
 
-    class SuggestionAdapter(
-        private val items: List<StorageOptimizer.Suggestion>,
-        private val storagePath: String
-    ) : RecyclerView.Adapter<SuggestionAdapter.ViewHolder>() {
+    /** Category section header data. */
+    data class CategoryHeader(val category: FileCategory, val count: Int)
 
-        class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    /** Adapter with category headers and suggestion items. */
+    class GroupedSuggestionAdapter(
+        private val items: List<Any>,
+        private val storagePath: String,
+        private val onSelectionChanged: () -> Unit
+    ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+        companion object {
+            private const val TYPE_HEADER = 0
+            private const val TYPE_SUGGESTION = 1
+        }
+
+        class HeaderViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val title: TextView = view.findViewById(R.id.tv_header_title)
+            val count: TextView = view.findViewById(R.id.tv_header_count)
+        }
+
+        class SuggestionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val checkbox: CheckBox = view.findViewById(R.id.cb_accept)
             val filename: TextView = view.findViewById(R.id.tv_filename)
             val reason: TextView = view.findViewById(R.id.tv_reason)
             val movePath: TextView = view.findViewById(R.id.tv_move_path)
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_optimize_suggestion, parent, false)
-            return ViewHolder(view)
+        override fun getItemViewType(position: Int) =
+            if (items[position] is CategoryHeader) TYPE_HEADER else TYPE_SUGGESTION
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+            val inflater = LayoutInflater.from(parent.context)
+            return if (viewType == TYPE_HEADER) {
+                HeaderViewHolder(inflater.inflate(R.layout.item_optimize_header, parent, false))
+            } else {
+                SuggestionViewHolder(inflater.inflate(R.layout.item_optimize_suggestion, parent, false))
+            }
         }
 
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val item = items[position]
-            holder.filename.text = item.file.name
-            holder.reason.text = item.reason
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            when (val item = items[position]) {
+                is CategoryHeader -> {
+                    val h = holder as HeaderViewHolder
+                    val ctx = h.itemView.context
+                    h.title.text = "${item.category.emoji} ${ctx.getString(item.category.displayNameRes)}"
+                    h.count.text = ctx.resources.getQuantityString(R.plurals.n_files, item.count, item.count)
+                }
+                is StorageOptimizer.Suggestion -> {
+                    val h = holder as SuggestionViewHolder
+                    h.filename.text = item.file.name
+                    h.reason.text = item.reason
 
-            val fromRelative = item.currentPath.removePrefix(storagePath)
-            val toRelative = item.suggestedPath.removePrefix(storagePath)
-            holder.movePath.text = "$fromRelative \u2192 $toRelative"
+                    val fromRelative = item.currentPath.removePrefix(storagePath)
+                    val toRelative = item.suggestedPath.removePrefix(storagePath)
+                    h.movePath.text = "$fromRelative \u2192 $toRelative"
 
-            holder.checkbox.setOnCheckedChangeListener(null)
-            holder.checkbox.isChecked = item.accepted
-            holder.checkbox.setOnCheckedChangeListener { _, checked ->
-                item.accepted = checked
+                    h.checkbox.setOnCheckedChangeListener(null)
+                    h.checkbox.isChecked = item.accepted
+                    h.checkbox.setOnCheckedChangeListener { _, checked ->
+                        item.accepted = checked
+                        onSelectionChanged()
+                    }
+                }
             }
         }
 

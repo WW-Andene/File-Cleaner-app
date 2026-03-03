@@ -341,6 +341,9 @@
 
     <!-- Accessibility -->
     <string name="a11y_view_mode">Toggle view mode</string>
+    <string name="filter_options">Filters</string>
+    <string name="sort_by_label">Sort by</string>
+    <string name="browse_category_label">Category</string>
 
     <!-- Settings (P14) -->
     <string name="settings_scan_section">Scan Settings</string>
@@ -449,6 +452,9 @@
         <item quantity="other">Moved %d files successfully</item>
     </plurals>
     <string name="optimize_none_selected">No suggestions selected</string>
+    <string name="optimize_info_title">How it works</string>
+    <string name="optimize_info_body">This tool analyzes your files and suggests moving them into organized folders by type and date. Photos go to Pictures/YYYY-MM, videos to Videos/YYYY-MM, audio to Music, documents to Documents, and old downloads to OldDownloads. Uncheck any files you want to keep in place.</string>
+    <string name="optimize_summary_detail">%1$d suggestions \u2022 %2$d selected</string>
 
     <!-- Dual Pane -->
     <string name="dual_pane_title">Dual Pane</string>
@@ -507,6 +513,12 @@
     <string name="cloud_error_host_required">Host is required</string>
     <string name="cloud_error_port_range">Port must be 1\u201365535</string>
     <string name="cloud_error_username_required">Username is required</string>
+    <string name="cloud_sftp_host_hint">Hostname or IP (e.g. 192.168.1.10)</string>
+    <string name="cloud_webdav_host_hint">Server URL (e.g. https://cloud.example.com/remote.php/webdav)</string>
+    <string name="cloud_gdrive_token_hint">OAuth2 Access Token</string>
+    <string name="cloud_sftp_help">Connect to any SSH/SFTP server. Use your server\'s IP address or hostname.</string>
+    <string name="cloud_webdav_help">Works with Nextcloud, ownCloud, and other WebDAV servers. Enter the full WebDAV URL.</string>
+    <string name="cloud_gdrive_help">Paste your Google Drive OAuth2 token. You can generate one from the Google API Console.</string>
 
     <!-- Antivirus / Security Scanner -->
     <string name="av_title">Security Scanner</string>

@@ -24,6 +24,7 @@ class FileAdapter(
             override fun areItemsTheSame(a: FileItem, b: FileItem) = a.path == b.path
             override fun areContentsTheSame(a: FileItem, b: FileItem) = a == b
         }
+        private const val TYPE_COMPACT = 2
         private const val TYPE_LIST = 0
         private const val TYPE_GRID = 1
         private const val PAYLOAD_SELECTION = "selection"
@@ -69,12 +70,17 @@ class FileAdapter(
     }
 
     override fun getItemViewType(position: Int): Int = when (viewMode) {
+        ViewMode.LIST_COMPACT -> TYPE_COMPACT
         ViewMode.LIST, ViewMode.LIST_WITH_THUMBNAILS -> TYPE_LIST
         ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE -> TYPE_GRID
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileViewHolder {
-        val layoutRes = if (viewType == TYPE_GRID) R.layout.item_file_grid else R.layout.item_file
+        val layoutRes = when (viewType) {
+            TYPE_COMPACT -> R.layout.item_file_compact
+            TYPE_GRID -> R.layout.item_file_grid
+            else -> R.layout.item_file
+        }
         val view = LayoutInflater.from(parent.context).inflate(layoutRes, parent, false)
         return FileViewHolder(view)
     }
@@ -129,7 +135,7 @@ class FileAdapter(
         }
 
         // Load thumbnail for images/videos, category icon for everything else
-        val isGrid = viewMode != ViewMode.LIST && viewMode != ViewMode.LIST_WITH_THUMBNAILS
+        val isGrid = viewMode != ViewMode.LIST && viewMode != ViewMode.LIST_WITH_THUMBNAILS && viewMode != ViewMode.LIST_COMPACT
         FileItemUtils.loadThumbnail(holder.icon, item, isGrid)
 
         // Visual state: duplicate group colouring → selection highlight → default

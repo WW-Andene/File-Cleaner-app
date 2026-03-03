@@ -130,8 +130,8 @@ class SettingsFragment : Fragment() {
                 .setNegativeButton(getString(R.string.cancel), null)
                 .show()
         }
-        // Add to the root scrollable container
-        (binding.root as? android.view.ViewGroup)?.addView(clearButton)
+        // Add to the inner LinearLayout (not the ScrollView root)
+        binding.settingsContainer.addView(clearButton)
     }
 
     private fun updateLargeFileLabel() {

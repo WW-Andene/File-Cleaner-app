@@ -24,6 +24,7 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         private const val TYPE_HEADER = 0
         private const val TYPE_FILE = 1
         private const val TYPE_FILE_GRID = 11
+        private const val TYPE_FILE_COMPACT = 12
 
         private val DIFF = object : DiffUtil.ItemCallback<Item>() {
             override fun areItemsTheSame(a: Item, b: Item): Boolean = when {
@@ -54,6 +55,7 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
     override fun getItemViewType(position: Int): Int = when (getItem(position)) {
         is Item.Header -> TYPE_HEADER
         is Item.File -> when (viewMode) {
+            ViewMode.LIST_COMPACT -> TYPE_FILE_COMPACT
             ViewMode.LIST, ViewMode.LIST_WITH_THUMBNAILS -> TYPE_FILE
             ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE -> TYPE_FILE_GRID
         }
@@ -66,7 +68,11 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         return when (viewType) {
             TYPE_HEADER -> HeaderViewHolder(inflater.inflate(R.layout.item_folder_header, parent, false))
             else -> {
-                val layoutRes = if (viewType == TYPE_FILE) R.layout.item_file else R.layout.item_file_grid
+                val layoutRes = when (viewType) {
+                    TYPE_FILE_COMPACT -> R.layout.item_file_compact
+                    TYPE_FILE_GRID -> R.layout.item_file_grid
+                    else -> R.layout.item_file
+                }
                 FileViewHolder(inflater.inflate(layoutRes, parent, false))
             }
         }
@@ -97,7 +103,7 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         }
 
         // Load thumbnail or icon
-        val isGrid = viewMode != ViewMode.LIST && viewMode != ViewMode.LIST_WITH_THUMBNAILS
+        val isGrid = viewMode != ViewMode.LIST && viewMode != ViewMode.LIST_WITH_THUMBNAILS && viewMode != ViewMode.LIST_COMPACT
         FileItemUtils.loadThumbnail(holder.icon, item, isGrid)
 
         // Default card colors (using shared resolved colors)

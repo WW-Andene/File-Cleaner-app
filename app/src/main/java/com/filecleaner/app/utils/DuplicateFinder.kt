@@ -38,9 +38,12 @@ object DuplicateFinder {
         onProgress: (Int, Int) -> Unit = { _, _ -> }
     ): List<FileItem> = withContext(Dispatchers.IO) {
 
-        // Stage 1: Group by size — skip unique sizes immediately
-        val bySizeGroups = files
-            .filter { it.size > 0 }
+        // Stage 1: Group by size — skip unique sizes immediately.
+        // Also verify files are readable to avoid silent failures later.
+        val readable = files.filter { item ->
+            item.size > 0 && File(item.path).let { it.exists() && it.canRead() }
+        }
+        val bySizeGroups = readable
             .groupBy { it.size }
             .filter { it.value.size > 1 }
 
@@ -53,7 +56,9 @@ object DuplicateFinder {
         for (item in sizeCollisions) {
             ensureActive()
             onProgress(done++, total)
-            val key = partialHash(File(item.path)) ?: continue
+            val file = File(item.path)
+            if (!file.exists() || !file.canRead()) continue
+            val key = partialHash(file) ?: continue
             byPartial.getOrPut(key) { mutableListOf() }.add(item)
         }
 
@@ -66,7 +71,9 @@ object DuplicateFinder {
             val byFull = mutableMapOf<String, MutableList<FileItem>>()
             for (item in partialGroup) {
                 ensureActive()
-                val hash = fullMd5(File(item.path)) ?: continue
+                val file = File(item.path)
+                if (!file.exists() || !file.canRead()) continue
+                val hash = fullMd5(file) ?: continue
                 byFull.getOrPut(hash) { mutableListOf() }.add(item)
             }
 

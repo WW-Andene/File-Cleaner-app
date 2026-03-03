@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/spacing_xs"
+    android:layout_marginVertical="1dp"
+    app:cardCornerRadius="@dimen/radius_sm"
+    app:cardElevation="@dimen/elevation_none"
+    app:cardBackgroundColor="@color/surfaceColor"
+    app:strokeWidth="@dimen/stroke_default"
+    app:strokeColor="@color/borderDefault"
+    app:rippleColor="@color/colorPrimaryContainer"
+    android:foreground="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:minHeight="40dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/spacing_md"
+        android:paddingVertical="@dimen/spacing_xs">
+
+        <!-- Small icon -->
+        <ImageView
+            android:id="@+id/iv_file_icon"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:scaleType="centerCrop"
+            android:importantForAccessibility="no" />
+
+        <!-- Text block -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:layout_marginEnd="@dimen/spacing_xs">
+
+            <TextView
+                android:id="@+id/tv_file_name"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.FileCleaner.Body"
+                android:textColor="@color/textPrimary"
+                android:maxLines="1"
+                android:ellipsize="middle"
+                android:textAlignment="viewStart" />
+
+            <TextView
+                android:id="@+id/tv_file_meta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
+                android:textColor="@color/textTertiary"
+                android:maxLines="1"
+                android:layout_marginStart="@dimen/spacing_sm"
+                android:textAlignment="viewEnd" />
+
+        </LinearLayout>
+
+        <!-- Checkbox -->
+        <CheckBox
+            android:id="@+id/cb_select"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:buttonTint="@color/colorPrimary" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

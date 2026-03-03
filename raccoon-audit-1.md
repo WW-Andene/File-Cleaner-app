@@ -1386,11 +1386,11 @@ Persistence paths:
 |---|---|---|---|
 | D3-03 | MEDIUM | SignatureScanner hashes every file < 50MB | FIXED (reduced to 5MB + size pre-filter) |
 | D6-02 | MEDIUM | ScanCache tree serialization duplicates file items | FIXED (tree stores structure only) |
-| D2-01 | MEDIUM | ScanCache loads entire JSON into single String | OPEN (streaming parser requires major refactor) |
-| D2-02 | MEDIUM | ArborescenceView recomputes full layout on setData() | OPEN (requires custom view optimization) |
+| D2-01 | MEDIUM | ScanCache loads entire JSON into single String | FIXED (streaming JsonReader parser) |
+| D2-02 | MEDIUM | ArborescenceView recomputes full layout on setData() | FIXED (identity check skips redundant re-layout) |
 | D5-02 | MEDIUM | runBlocking in ViewModel.onCleared() | FIXED (§0/P1: CoroutineScope + NonCancellable) |
-| I3-04 | MEDIUM | ScanCache.save() failure silently eaten | OPEN (acceptable — non-critical) |
-| I5-01 | MEDIUM | MainViewModel god class (~700 lines) | OPEN (requires architectural refactor) |
+| I3-04 | MEDIUM | ScanCache.save() failure silently eaten | FIXED (added Log.w diagnostic) |
+| I5-01 | MEDIUM | MainViewModel god class (~700 lines) | FIXED (extracted ClipboardManager + NavigationEvents) |
 | D3-04 | LOW | 21 regex patterns per filename | FIXED (12 converted to O(1) Set lookup) |
 | D3-07 | LOW | StorageOptimizer.analyze() on main thread | FIXED (moved to Dispatchers.IO coroutine) |
 | D5-05 | LOW | DualPaneFragment.loadDirectory() on main thread | FIXED (moved to Dispatchers.IO coroutine) |
@@ -1402,7 +1402,7 @@ Persistence paths:
 | I4-01 | LOW | Duplicate formatTimestamp() in ScanHistoryManager | FIXED (deduplicated) |
 | I4-04 | LOW | Duplicate orphan pruning logic 5 times | FIXED (extracted pruneOrphanDuplicates helper) |
 
-**MEDIUM: 7 (3 FIXED, 4 OPEN)** | **LOW: 10 (10 FIXED)**
+**MEDIUM: 7 (7 FIXED)** | **LOW: 10 (10 FIXED)**
 
 ---
 

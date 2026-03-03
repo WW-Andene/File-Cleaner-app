@@ -53,6 +53,21 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // I5-01: Extracted responsibilities into dedicated managers
+    val clipboard = ClipboardManager()
+    val navigation = NavigationEvents()
+    // Delegation for backward compatibility
+    val clipboardEntry: LiveData<ClipboardManager.ClipboardEntry?> get() = clipboard.clipboardEntry
+    fun setCutFile(item: FileItem) = clipboard.setCutFile(item)
+    fun setCopyFile(item: FileItem) = clipboard.setCopyFile(item)
+    fun clearClipboard() = clipboard.clearClipboard()
+    val navigateToBrowse: LiveData<String?> get() = navigation.navigateToBrowse
+    fun requestBrowseFolder(folderPath: String) = navigation.requestBrowseFolder(folderPath)
+    fun clearBrowseNavigation() = navigation.clearBrowseNavigation()
+    val navigateToTree: LiveData<String?> get() = navigation.navigateToTree
+    fun requestTreeHighlight(filePath: String) = navigation.requestTreeHighlight(filePath)
+    fun clearTreeHighlight() = navigation.clearTreeHighlight()
+
     // File manager needs broad storage access; MANAGE_EXTERNAL_STORAGE grants it
     @Suppress("DEPRECATION")
     private val storagePath: String by lazy {
@@ -234,7 +249,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             if (files.isNotEmpty() && tree != null) {
                 try {
                     ScanCache.save(getApplication(), files, tree)
-                } catch (_: Exception) { }
+                } catch (e: Exception) {
+                    android.util.Log.w("MainViewModel", "Cache save failed in onCleared", e)
+                }
             }
         }
     }
@@ -466,18 +483,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // ── Clipboard for cut/copy/paste ──
-    enum class ClipboardMode { CUT, COPY }
-
-    data class ClipboardEntry(val item: FileItem, val mode: ClipboardMode)
-
-    private val _clipboardEntry = MutableLiveData<ClipboardEntry?>(null)
-    val clipboardEntry: LiveData<ClipboardEntry?> = _clipboardEntry
-
-    fun setCutFile(item: FileItem) { _clipboardEntry.value = ClipboardEntry(item, ClipboardMode.CUT) }
-    fun setCopyFile(item: FileItem) { _clipboardEntry.value = ClipboardEntry(item, ClipboardMode.COPY) }
-    fun clearClipboard() { _clipboardEntry.value = null }
-
     /** Copy a file to a target directory (for paste after copy). */
     fun copyFile(filePath: String, targetDirPath: String) {
         viewModelScope.launch {
@@ -489,32 +494,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 refreshAfterFileChange(addedFile = dst)
             }
         }
-    }
-
-    // ── Navigate to Browse tab (filtered to a folder) ──
-    private val _navigateToBrowse = MutableLiveData<String?>()
-    val navigateToBrowse: LiveData<String?> = _navigateToBrowse
-
-    fun requestBrowseFolder(folderPath: String) {
-        _navigateToBrowse.value = folderPath
-    }
-
-    fun clearBrowseNavigation() {
-        _navigateToBrowse.value = null
-    }
-
-    // ── Navigate to tree highlight ──
-    // Uses MutableLiveData (not SingleLiveEvent) so both MainActivity (tab switch)
-    // and ArborescenceFragment (highlight) can observe the same value.
-    private val _navigateToTree = MutableLiveData<String?>()
-    val navigateToTree: LiveData<String?> = _navigateToTree
-
-    fun requestTreeHighlight(filePath: String) {
-        _navigateToTree.value = filePath
-    }
-
-    fun clearTreeHighlight() {
-        _navigateToTree.value = null
     }
 
     // ── File operations ──

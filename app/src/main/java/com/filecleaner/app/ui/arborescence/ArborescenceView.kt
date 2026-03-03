@@ -220,6 +220,13 @@ class ArborescenceView @JvmOverloads constructor(
     )
 
     private var rootNode: DirectoryNode? = null
+    // D2-02: Track tree identity to skip redundant re-layout
+    private var treeIdentity: Long = 0L
+
+    private fun computeTreeIdentity(root: DirectoryNode): Long {
+        // Combine path hash + file count + size for cheap identity check
+        return root.path.hashCode().toLong() * 31 + root.totalFileCount * 17 + root.totalSize
+    }
     private val layouts = mutableMapOf<String, NodeLayout>()
     private var selectedPath: String? = null
 
@@ -356,6 +363,9 @@ class ArborescenceView @JvmOverloads constructor(
         layouts.filter { it.value.expanded }.keys.toSet()
 
     fun setTree(root: DirectoryNode) {
+        val newIdentity = computeTreeIdentity(root)
+        if (newIdentity == treeIdentity && rootNode != null) return
+        treeIdentity = newIdentity
         rootNode = root
         layouts.clear()
         selectedPath = null
@@ -373,6 +383,9 @@ class ArborescenceView @JvmOverloads constructor(
     }
 
     fun setTreeWithState(root: DirectoryNode, expandedPaths: Set<String>) {
+        val newIdentity = computeTreeIdentity(root)
+        if (newIdentity == treeIdentity && rootNode != null) return
+        treeIdentity = newIdentity
         rootNode = root
         layouts.clear()
         selectedPath = null

@@ -29,6 +29,7 @@ import com.filecleaner.app.data.cloud.ProviderType
 import com.filecleaner.app.data.cloud.SftpProvider
 import com.filecleaner.app.data.cloud.WebDavProvider
 import com.filecleaner.app.databinding.FragmentCloudBrowserBinding
+import com.filecleaner.app.utils.styleAsError
 import com.google.android.material.snackbar.Snackbar
 import com.jcraft.jsch.JSchException
 import kotlinx.coroutines.CoroutineScope
@@ -208,7 +209,7 @@ class CloudBrowserFragment : Fragment() {
             _binding?.root?.let { root ->
                 Snackbar.make(root,
                     getString(R.string.cloud_no_network),
-                    Snackbar.LENGTH_LONG).show()
+                    Snackbar.LENGTH_LONG).styleAsError().show()
             }
             updateConnectionStatus()
             return
@@ -239,7 +240,7 @@ class CloudBrowserFragment : Fragment() {
                     _binding?.root?.let { root ->
                         Snackbar.make(root,
                             getString(R.string.cloud_connection_failed, connection.displayName),
-                            Snackbar.LENGTH_LONG).show()
+                            Snackbar.LENGTH_LONG).styleAsError().show()
                     }
                 }
             } catch (e: Exception) {
@@ -261,7 +262,7 @@ class CloudBrowserFragment : Fragment() {
                         getString(R.string.cloud_connection_failed, connection.displayName)
                 }
                 _binding?.root?.let { root ->
-                    Snackbar.make(root, message, Snackbar.LENGTH_LONG).show()
+                    Snackbar.make(root, message, Snackbar.LENGTH_LONG).styleAsError().show()
                 }
             }
         }
@@ -283,7 +284,7 @@ class CloudBrowserFragment : Fragment() {
         val capabilities = cm.getNetworkCapabilities(cm.activeNetwork)
         val hasNet = capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
         if (!hasNet) {
-            Snackbar.make(b.root, getString(R.string.cloud_no_network), Snackbar.LENGTH_LONG).show()
+            Snackbar.make(b.root, getString(R.string.cloud_no_network), Snackbar.LENGTH_LONG).styleAsError().show()
             return
         }
 
@@ -308,7 +309,7 @@ class CloudBrowserFragment : Fragment() {
                     Snackbar.make(b2.root,
                         getString(R.string.cloud_test_failed,
                             getString(R.string.cloud_connection_failed, connection.displayName)),
-                        Snackbar.LENGTH_LONG).show()
+                        Snackbar.LENGTH_LONG).styleAsError().show()
                 }
             } catch (e: Exception) {
                 val b2 = _binding ?: return@launch
@@ -316,7 +317,7 @@ class CloudBrowserFragment : Fragment() {
                 Snackbar.make(b2.root,
                     getString(R.string.cloud_test_failed,
                         e.localizedMessage ?: e.javaClass.simpleName),
-                    Snackbar.LENGTH_LONG).show()
+                    Snackbar.LENGTH_LONG).styleAsError().show()
             }
         }
     }
@@ -349,7 +350,7 @@ class CloudBrowserFragment : Fragment() {
                 b2.progress.visibility = View.GONE
                 Snackbar.make(b2.root,
                     getString(R.string.cloud_connection_failed) + ": ${e.message}",
-                    Snackbar.LENGTH_LONG).show()
+                    Snackbar.LENGTH_LONG).styleAsError().show()
                 return@launch
             }
             val b2 = _binding ?: return@launch
@@ -506,7 +507,7 @@ class CloudBrowserFragment : Fragment() {
                 b.progress.visibility = View.GONE
                 Snackbar.make(b.root,
                     getString(R.string.cloud_upload_failed, e.localizedMessage ?: ""),
-                    Snackbar.LENGTH_LONG).show()
+                    Snackbar.LENGTH_LONG).styleAsError().show()
             }
         }
     }

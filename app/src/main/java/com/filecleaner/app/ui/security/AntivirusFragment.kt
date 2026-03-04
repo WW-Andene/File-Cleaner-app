@@ -28,6 +28,7 @@ import com.filecleaner.app.services.ScanService
 import com.filecleaner.app.utils.antivirus.*
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.google.android.material.button.MaterialButton
+import com.filecleaner.app.utils.styleAsError
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -524,7 +525,7 @@ class AntivirusFragment : Fragment() {
             })
         } catch (e: Exception) {
             _binding?.root?.let {
-                Snackbar.make(it, getString(R.string.av_uninstall_failed), Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(it, getString(R.string.av_uninstall_failed), Snackbar.LENGTH_SHORT).styleAsError().show()
             }
         }
     }

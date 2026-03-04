@@ -24,6 +24,7 @@ import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.ClipboardManager
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.filecleaner.app.utils.styleAsError
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.text.DateFormat
@@ -225,7 +226,7 @@ object FileContextMenu {
                     // C2: UI-layer defense-in-depth for invalid filesystem characters
                     val invalidChars = charArrayOf('/', '\u0000', ':', '*', '?', '"', '<', '>', '|')
                     if (newName.isNotEmpty() && invalidChars.any { it in newName }) {
-                        Snackbar.make(anchor, context.getString(R.string.op_invalid_name), Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(anchor, context.getString(R.string.op_invalid_name), Snackbar.LENGTH_SHORT).styleAsError().show()
                     } else if (newName.isNotEmpty() && newName != item.name) {
                         callback.onRename(item, newName)
                     }

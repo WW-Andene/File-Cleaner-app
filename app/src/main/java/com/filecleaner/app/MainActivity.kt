@@ -24,6 +24,7 @@ import com.filecleaner.app.databinding.ActivityMainBinding
 import com.filecleaner.app.ui.cloud.CloudSetupDialog
 import com.filecleaner.app.ui.onboarding.OnboardingDialog
 import com.filecleaner.app.utils.UndoHelper
+import com.filecleaner.app.utils.styleAsError
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.viewmodel.ScanPhase
 import com.filecleaner.app.viewmodel.ScanState
@@ -233,7 +234,7 @@ class MainActivity : AppCompatActivity() {
                     binding.tvScanStatus.text = getString(R.string.error_scan_failed)
                     Snackbar.make(binding.root,
                         getString(R.string.error_prefix, state.message),
-                        Snackbar.LENGTH_LONG).show()
+                        Snackbar.LENGTH_LONG).styleAsError().show()
                 }
             }
         }
@@ -313,7 +314,7 @@ class MainActivity : AppCompatActivity() {
                         binding.root,
                         getString(R.string.cloud_oauth_failed, result.error),
                         Snackbar.LENGTH_LONG
-                    ).show()
+                    ).styleAsError().show()
                 }
             }
         }

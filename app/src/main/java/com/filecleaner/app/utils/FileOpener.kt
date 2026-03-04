@@ -11,6 +11,7 @@ import androidx.core.content.FileProvider
 import androidx.navigation.findNavController
 import com.filecleaner.app.R
 import com.filecleaner.app.ui.viewer.FileViewerFragment
+import com.filecleaner.app.utils.styleAsError
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
 
@@ -97,7 +98,7 @@ object FileOpener {
     private fun showNoAppFound(context: Context) {
         val rootView = (context as? Activity)?.findViewById<View>(android.R.id.content)
         if (rootView != null) {
-            Snackbar.make(rootView, context.getString(R.string.no_app_found), Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(rootView, context.getString(R.string.no_app_found), Snackbar.LENGTH_SHORT).styleAsError().show()
         }
     }
 }

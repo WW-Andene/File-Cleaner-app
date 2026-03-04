@@ -2,6 +2,7 @@ package com.filecleaner.app.utils
 
 import com.jcraft.jsch.JSchException
 import java.io.IOException
+import java.util.concurrent.CancellationException
 
 /**
  * Retries a block up to [maxRetries] times with exponential backoff
@@ -19,10 +20,12 @@ inline fun <T> retryOnNetworkError(
         try {
             return block()
         } catch (e: Exception) {
+            // Always rethrow cancellation to preserve coroutine cooperative cancellation
+            if (e is CancellationException) throw e
             if (!isRetryable(e)) throw e
             lastException = e
             if (attempt < maxRetries - 1) {
-                val delay = initialDelayMs * (1L shl attempt) // 1s, 2s, 4s
+                val delay = (initialDelayMs * (1L shl attempt)).coerceAtMost(30_000L)
                 Thread.sleep(delay)
             }
         }

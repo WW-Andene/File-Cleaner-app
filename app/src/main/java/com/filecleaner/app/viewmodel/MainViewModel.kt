@@ -146,8 +146,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         )
 
     // Map of original path -> trash path for pending undo
+    // ConcurrentHashMap for safe snapshot in onCleared() when mutex is unavailable
     private val trashMutex = Mutex()
-    private var pendingTrash = mutableMapOf<String, String>()
+    private var pendingTrash = java.util.concurrent.ConcurrentHashMap<String, String>()
 
     // In-memory copies for reliable cache saving (postValue is async,
     // so LiveData .value may be stale when saveCache reads it)
@@ -396,7 +397,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             }
 
             trashMutex.withLock {
-                pendingTrash = movedPaths.toMutableMap()
+                pendingTrash.clear()
+                pendingTrash.putAll(movedPaths)
             }
 
             val failed = safeToDelete.size - movedPaths.size
@@ -451,18 +453,24 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             }
 
             if (restored.isNotEmpty()) {
+                // Compute updated file list under mutex, then run heavy I/O outside
+                val updated = stateMutex.withLock {
+                    val files = latestFiles + restored
+                    latestFiles = files
+                    _filesByCategory.postValue(files.groupBy { it.category })
+                    files
+                }
+                // Heavy I/O outside mutex to avoid blocking other state operations
+                val dupes = DuplicateFinder.findDuplicates(updated)
+                val minLargeFileMb = try { UserPreferences.largeFileThresholdMb } catch (_: Exception) { 50 }
+                val maxLargeFileCount = try { UserPreferences.maxLargeFiles } catch (_: Exception) { 200 }
+                val large = JunkFinder.findLargeFiles(updated, minLargeFileMb * 1024L * 1024L, maxLargeFileCount)
+                val junk = JunkFinder.findJunk(updated)
                 stateMutex.withLock {
-                    val updated = latestFiles + restored
-                    latestFiles = updated
-                    _filesByCategory.postValue(updated.groupBy { it.category })
-                    // Re-run classification for restored files
-                    val dupes = DuplicateFinder.findDuplicates(updated)
-                    val large = JunkFinder.findLargeFiles(updated)
-                    val junk = JunkFinder.findJunk(updated)
                     _duplicates.postValue(dupes)
                     _largeFiles.postValue(large)
                     _junkFiles.postValue(junk)
-                    recalcStats(updated, dupes, large, junk)
+                    recalcStats(latestFiles, dupes, large, junk)
                 }
                 saveCache()
             }
@@ -494,7 +502,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         // Fallback: copy + delete (handles cross-filesystem moves)
         return try {
             src.copyTo(dst, overwrite = false)
-            src.delete()
+            if (!src.delete()) {
+                // Source still exists — clean up the copy and report failure
+                dst.delete()
+                return false
+            }
             true
         } catch (_: Exception) {
             dst.delete() // Clean up partial copy
@@ -554,7 +566,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
             // B1+D1: Rebuild derived state after batch rename, but carry duplicate
             // groups from old items since renaming doesn't change file content.
-            stateMutex.withLock {
+            val (files, dupes) = stateMutex.withLock {
                 val renamedPaths = renames.map { it.first.path }.toSet()
                 // Build a map of old path → duplicate group for carrying over
                 val oldDupeGroups = latestFiles.filter { it.path in renamedPaths && it.duplicateGroup >= 0 }
@@ -574,12 +586,18 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 _filesByCategory.postValue(latestFiles.groupBy { it.category })
                 // D1: Incrementally update duplicate list by replacing old paths
                 val currentDupes = _duplicates.value ?: emptyList()
-                val dupes = pruneOrphanDuplicates(
+                val dupesResult = pruneOrphanDuplicates(
                     currentDupes.filter { it.path !in renamedPaths }
                         .plus(newItems.filter { it.duplicateGroup >= 0 })
                 )
-                val large = JunkFinder.findLargeFiles(latestFiles)
-                val junk = JunkFinder.findJunk(latestFiles)
+                latestFiles to dupesResult
+            }
+            // Heavy I/O outside mutex
+            val minLargeFileMb = try { UserPreferences.largeFileThresholdMb } catch (_: Exception) { 50 }
+            val maxLargeFileCount = try { UserPreferences.maxLargeFiles } catch (_: Exception) { 200 }
+            val large = JunkFinder.findLargeFiles(files, minLargeFileMb * 1024L * 1024L, maxLargeFileCount)
+            val junk = JunkFinder.findJunk(files)
+            stateMutex.withLock {
                 _duplicates.postValue(dupes)
                 _largeFiles.postValue(large)
                 _junkFiles.postValue(junk)
@@ -656,7 +674,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                         }
                 )
 
-                val large = JunkFinder.findLargeFiles(files)
+                val minLargeFileMb = try { UserPreferences.largeFileThresholdMb } catch (_: Exception) { 50 }
+                val maxLargeFileCount = try { UserPreferences.maxLargeFiles } catch (_: Exception) { 200 }
+                val large = JunkFinder.findLargeFiles(files, minLargeFileMb * 1024L * 1024L, maxLargeFileCount)
                 val junk = JunkFinder.findJunk(files)
                 _duplicates.postValue(updatedDupes)
                 _largeFiles.postValue(large)

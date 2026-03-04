@@ -35,8 +35,8 @@ object ScanCache {
             }
             root.put("files", filesArray)
 
-            // Serialize directory tree
-            root.put("tree", directoryNodeToJson(tree))
+            // Serialize directory tree (with depth guard matching read-side MAX_TREE_DEPTH)
+            root.put("tree", directoryNodeToJson(tree, 0))
 
             // Write to file
             val cacheFile = File(context.filesDir, CACHE_FILE)
@@ -67,7 +67,7 @@ object ScanCache {
                 var files: List<FileItem>? = null
                 var tree: DirectoryNode? = null
 
-                android.util.JsonReader(cacheFile.reader()).use { reader ->
+                android.util.JsonReader(cacheFile.reader(Charsets.UTF_8)).use { reader ->
                     reader.beginObject()
                     while (reader.hasNext()) {
                         when (reader.nextName()) {
@@ -191,7 +191,7 @@ object ScanCache {
 
     // D6-02: Only serialize structural data in tree nodes.
     // File items are already in the flat "files" array — no need to duplicate them.
-    private fun directoryNodeToJson(node: DirectoryNode): JSONObject = JSONObject().apply {
+    private fun directoryNodeToJson(node: DirectoryNode, depth: Int = 0): JSONObject = JSONObject().apply {
         put("path", node.path)
         put("name", node.name)
         put("totalSize", node.totalSize)
@@ -199,8 +199,10 @@ object ScanCache {
         put("depth", node.depth)
 
         val childrenArray = JSONArray()
-        for (child in node.children) {
-            childrenArray.put(directoryNodeToJson(child))
+        if (depth < MAX_TREE_DEPTH) {
+            for (child in node.children) {
+                childrenArray.put(directoryNodeToJson(child, depth + 1))
+            }
         }
         put("children", childrenArray)
     }

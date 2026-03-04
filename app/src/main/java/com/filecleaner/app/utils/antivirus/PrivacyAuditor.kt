@@ -266,7 +266,9 @@ object PrivacyAuditor {
             val listeners = flat.split(":").filter { it.isNotBlank() }
 
             for (listener in listeners) {
-                val pkg = listener.substringBefore('/')
+                // Use ComponentName.unflattenFromString for robust parsing of OEM formats
+                val component = android.content.ComponentName.unflattenFromString(listener)
+                val pkg = component?.packageName ?: listener.substringBefore('/')
                 if (pkg.startsWith("com.google.") || pkg.startsWith("com.android.") ||
                     pkg.startsWith("com.samsung.")
                 ) continue
@@ -345,6 +347,8 @@ object PrivacyAuditor {
         packages: List<android.content.pm.PackageInfo>
     ): List<ThreatResult> {
         val results = mutableListOf<ThreatResult>()
+        // QUERY_ALL_PACKAGES only meaningful on API 30+ (package visibility filtering)
+        if (android.os.Build.VERSION.SDK_INT < 30) return results
         val pm = context.packageManager
 
         for (pkg in packages) {

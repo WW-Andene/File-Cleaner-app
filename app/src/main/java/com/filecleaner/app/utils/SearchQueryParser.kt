@@ -125,7 +125,7 @@ object SearchQueryParser {
      * I2: Extracted from BrowseFragment and BaseFileListFragment to eliminate duplication.
      */
     fun filterItems(items: List<FileItem>, query: String): List<FileItem> {
-        if (query.isEmpty()) return items
+        if (query.isBlank()) return items
         return if (hasOperators(query)) {
             val parsed = parse(query)
             items.filter { matches(it, parsed) }

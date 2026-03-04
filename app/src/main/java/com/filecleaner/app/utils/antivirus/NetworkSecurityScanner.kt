@@ -118,8 +118,9 @@ object NetworkSecurityScanner {
             }
 
             // Check for explicit usesCleartextTraffic in the manifest via PackageManager
+            // Only for API >= 28 where the flag being set indicates explicit opt-in (avoids double-report)
             try {
-                if (hasCleartextInManifest(pkg.packageName, context)) {
+                if (appInfo.targetSdkVersion >= 28 && hasCleartextInManifest(pkg.packageName, context)) {
                     val appName = pm.getApplicationLabel(appInfo).toString()
                     results.add(
                         ThreatResult(
@@ -163,6 +164,8 @@ object NetworkSecurityScanner {
         for (pkg in packages) {
             val appInfo = pkg.applicationInfo ?: continue
             if (appInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0) continue
+            // Don't flag this app itself
+            if (pkg.packageName == context.packageName) continue
 
             val requested = pkg.requestedPermissions ?: continue
             val hasInternet = "android.permission.INTERNET" in requested
@@ -286,7 +289,7 @@ object NetworkSecurityScanner {
         try {
             val prop = ProcessBuilder("getprop", "service.adb.tcp.port").redirectErrorStream(true).start()
             val output = prop.inputStream.bufferedReader().readText().trim()
-            prop.waitFor()
+            if (!prop.waitFor(5, java.util.concurrent.TimeUnit.SECONDS)) prop.destroyForcibly()
             if (output.isNotEmpty() && output != "-1" && output != "0") {
                 results.add(
                     ThreatResult(

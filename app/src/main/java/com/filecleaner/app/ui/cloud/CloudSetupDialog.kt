@@ -46,9 +46,18 @@ object CloudSetupDialog {
      */
     private var pendingOAuthCallback: ((String) -> Unit)? = null
 
-    fun handleOAuthCallback(code: String) {
-        pendingOAuthCallback?.invoke(code)
+    /**
+     * Returns true if there was a pending dialog callback that handled the code,
+     * false if no dialog is waiting (caller should handle the code directly).
+     */
+    fun handleOAuthCallback(code: String): Boolean {
+        val callback = pendingOAuthCallback
         pendingOAuthCallback = null
+        if (callback != null) {
+            callback.invoke(code)
+            return true
+        }
+        return false
     }
 
     /**

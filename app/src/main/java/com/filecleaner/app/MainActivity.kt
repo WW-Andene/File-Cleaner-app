@@ -28,6 +28,9 @@ import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.viewmodel.ScanPhase
 import com.filecleaner.app.viewmodel.ScanState
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -293,9 +296,41 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleOAuthIntent(intent: Intent?) {
         val uri = intent?.data ?: return
-        val code = OAuthHelper.parseCallbackCode(uri)
-        if (code != null) {
-            CloudSetupDialog.handleOAuthCallback(code)
+        val code = OAuthHelper.parseCallbackCode(uri) ?: return
+
+        // Try the setup dialog callback first (dialog is still open).
+        // If it returns true, the setup dialog handled the code exchange itself.
+        if (CloudSetupDialog.handleOAuthCallback(code)) {
+            return
+        }
+
+        // No setup dialog was waiting. This was launched from the provider
+        // picker dialog which bypassed the setup dialog. Exchange the code here
+        // and create the connection directly.
+        val pendingProvider = OAuthHelper.getPendingProvider()
+        if (pendingProvider != null) {
+            CoroutineScope(Dispatchers.Main).launch {
+                val result = OAuthHelper.exchangeCodeForToken(this@MainActivity, code, pendingProvider)
+                if (result.isSuccess) {
+                    CloudSetupDialog.showOAuthResult(
+                        this@MainActivity,
+                        pendingProvider,
+                        result.accessToken
+                    ) { _ ->
+                        Snackbar.make(
+                            binding.root,
+                            getString(R.string.cloud_oauth_success),
+                            Snackbar.LENGTH_SHORT
+                        ).show()
+                    }
+                } else {
+                    Snackbar.make(
+                        binding.root,
+                        getString(R.string.cloud_oauth_failed, result.error),
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
+            }
         }
     }
 

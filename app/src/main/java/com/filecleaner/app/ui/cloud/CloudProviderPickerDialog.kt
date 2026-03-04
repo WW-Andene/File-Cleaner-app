@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import com.filecleaner.app.R
 import com.filecleaner.app.data.cloud.CloudConnection
+import com.filecleaner.app.data.cloud.OAuthHelper
 import com.filecleaner.app.data.cloud.ProviderType
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -11,7 +12,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 /**
  * Step 1 of the cloud connection flow: provider picker.
  *
- * Shows branded cards for each supported service (Google Drive, SFTP, WebDAV).
+ * Shows branded cards for each supported service (Google Drive, GitHub, SFTP, WebDAV).
+ * For Google Drive and GitHub, clicking the button will attempt OAuth first if
+ * OAuth credentials are configured, falling back to manual token entry otherwise.
  * Selecting a card dismisses this dialog and opens [CloudSetupDialog] for the
  * chosen provider.
  */
@@ -35,7 +38,7 @@ object CloudProviderPickerDialog {
             .setNegativeButton(context.getString(R.string.cancel), null)
             .create()
 
-        // Google Drive card & button — "Sign in with Google" OAuth-style
+        // Google Drive card & button — tries OAuth first, falls back to manual token
         val btnGoogleSignIn = view.findViewById<com.google.android.material.button.MaterialButton>(
             R.id.btn_google_sign_in
         )
@@ -43,10 +46,20 @@ object CloudProviderPickerDialog {
             dialog.dismiss()
             CloudSetupDialog.showForProvider(context, ProviderType.GOOGLE_DRIVE, onAdded)
         }
+        val launchGDriveOAuth = {
+            val config = OAuthHelper.getConfig(context, ProviderType.GOOGLE_DRIVE)
+            if (config != null) {
+                dialog.dismiss()
+                OAuthHelper.launchAuthFlow(context, ProviderType.GOOGLE_DRIVE, config.clientId)
+            } else {
+                // Fall back to manual token entry (which also has its own OAuth button)
+                launchGDrive()
+            }
+        }
         cardGDrive.setOnClickListener { launchGDrive() }
-        btnGoogleSignIn.setOnClickListener { launchGDrive() }
+        btnGoogleSignIn.setOnClickListener { launchGDriveOAuth() }
 
-        // GitHub card & button — "Connect with GitHub" OAuth-style
+        // GitHub card & button — tries OAuth first, falls back to manual token
         val btnGitHubConnect = view.findViewById<com.google.android.material.button.MaterialButton>(
             R.id.btn_github_connect
         )
@@ -54,8 +67,18 @@ object CloudProviderPickerDialog {
             dialog.dismiss()
             CloudSetupDialog.showForProvider(context, ProviderType.GITHUB, onAdded)
         }
+        val launchGitHubOAuth = {
+            val config = OAuthHelper.getConfig(context, ProviderType.GITHUB)
+            if (config != null) {
+                dialog.dismiss()
+                OAuthHelper.launchAuthFlow(context, ProviderType.GITHUB, config.clientId)
+            } else {
+                // Fall back to manual token entry (which also has its own OAuth button)
+                launchGitHub()
+            }
+        }
         cardGitHub.setOnClickListener { launchGitHub() }
-        btnGitHubConnect.setOnClickListener { launchGitHub() }
+        btnGitHubConnect.setOnClickListener { launchGitHubOAuth() }
 
         // SFTP card & button
         val btnSftpConnect = view.findViewById<com.google.android.material.button.MaterialButton>(

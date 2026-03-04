@@ -7,11 +7,13 @@ import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import com.filecleaner.app.R
 import com.filecleaner.app.data.UserPreferences
 import com.filecleaner.app.data.cloud.CloudConnectionStore
 import com.filecleaner.app.databinding.FragmentSettingsBinding
+import com.filecleaner.app.utils.CrashReporter
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
 
@@ -105,6 +107,27 @@ class SettingsFragment : Fragment() {
             UserPreferences.showHiddenFiles = isChecked
         }
 
+        // ── Crash Reporting ──
+        binding.switchCrashReporting.isChecked = UserPreferences.crashReportingEnabled
+        binding.switchCrashReporting.setOnCheckedChangeListener { _, isChecked ->
+            UserPreferences.crashReportingEnabled = isChecked
+            updateCrashFieldsVisibility()
+        }
+
+        binding.etGithubToken.setText(UserPreferences.crashReportGithubToken)
+        binding.etGithubToken.doAfterTextChanged { text ->
+            UserPreferences.crashReportGithubToken = text?.toString()?.trim() ?: ""
+        }
+
+        binding.etGithubRepo.setText(UserPreferences.crashReportRepo)
+        binding.etGithubRepo.doAfterTextChanged { text ->
+            val repo = text?.toString()?.trim() ?: ""
+            if (repo.isNotEmpty()) UserPreferences.crashReportRepo = repo
+        }
+
+        updateCrashFieldsVisibility()
+        updatePendingReportsLabel()
+
         // Note: Settings take effect on next scan
         binding.tvSettingsNote.text = getString(R.string.settings_rescan_note)
 
@@ -151,6 +174,22 @@ class SettingsFragment : Fragment() {
         binding.tvUndoValue.text = getString(R.string.settings_undo_value, UserPreferences.undoTimeoutMs / 1000)
     }
 
+    private fun updateCrashFieldsVisibility() {
+        val visible = if (UserPreferences.crashReportingEnabled) View.VISIBLE else View.GONE
+        binding.tilGithubToken.visibility = visible
+        binding.tilGithubRepo.visibility = visible
+    }
+
+    private fun updatePendingReportsLabel() {
+        val count = CrashReporter.pendingReportCount()
+        if (count > 0) {
+            binding.tvCrashPending.visibility = View.VISIBLE
+            binding.tvCrashPending.text = getString(R.string.settings_crash_pending, count)
+        } else {
+            binding.tvCrashPending.visibility = View.GONE
+        }
+    }
+
     companion object {
         private const val TAG_CLEAR_BUTTON = "clear_all_data_button"
     }
@@ -173,6 +212,8 @@ class SettingsFragment : Fragment() {
         // Reset user preferences
         ctx.getSharedPreferences("raccoon_prefs", android.content.Context.MODE_PRIVATE)
             .edit().clear().apply()
+        // Clear pending crash reports
+        CrashReporter.clearPendingReports()
         // Clear encrypted cloud prefs
         try {
             ctx.getSharedPreferences("cloud_connections", android.content.Context.MODE_PRIVATE)
@@ -191,6 +232,7 @@ class SettingsFragment : Fragment() {
         binding.seekStaleAge.setOnSeekBarChangeListener(null)
         binding.seekUndoTimeout.setOnSeekBarChangeListener(null)
         binding.switchHiddenFiles.setOnCheckedChangeListener(null)
+        binding.switchCrashReporting.setOnCheckedChangeListener(null)
         super.onDestroyView()
         _binding = null
     }

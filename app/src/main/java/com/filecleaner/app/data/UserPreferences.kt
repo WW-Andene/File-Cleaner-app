@@ -101,4 +101,19 @@ object UserPreferences {
     var hasSeenPrivacyNotice: Boolean
         get() = prefs.getBoolean("has_seen_privacy_notice", false)
         set(value) = prefs.edit().putBoolean("has_seen_privacy_notice", value).apply()
+
+    // ── Crash Reporting ──
+
+    var crashReportingEnabled: Boolean
+        get() = prefs.getBoolean("crash_reporting_enabled", false)
+        set(value) = prefs.edit().putBoolean("crash_reporting_enabled", value).apply()
+
+    var crashReportGithubToken: String
+        get() = prefs.getString("crash_report_github_token", "") ?: ""
+        set(value) = prefs.edit().putString("crash_report_github_token", value).apply()
+
+    /** GitHub repo in "owner/repo" format. */
+    var crashReportRepo: String
+        get() = prefs.getString("crash_report_repo", "WW-Andene/File-Cleaner-app") ?: "WW-Andene/File-Cleaner-app"
+        set(value) = prefs.edit().putString("crash_report_repo", value).apply()
 }

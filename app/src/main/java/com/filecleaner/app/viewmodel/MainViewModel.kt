@@ -200,8 +200,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     if (_scanState.value !is ScanState.Idle) return@withLock
 
                     latestFiles = files
-                    latestTree = tree
-                    _directoryTree.postValue(tree)
+                    // Reconstruct per-directory file lists from the flat file list
+                    val filesByDir = files.groupBy { File(it.path).parent ?: "" }
+                    val enrichedTree = enrichTreeWithFiles(tree, filesByDir)
+                    latestTree = enrichedTree
+                    _directoryTree.postValue(enrichedTree)
                     _filesByCategory.postValue(files.groupBy { it.category })
 
                     // D2: Use cached duplicate group IDs from the saved cache instead
@@ -278,32 +281,35 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             _largeFiles.value = emptyList()
             _junkFiles.value = emptyList()
             val scanStartMs = System.currentTimeMillis()
+            try {
             runCatching {
                 val (files, tree) = FileScanner.scanWithTree(getApplication()) { count ->
                     _scanState.postValue(ScanState.Scanning(count, ScanPhase.INDEXING, progressPercent = -1))
                 }
 
+                val protectedPaths = try { UserPreferences.protectedPaths } catch (_: Exception) { emptySet<String>() }
+
+                // Finding 2 fix: Run heavy I/O outside stateMutex
+                _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.DUPLICATES, progressPercent = ScanPhase.DUPLICATES.baseProgress()))
+                val dupes = DuplicateFinder.findDuplicates(files)
+                    .filter { it.path !in protectedPaths }
+
+                _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.ANALYZING, progressPercent = ScanPhase.ANALYZING.baseProgress()))
+                val maxLargeFileCount = try { UserPreferences.maxLargeFiles } catch (_: Exception) { 200 }
+                val large = JunkFinder.findLargeFiles(files, minLargeFileMb * 1024L * 1024L, maxLargeFileCount)
+
+                _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.JUNK, progressPercent = ScanPhase.JUNK.baseProgress()))
+                val junk = JunkFinder.findJunk(files)
+                    .filter { it.path !in protectedPaths }
+
+                // Only hold stateMutex for the actual state updates
                 stateMutex.withLock {
                     latestFiles = files
                     latestTree = tree
                     _directoryTree.postValue(tree)
                     _filesByCategory.postValue(files.groupBy { it.category })
-
-                    val protectedPaths = try { UserPreferences.protectedPaths } catch (_: Exception) { emptySet<String>() }
-
-                    _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.DUPLICATES, progressPercent = ScanPhase.DUPLICATES.baseProgress()))
-                    val dupes = DuplicateFinder.findDuplicates(files)
-                        .filter { it.path !in protectedPaths }
                     _duplicates.postValue(dupes)
-
-                    _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.ANALYZING, progressPercent = ScanPhase.ANALYZING.baseProgress()))
-                    val maxLargeFileCount = try { UserPreferences.maxLargeFiles } catch (_: Exception) { 200 }
-                    val large = JunkFinder.findLargeFiles(files, minLargeFileMb * 1024L * 1024L, maxLargeFileCount)
                     _largeFiles.postValue(large)
-
-                    _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.JUNK, progressPercent = ScanPhase.JUNK.baseProgress()))
-                    val junk = JunkFinder.findJunk(files)
-                        .filter { it.path !in protectedPaths }
                     _junkFiles.postValue(junk)
 
                     _storageStats.postValue(StorageStats(
@@ -318,10 +324,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
                 ensureActive() // P2-A4-01: Check cancellation before transitioning to Done
                 _scanState.postValue(ScanState.Done)
-                _isScanning = false
             }.onFailure { e ->
                 if (e is kotlinx.coroutines.CancellationException) throw e
-                _isScanning = false
                 _scanState.postValue(ScanState.Error(e.localizedMessage ?: str(R.string.op_scan_failed)))
             }
 
@@ -329,6 +333,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             // doesn't override ScanState.Done with Error.
             // D5: Flush immediately after scan (no debounce) since this is the primary save.
             saveCacheNow()
+            } finally {
+                _isScanning = false
+            }
         }
     }
 
@@ -543,7 +550,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             }
             val (success, failed) = results
             val msg = str(R.string.batch_rename_result, success, failed)
-            _operationResult.postValue(MoveResult(true, msg))
+            _operationResult.postValue(MoveResult(success > 0, msg))
 
             // B1+D1: Rebuild derived state after batch rename, but carry duplicate
             // groups from old items since renaming doesn't change file content.
@@ -665,12 +672,13 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
      *  coalesce into a single write after 3 seconds of inactivity.
      *  Uses NonCancellable so the write finishes even if the scope is cancelled. */
     private fun saveCache() {
-        val files = latestFiles.ifEmpty { return }
-        val tree = latestTree ?: return
         synchronized(cacheLock) {
             saveCacheJob?.cancel()
             saveCacheJob = viewModelScope.launch {
                 delay(SAVE_CACHE_DEBOUNCE_MS)
+                // Capture state after delay so the cache reflects the latest data
+                val files = latestFiles.ifEmpty { return@launch }
+                val tree = latestTree ?: return@launch
                 withContext(NonCancellable + Dispatchers.IO) {
                     try {
                         ScanCache.save(getApplication(), files, tree)
@@ -697,6 +705,15 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             }
         }
     }
+
+    /** Reconstruct per-directory file lists in the tree from the flat file list. */
+    private fun enrichTreeWithFiles(
+        node: DirectoryNode,
+        filesByDir: Map<String, List<FileItem>>
+    ): DirectoryNode = node.copy(
+        files = filesByDir[node.path] ?: emptyList(),
+        children = node.children.map { enrichTreeWithFiles(it, filesByDir) }
+    )
 
     private fun recalcStats(
         remaining: List<FileItem>,

@@ -157,8 +157,8 @@ object FileConverter {
                 val ratioW = maxWidth.toFloat() / original.width
                 val ratioH = maxHeight.toFloat() / original.height
                 val ratio = minOf(ratioW, ratioH, 1f)
-                val newW = (original.width * ratio).toInt()
-                val newH = (original.height * ratio).toInt()
+                val newW = (original.width * ratio).toInt().coerceAtLeast(1)
+                val newH = (original.height * ratio).toInt().coerceAtLeast(1)
 
                 resized = Bitmap.createScaledBitmap(original, newW, newH, true)
 
@@ -271,6 +271,8 @@ object FileConverter {
                 it.readLines()
             }
 
+            if (lines.isEmpty()) return ConvertResult(false, "", "Source file is empty")
+
             val paint = Paint().apply {
                 typeface = Typeface.MONOSPACE
                 textSize = fontSize
@@ -362,15 +364,26 @@ object FileConverter {
         val cells = mutableListOf<String>()
         var current = StringBuilder()
         var inQuotes = false
-        for (ch in line) {
+        var i = 0
+        while (i < line.length) {
+            val ch = line[i]
             when {
-                ch == '"' -> inQuotes = !inQuotes
+                ch == '"' -> {
+                    if (inQuotes && i + 1 < line.length && line[i + 1] == '"') {
+                        // RFC 4180: escaped quote ("") -> literal quote
+                        current.append('"')
+                        i++ // skip the second quote
+                    } else {
+                        inQuotes = !inQuotes
+                    }
+                }
                 ch == delimiter && !inQuotes -> {
                     cells.add(current.toString().trim())
                     current = StringBuilder()
                 }
                 else -> current.append(ch)
             }
+            i++
         }
         cells.add(current.toString().trim())
         return cells
@@ -468,11 +481,11 @@ object FileConverter {
                 ?: return ConvertResult(false, "", "Cannot determine video duration")
             val durationUs = durationMs * 1000
             val count = frameCount.coerceAtLeast(1)
-            val interval = durationUs / count
+            val interval = if (count == 1) durationUs / 2 else durationUs / count
 
             var extracted = 0
             for (i in 0 until count) {
-                val timeUs = interval * i
+                val timeUs = if (count == 1) interval else interval * i
                 val bitmap = retriever.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
                     ?: continue
                 try {

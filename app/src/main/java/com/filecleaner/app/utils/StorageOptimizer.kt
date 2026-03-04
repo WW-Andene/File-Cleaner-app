@@ -98,13 +98,13 @@ object StorageOptimizer {
             if (suggestion != null) {
                 // P2-A1-09: Avoid duplicate target paths by appending a suffix
                 var finalPath = suggestion.suggestedPath
-                if (finalPath in usedPaths) {
+                if (finalPath in usedPaths || File(finalPath).exists()) {
                     val targetFile = File(finalPath)
                     val parent = targetFile.parent ?: ""
                     val nameNoExt = targetFile.nameWithoutExtension
                     val ext = targetFile.extension
                     var counter = 1
-                    while (finalPath in usedPaths) {
+                    while (finalPath in usedPaths || File(finalPath).exists()) {
                         val suffix = if (ext.isNotEmpty()) "${nameNoExt}_($counter).$ext" else "${nameNoExt}_($counter)"
                         finalPath = "$parent/$suffix"
                         counter++

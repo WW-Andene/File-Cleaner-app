@@ -170,10 +170,6 @@ class FileOperationService(private val app: Application, private val storagePath
                 val outDirCanonical = outDir.canonicalPath + File.separator
                 var entry = zis.nextEntry
                 while (entry != null) {
-                    if (entry.name.contains("..")) {
-                        entry = zis.nextEntry
-                        continue
-                    }
                     val outFile = File(outDir, entry.name)
                     if (!outFile.canonicalPath.startsWith(outDirCanonical) &&
                         outFile.canonicalPath != outDir.canonicalPath) {
@@ -191,7 +187,7 @@ class FileOperationService(private val app: Application, private val storagePath
                         outFile.outputStream().buffered().use { out ->
                             val buf = ByteArray(IO_BUFFER_SIZE)
                             var len: Int
-                            while (zis.read(buf).also { len = it } > 0) {
+                            while (zis.read(buf).also { len = it } != -1) {
                                 totalExtracted += len
                                 if (totalExtracted > MAX_EXTRACT_BYTES) {
                                     out.close()

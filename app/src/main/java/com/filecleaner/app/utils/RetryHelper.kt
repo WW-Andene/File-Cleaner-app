@@ -2,8 +2,6 @@ package com.filecleaner.app.utils
 
 import com.jcraft.jsch.JSchException
 import java.io.IOException
-import java.net.ConnectException
-import java.net.SocketTimeoutException
 
 /**
  * Retries a block up to [maxRetries] times with exponential backoff
@@ -41,14 +39,14 @@ fun isRetryable(e: Exception): Boolean {
     if (e is JSchException && e.message?.contains("Auth fail", ignoreCase = true) == true) {
         return false
     }
-    // Retry on known network/IO exceptions
-    if (e is IOException || e is SocketTimeoutException || e is ConnectException) {
+    // Retry on known network/IO exceptions (SocketTimeoutException, ConnectException are subclasses of IOException)
+    if (e is IOException) {
         return true
     }
     // JSch wraps network errors in JSchException
     if (e is JSchException) {
         val cause = e.cause
-        if (cause is IOException || cause is SocketTimeoutException || cause is ConnectException) {
+        if (cause is IOException) {
             return true
         }
         // Connection-related JSch errors (e.g. "timeout" in connect, "connection is closed")

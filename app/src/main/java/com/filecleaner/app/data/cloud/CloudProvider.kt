@@ -74,14 +74,14 @@ data class CloudConnection(
 ) {
     companion object {
         fun googleDrive(displayName: String, authToken: String) = CloudConnection(
-            id = "gdrive_${System.currentTimeMillis()}",
+            id = "gdrive_${java.util.UUID.randomUUID()}",
             type = ProviderType.GOOGLE_DRIVE,
             displayName = displayName,
             authToken = authToken
         )
 
         fun sftp(displayName: String, host: String, port: Int = 22, username: String) = CloudConnection(
-            id = "sftp_${System.currentTimeMillis()}",
+            id = "sftp_${java.util.UUID.randomUUID()}",
             type = ProviderType.SFTP,
             displayName = displayName,
             host = host,
@@ -90,7 +90,7 @@ data class CloudConnection(
         )
 
         fun webdav(displayName: String, host: String, username: String, authToken: String) = CloudConnection(
-            id = "webdav_${System.currentTimeMillis()}",
+            id = "webdav_${java.util.UUID.randomUUID()}",
             type = ProviderType.WEBDAV,
             displayName = displayName,
             host = host,

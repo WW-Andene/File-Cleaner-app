@@ -16,6 +16,6 @@ object MotionUtil {
             Settings.Global.ANIMATOR_DURATION_SCALE,
             1f
         )
-        return scale < 1f
+        return scale <= 0f
     }
 }

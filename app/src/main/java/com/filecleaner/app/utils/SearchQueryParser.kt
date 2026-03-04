@@ -60,7 +60,7 @@ object SearchQueryParser {
                 "gb" -> (num * 1024 * 1024 * 1024).toLong()
                 else -> return@forEach
             }
-            if (op == ">") minSize = bytes else maxSize = bytes
+            if (op == ">") minSize = maxOf(minSize ?: 0L, bytes) else maxSize = minOf(maxSize ?: Long.MAX_VALUE, bytes)
             remaining = remaining.replace(match.value, "")
         }
 

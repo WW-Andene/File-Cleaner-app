@@ -40,6 +40,60 @@ description: >
 
 ---
 
+## SCOPE CONVENTION — "audit/fix" vs "full deep audit/fix"
+
+> **This is a binding instruction.** The words "full deep" in a user request are a scope multiplier.
+
+### The Rule
+
+| User Says | Scope | What Claude Does |
+|-----------|-------|-----------------|
+| **"audit/fix art design aesthetic"** | **Standard** | Run this SKILL only — the 21-step aesthetic audit path from §EXEC. Colors, typography, motion, icons, brand, tokens, states, components. |
+| **"full deep audit/fix art design aesthetic"** | **Everything UI** | Run this SKILL's full 21-step path **PLUS every section from `app-audit-SKILL.md` that touches UI**. Nothing visual, interactive, or user-facing is skipped. |
+
+### What "Full Deep" Adds (from `app-audit-SKILL.md`)
+
+When the user says **"full deep"** for a design/aesthetic audit, expand to include:
+
+| Added Section | Why — What It Touches |
+|---------------|----------------------|
+| §E (Visual Design Quality) | Structural/code side: tokens in code, spacing in layouts, contrast in implementation |
+| §F1 (Information Architecture) | Navigation structure, grouping logic, discoverability |
+| §F2 (User Flow Quality) | Dead ends, error recovery, back navigation |
+| §F3 (Onboarding & First Use) | First-run experience, permission requests — first visual impression |
+| §F4 (Copy Quality) | Labels, error messages, terminology — copy IS the visual surface |
+| §F5 (Micro-Interactions) | Functional feedback loops — motion needs interaction triggers |
+| §F6 (Engagement & Delight) | Personality moments, reward patterns — aesthetic at its most expressive |
+| §G1-G4 (Accessibility) | Content descriptions, TalkBack, focus order, contrast, reduced motion |
+| §H3 (Mobile & Touch) | Touch targets (48dp min), safe areas, gesture conflicts |
+| §L3 (Design System Standard.) | Token consistency, component variants, spacing unification |
+| §L4 (Copy & Content Standard.) | Voice consistency, terminology across the app |
+| §L5 (Interaction & Experience Polish) | Micro-animation refinement, transition consistency |
+| §D5 (Mobile Performance) | RecyclerView jank, animation frame drops — stuttering design is broken design |
+
+### Execution Order for "Full Deep Art Design Aesthetic"
+
+```
+PHASE 1 — Core aesthetic audit (this SKILL):
+  §0 → §DS1–DS2 → §DP0–DP2 → §DBI1+DBI3 → §DC1–DC5 → §DT1–DT4
+  → §DCO1–DCO6 → §DH1–DH4 → §DSA1–DSA5 → §DM1–DM5 → §DI1–DI4
+  → §DST1–DST4 → §DCVW1–DCVW3 → §DIL1–DIL3 → §DDV1–DDV3
+  → §DTA1–DTA2 → §DRC1–DRC3 → §DDT1–DDT2 → §DP3 → §DBI2 → §DCP1–DCP3
+
+PHASE 2 — Expanded UI audit (from app-audit-SKILL.md):
+  §E1–E10 → §F1–F6 → §G1–G4 → §H3 → §L3–L5 → §D5
+
+PHASE 3 — Cross-reference:
+  Review §VIII (Cross-Cutting Concern Map) for compound chains
+  between aesthetic findings and UX/accessibility/performance findings
+```
+
+### The General Principle
+
+**"Full deep"** applies to ANY subject, not just design. See `app-audit-SKILL.md` for the complete expansion map covering security, performance, UX, and code quality. The rule is always the same: if the subject touches it, audit it.
+
+---
+
 ## SKILL MAP — Quick Reference
 
 ### Section Index

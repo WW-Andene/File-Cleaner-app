@@ -410,6 +410,113 @@ description: >
 
 ---
 
+## SCOPE CONVENTION — "audit/fix" vs "full deep audit/fix"
+
+> **This is a binding instruction.** The words "full deep" in a user request are a scope multiplier. They change what gets audited and fixed.
+
+### The Rule
+
+| User Says | Scope | What Claude Does |
+|-----------|-------|-----------------|
+| **"audit/fix [subject]"** | **Standard** | Run only the core SKILL or category for that subject. Stay within its boundaries. |
+| **"full deep audit/fix [subject]"** | **Expanded — everything the subject touches** | Run the core SKILL/category **PLUS every cross-cutting section from either SKILL that affects the subject**. Follow every dependency chain. Leave nothing UI-adjacent unexamined. |
+
+### The Principle
+
+**"Full deep"** means: if the subject touches it, audit it. Not just the primary category — every section in both `app-audit-SKILL.md` and `design-aesthetic-audit-SKILL.md` where the subject has a dependency, a side effect, or a shared concern.
+
+### Subject-Specific Expansion Map
+
+#### "full deep audit/fix art design aesthetic" — EVERYTHING UI
+
+Standard scope: `design-aesthetic-audit-SKILL.md` 21-step path only.
+
+Full deep adds from `app-audit-SKILL.md`:
+| Added Section | Why — What It Touches |
+|---------------|----------------------|
+| §E (Visual Design Quality) | Structural/code side of design: tokens in code, spacing in layouts, contrast in implementation |
+| §F1 (Information Architecture) | Navigation structure, grouping logic, discoverability — design depends on IA |
+| §F2 (User Flow Quality) | Dead ends, error recovery, back navigation — aesthetic breaks if flow breaks |
+| §F3 (Onboarding & First Use) | First-run experience, permission requests — first visual impression |
+| §F4 (Copy Quality) | Labels, error messages, terminology — copy IS part of the visual surface |
+| §F5 (Micro-Interactions) | Functional feedback loops — motion architecture needs interaction triggers |
+| §F6 (Engagement & Delight) | Personality moments, reward patterns — aesthetic at its most expressive |
+| §G1-G4 (Accessibility) | Content descriptions, TalkBack, focus order, contrast, reduced motion — design must be accessible |
+| §H3 (Mobile & Touch) | Touch targets (48dp min), safe areas, gesture conflicts — design must be touchable |
+| §L3 (Design System Standard.) | Token consistency, component variants, spacing unification — the system under the design |
+| §L4 (Copy & Content Standard.) | Voice consistency, terminology — copy-visual alignment at scale |
+| §L5 (Interaction & Experience Polish) | Micro-animation refinement, transition consistency — the polish layer |
+| §D5 (Mobile Performance) | RecyclerView jank, animation frame drops — design that stutters is broken design |
+
+#### "full deep audit/fix security" — EVERYTHING TRUST
+
+Standard scope: §C (Security & Trust) only.
+
+Full deep adds:
+| Added Section | Why |
+|---------------|-----|
+| §B3 (Input Validation) | Validation gaps are security gaps |
+| §C7 (Mobile Security) | Permissions, exported components, WebView, ProGuard |
+| §K1-K5 (Domain Depths) | Financial precision, medical safety, AI prompt injection |
+| §B2 (Persistence) | Storage security, encryption, concurrent access |
+| §B4 (Import/Export) | Malformed import → prototype pollution → state corruption |
+| §M2 (Observability) | Can you detect a breach? Crash reporting, error tracking |
+| §O4 (Dependency Decay) | Outdated dependencies with known CVEs |
+| §H4 (Network Resilience) | Retry logic, degraded connectivity — attack surface |
+
+#### "full deep audit/fix performance" — EVERYTHING SPEED
+
+Standard scope: §D (Performance & Resources) only.
+
+Full deep adds:
+| Added Section | Why |
+|---------------|-----|
+| §D5 (Mobile Performance) | Coroutines, RecyclerView, process death, ANR |
+| §L6 (Performance Polish) | Perceived performance, skeleton screens, optimistic updates |
+| §O1 (Scale Cliffs) | Where does it break under load? |
+| §H4 (Network Resilience) | Retry, offline, degraded connectivity |
+| §D3 (Resource Budget) | APK size, image optimization, font loading |
+| §I1 (Dead Code) | Dead code = wasted bundle size = slower load |
+| §A6 (Async & Concurrency) | Race conditions, stale closures, ordering bugs — perf symptoms |
+| §J3 (Asset Management) | Image optimization, lazy loading, format selection |
+
+#### "full deep audit/fix UX" — EVERYTHING USER-FACING
+
+Standard scope: §F (UX, IA & Copy) only.
+
+Full deep adds:
+| Added Section | Why |
+|---------------|-----|
+| §E (Visual Design Quality) | UX and visual design are inseparable |
+| §G1-G4 (Accessibility) | Accessibility IS UX for affected users |
+| §H3 (Mobile & Touch) | Touch interaction IS UX |
+| §L5 (Interaction Polish) | Polish IS the UX quality ceiling |
+| §F6 (Engagement & Delight) | Emotional design IS UX at its best |
+| Full `design-aesthetic-audit-SKILL.md` | The aesthetic layer IS part of the user experience |
+
+#### "full deep audit/fix code quality" — EVERYTHING MAINTAINABLE
+
+Standard scope: §I (Code Quality & Architecture) only.
+
+Full deep adds:
+| Added Section | Why |
+|---------------|-----|
+| §L1-L2 (Optimization & Standardization) | Standards are code quality infrastructure |
+| §O1-O7 (All Projections) | Future maintainability depends on today's architecture |
+| §M1-M3 (Deployment & Ops) | Versioning, monitoring, feature flags — operational code quality |
+| §B1 (State Architecture) | State bugs are architecture bugs |
+| §I5 (Module Architecture) | Coupling, cohesion, dependency direction |
+
+### Claude Execution Note
+
+When "full deep" is detected:
+1. **Use `TodoWrite`** to list ALL sections (core + expanded) as individual tasks
+2. **Run core SKILL sections first**, then expanded sections in order
+3. **Cross-reference findings** — a design finding may reveal a UX gap, a UX gap may reveal an accessibility gap
+4. **Follow the Cross-Cutting Concern Map (§VIII)** — it maps exactly these dependency chains
+
+---
+
 ## SKILL MAP — Quick Reference
 
 > **Read this first.** This is a 2,800+ line skill. You never need all of it. Use this map.

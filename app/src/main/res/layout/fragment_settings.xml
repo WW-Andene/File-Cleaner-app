@@ -171,36 +171,53 @@
             android:text="@string/settings_safety_section"
             android:textAppearance="@style/TextAppearance.FileCleaner.SectionHeader"
             android:layout_marginTop="@dimen/spacing_xl"
-            android:layout_marginBottom="@dimen/spacing_md" />
+            android:layout_marginBottom="@dimen/spacing_sm" />
 
-        <!-- Undo timeout -->
-        <TextView
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/settings_undo_label"
-            android:textAppearance="@style/TextAppearance.FileCleaner.Body"
-            android:layout_marginTop="@dimen/spacing_md" />
+            app:cardCornerRadius="@dimen/radius_card"
+            app:cardElevation="@dimen/elevation_subtle"
+            app:cardBackgroundColor="@color/surfaceColor"
+            app:strokeWidth="@dimen/stroke_default"
+            app:strokeColor="@color/borderSubtle"
+            android:layout_marginBottom="@dimen/spacing_lg">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <SeekBar
-                android:id="@+id/seek_undo_timeout"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:contentDescription="@string/a11y_seek_undo_timeout" />
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_lg">
 
-            <TextView
-                android:id="@+id/tv_undo_value"
-                android:layout_width="@dimen/seekbar_value_width"
-                android:layout_height="wrap_content"
-                android:gravity="end"
-                android:textAppearance="@style/TextAppearance.FileCleaner.NumericBody" />
-        </LinearLayout>
+                <!-- Undo timeout -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_undo_label"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.Body" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <SeekBar
+                        android:id="@+id/seek_undo_timeout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:contentDescription="@string/a11y_seek_undo_timeout" />
+
+                    <TextView
+                        android:id="@+id/tv_undo_value"
+                        android:layout_width="@dimen/seekbar_value_width"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:textAppearance="@style/TextAppearance.FileCleaner.NumericBody" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- F1: Display section header -->
         <TextView
@@ -209,34 +226,44 @@
             android:text="@string/settings_display_section"
             android:textAppearance="@style/TextAppearance.FileCleaner.SectionHeader"
             android:layout_marginTop="@dimen/spacing_xl"
-            android:layout_marginBottom="@dimen/spacing_md" />
+            android:layout_marginBottom="@dimen/spacing_sm" />
 
-        <!-- Show hidden files -->
-        <LinearLayout
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="@dimen/spacing_lg"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:minHeight="@dimen/icon_button"
-            android:paddingVertical="@dimen/spacing_sm">
+            app:cardCornerRadius="@dimen/radius_card"
+            app:cardElevation="@dimen/elevation_subtle"
+            app:cardBackgroundColor="@color/surfaceColor"
+            app:strokeWidth="@dimen/stroke_default"
+            app:strokeColor="@color/borderSubtle"
+            android:layout_marginBottom="@dimen/spacing_lg">
 
-            <TextView
-                android:layout_width="0dp"
+            <!-- Show hidden files -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/settings_hidden_files"
-                android:textAppearance="@style/TextAppearance.FileCleaner.Body" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:minHeight="@dimen/icon_button"
+                android:padding="@dimen/spacing_lg">
 
-            <com.google.android.material.switchmaterial.SwitchMaterial
-                android:id="@+id/switch_hidden_files"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/a11y_switch_hidden_files" />
-        </LinearLayout>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/settings_hidden_files"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.Body" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switch_hidden_files"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/a11y_switch_hidden_files" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Crash Reporting section -->
         <TextView

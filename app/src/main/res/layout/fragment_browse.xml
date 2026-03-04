@@ -102,21 +102,6 @@
             app:iconGravity="end"
             app:iconTint="@color/textSecondary" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_view_mode"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/button_height_sm"
-            android:text="@string/display_options"
-            android:textAllCaps="false"
-            android:textSize="@dimen/text_body_small"
-            android:textColor="@color/textSecondary"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            app:icon="@drawable/ic_view_list"
-            app:iconSize="16dp"
-            app:iconGravity="textStart"
-            app:iconTint="@color/textSecondary" />
     </LinearLayout>
 
     <!-- Collapsible display options panel -->

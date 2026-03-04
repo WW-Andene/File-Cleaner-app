@@ -22,6 +22,7 @@ import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.databinding.FragmentListActionBinding
 import android.widget.HorizontalScrollView
 import androidx.annotation.StringRes
+import android.widget.PopupMenu
 import com.filecleaner.app.ui.adapters.ColorMode
 import com.filecleaner.app.ui.adapters.FileAdapter
 import com.filecleaner.app.ui.adapters.ViewMode
@@ -197,9 +198,8 @@ abstract class BaseFileListFragment : Fragment() {
         // Collapsible filter panel toggle
         binding.btnToggleFilters.setOnClickListener { toggleFilterPanel() }
 
-        // View mode toggle
-        binding.btnViewMode.setOnClickListener { cycleViewMode() }
-        updateViewModeIcon()
+        // View mode popup menu
+        binding.btnViewMode.setOnClickListener { showViewModePopup() }
 
         // Grid columns chips
         setupGridColumnChips()
@@ -336,13 +336,28 @@ abstract class BaseFileListFragment : Fragment() {
         )
     }
 
-    private fun cycleViewMode() {
-        val modes = ViewMode.entries
-        val nextIndex = (modes.indexOf(currentViewMode) + 1) % modes.size
-        currentViewMode = modes[nextIndex]
-        adapter.viewMode = currentViewMode
-        applyLayoutManager()
-        updateViewModeIcon()
+    private fun showViewModePopup() {
+        val popup = PopupMenu(requireContext(), binding.btnViewMode)
+        val modes = listOf(
+            getString(R.string.sort_name_asc).let { "List" } to ViewMode.LIST,
+            "Compact" to ViewMode.LIST_COMPACT,
+            "Thumbnails" to ViewMode.LIST_WITH_THUMBNAILS,
+            "Grid 2" to ViewMode.GRID_LARGE,
+            "Grid 3" to ViewMode.GRID_MEDIUM,
+            "Grid 4" to ViewMode.GRID_SMALL
+        )
+        modes.forEachIndexed { index, (label, _) ->
+            popup.menu.add(0, index, index, label)
+        }
+        popup.setOnMenuItemClickListener { item ->
+            val (_, mode) = modes[item.itemId]
+            currentViewMode = mode
+            adapter.viewMode = currentViewMode
+            applyLayoutManager()
+            updateGridColumnsVisibility()
+            true
+        }
+        popup.show()
     }
 
     private fun applyLayoutManager() {
@@ -357,15 +372,6 @@ abstract class BaseFileListFragment : Fragment() {
         if (!isGridMode) {
             dividerDecoration?.let { binding.recyclerView.addItemDecoration(it) }
         }
-    }
-
-    private fun updateViewModeIcon() {
-        val iconRes = when (currentViewMode) {
-            ViewMode.LIST_COMPACT, ViewMode.LIST, ViewMode.LIST_WITH_THUMBNAILS -> R.drawable.ic_view_list
-            ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE, ViewMode.GRID_XLARGE -> R.drawable.ic_view_grid
-        }
-        (binding.btnViewMode as? com.google.android.material.button.MaterialButton)?.setIconResource(iconRes)
-        updateGridColumnsVisibility()
     }
 
     private var suppressGridChipListener = false
@@ -396,7 +402,7 @@ abstract class BaseFileListFragment : Fragment() {
                     currentViewMode = mode
                     adapter.viewMode = currentViewMode
                     applyLayoutManager()
-                    updateViewModeIcon()
+                    updateGridColumnsVisibility()
                 }
             }
         }

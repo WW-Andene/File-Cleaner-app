@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -27,8 +28,8 @@ import com.filecleaner.app.utils.FileOpener
 import com.filecleaner.app.utils.FileScanner
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.MainViewModel
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -105,7 +106,7 @@ class DualPaneFragment : Fragment() {
             countLabel = binding.tvCountLeft,
             upButton = binding.btnUpLeft,
             pickDirButton = binding.btnPickDirLeft,
-            tabLayout = binding.tabModeLeft,
+            modeButton = binding.btnModeLeft,
             pane = Pane.LEFT
         )
 
@@ -117,7 +118,7 @@ class DualPaneFragment : Fragment() {
             countLabel = binding.tvCountRight,
             upButton = binding.btnUpRight,
             pickDirButton = binding.btnPickDirRight,
-            tabLayout = binding.tabModeRight,
+            modeButton = binding.btnModeRight,
             pane = Pane.RIGHT
         )
 
@@ -189,7 +190,7 @@ class DualPaneFragment : Fragment() {
         countLabel: TextView,
         upButton: ImageButton,
         pickDirButton: ImageButton,
-        tabLayout: TabLayout,
+        modeButton: MaterialButton,
         pane: Pane
     ) {
         recycler.layoutManager = LinearLayoutManager(requireContext())
@@ -263,8 +264,9 @@ class DualPaneFragment : Fragment() {
             showDirectoryPicker(pane)
         }
 
-        // --- Setup TabLayout for content mode ---
-        setupTabLayout(tabLayout, pane)
+        // --- Setup mode selector popup ---
+        updateModeButtonText(pane)
+        modeButton.setOnClickListener { showModePopup(modeButton, pane) }
     }
 
     /** Payload carried by a drag operation between panes. */
@@ -328,41 +330,32 @@ class DualPaneFragment : Fragment() {
             .show()
     }
 
-    private fun setupTabLayout(tabLayout: TabLayout, pane: Pane) {
-        // Add a tab for each PaneContentMode
-        PaneContentMode.entries.forEachIndexed { index, _ ->
-            val tab = tabLayout.newTab().setText(tabLabels[index])
-            tabLayout.addTab(tab)
+    private fun showModePopup(anchor: View, pane: Pane) {
+        val popup = PopupMenu(requireContext(), anchor)
+        PaneContentMode.entries.forEachIndexed { index, mode ->
+            popup.menu.add(0, index, index, getString(mode.labelRes))
         }
-
-        // Set initial selection to match current mode
-        val currentMode = if (pane == Pane.LEFT) leftMode else rightMode
-        val currentIndex = PaneContentMode.entries.indexOf(currentMode)
-        if (currentIndex >= 0) {
-            tabLayout.getTabAt(currentIndex)?.select()
+        popup.setOnMenuItemClickListener { item ->
+            val selectedMode = PaneContentMode.entries[item.itemId]
+            if (pane == Pane.LEFT) leftMode = selectedMode else rightMode = selectedMode
+            activePane = pane
+            updateModeButtonText(pane)
+            applyContentMode(pane)
+            true
         }
-
-        // Listen for tab changes
-        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab) {
-                val selectedMode = PaneContentMode.entries[tab.position]
-                if (pane == Pane.LEFT) leftMode = selectedMode else rightMode = selectedMode
-                activePane = pane
-                applyContentMode(pane)
-            }
-            override fun onTabUnselected(tab: TabLayout.Tab) {}
-            override fun onTabReselected(tab: TabLayout.Tab) {}
-        })
+        popup.show()
     }
 
-    /** Sync the TabLayout selection with the current mode (e.g., after swap or tree navigation). */
-    private fun syncTabSelection(pane: Pane) {
+    /** Update the mode button text to reflect the current mode. */
+    private fun updateModeButtonText(pane: Pane) {
         val mode = if (pane == Pane.LEFT) leftMode else rightMode
-        val tabLayout = if (pane == Pane.LEFT) binding.tabModeLeft else binding.tabModeRight
-        val index = PaneContentMode.entries.indexOf(mode)
-        if (index >= 0 && tabLayout.selectedTabPosition != index) {
-            tabLayout.getTabAt(index)?.select()
-        }
+        val button = if (pane == Pane.LEFT) binding.btnModeLeft else binding.btnModeRight
+        button.text = getString(mode.labelRes)
+    }
+
+    /** Sync the mode button text with the current mode (e.g., after swap or tree navigation). */
+    private fun syncTabSelection(pane: Pane) {
+        updateModeButtonText(pane)
     }
 
     // ── Content Mode Handling ──

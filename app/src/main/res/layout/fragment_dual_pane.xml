@@ -63,23 +63,25 @@
             android:background="@color/surfaceColor"
             android:layout_marginEnd="1dp">
 
-            <!-- Left pane content mode tabs -->
-            <com.google.android.material.tabs.TabLayout
-                android:id="@+id/tab_mode_left"
+            <!-- Left pane content mode selector -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_mode_left"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="match_parent"
                 android:layout_height="32dp"
                 android:background="@color/surfaceDim"
-                app:tabMode="scrollable"
-                app:tabGravity="start"
-                app:tabMinWidth="48dp"
-                app:tabPaddingStart="8dp"
-                app:tabPaddingEnd="8dp"
-                app:tabTextColor="@color/textSecondary"
-                app:tabSelectedTextColor="@color/colorPrimary"
-                app:tabIndicatorColor="@color/colorPrimary"
-                app:tabIndicatorHeight="2dp"
-                app:tabInlineLabel="true"
-                app:tabTextAppearance="@style/TextAppearance.FileCleaner.Caption" />
+                android:text="@string/dual_pane_tab_browse"
+                android:textAllCaps="false"
+                android:textColor="@color/colorPrimary"
+                android:textSize="12sp"
+                android:gravity="start|center_vertical"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="@dimen/spacing_sm"
+                app:icon="@drawable/ic_arrow_down"
+                app:iconSize="14dp"
+                app:iconGravity="end"
+                app:iconTint="@color/textSecondary" />
 
             <!-- Left pane path bar -->
             <LinearLayout
@@ -175,23 +177,25 @@
             android:background="@color/surfaceColor"
             android:layout_marginStart="1dp">
 
-            <!-- Right pane content mode tabs -->
-            <com.google.android.material.tabs.TabLayout
-                android:id="@+id/tab_mode_right"
+            <!-- Right pane content mode selector -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_mode_right"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="match_parent"
                 android:layout_height="32dp"
                 android:background="@color/surfaceDim"
-                app:tabMode="scrollable"
-                app:tabGravity="start"
-                app:tabMinWidth="48dp"
-                app:tabPaddingStart="8dp"
-                app:tabPaddingEnd="8dp"
-                app:tabTextColor="@color/textSecondary"
-                app:tabSelectedTextColor="@color/colorPrimary"
-                app:tabIndicatorColor="@color/colorPrimary"
-                app:tabIndicatorHeight="2dp"
-                app:tabInlineLabel="true"
-                app:tabTextAppearance="@style/TextAppearance.FileCleaner.Caption" />
+                android:text="@string/dual_pane_tab_browse"
+                android:textAllCaps="false"
+                android:textColor="@color/colorPrimary"
+                android:textSize="12sp"
+                android:gravity="start|center_vertical"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="@dimen/spacing_sm"
+                app:icon="@drawable/ic_arrow_down"
+                app:iconSize="14dp"
+                app:iconGravity="end"
+                app:iconTint="@color/textSecondary" />
 
             <!-- Right pane path bar -->
             <LinearLayout

@@ -171,10 +171,6 @@ class BrowseFragment : Fragment() {
         binding.btnToggleExpandCollapse.setOnClickListener { toggleAllFolders() }
         updateExpandCollapseButton()
 
-        // View mode toggle
-        binding.btnViewMode.setOnClickListener { cycleViewMode() }
-        updateViewModeIcon()
-
         // Grid columns chips (inside filter panel)
         setupGridColumnChips()
 
@@ -319,15 +315,6 @@ class BrowseFragment : Fragment() {
         )
     }
 
-    private fun cycleViewMode() {
-        val modes = ViewMode.entries
-        val nextIndex = (modes.indexOf(currentViewMode) + 1) % modes.size
-        currentViewMode = modes[nextIndex]
-        adapter.viewMode = currentViewMode
-        applyLayoutManager()
-        updateViewModeIcon()
-    }
-
     private fun applyLayoutManager() {
         dividerDecoration?.let { binding.recyclerView.removeItemDecoration(it) }
         val isGridMode = currentViewMode in setOf(ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE, ViewMode.GRID_XLARGE)
@@ -347,15 +334,6 @@ class BrowseFragment : Fragment() {
         if (!isGridMode) {
             dividerDecoration?.let { binding.recyclerView.addItemDecoration(it) }
         }
-    }
-
-    private fun updateViewModeIcon() {
-        val iconRes = when (currentViewMode) {
-            ViewMode.LIST_COMPACT, ViewMode.LIST, ViewMode.LIST_WITH_THUMBNAILS -> R.drawable.ic_view_list
-            ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE, ViewMode.GRID_XLARGE -> R.drawable.ic_view_grid
-        }
-        (binding.btnViewMode as? com.google.android.material.button.MaterialButton)?.setIconResource(iconRes)
-        updateGridColumnsVisibility()
     }
 
     private var suppressGridChipListener = false
@@ -386,7 +364,7 @@ class BrowseFragment : Fragment() {
                     currentViewMode = mode
                     adapter.viewMode = currentViewMode
                     applyLayoutManager()
-                    updateViewModeIcon()
+                    updateGridColumnsVisibility()
                 }
             }
         }
@@ -455,7 +433,7 @@ class BrowseFragment : Fragment() {
                     currentViewMode = mode
                     adapter.viewMode = currentViewMode
                     applyLayoutManager()
-                    updateViewModeIcon()
+                    updateGridColumnsVisibility()
                     updateDisplayGridColumnsVisibility()
                 }
             }
@@ -503,7 +481,7 @@ class BrowseFragment : Fragment() {
                     currentViewMode = mode
                     adapter.viewMode = currentViewMode
                     applyLayoutManager()
-                    updateViewModeIcon()
+                    updateGridColumnsVisibility()
                     syncDisplayModeChips()
                 }
             }

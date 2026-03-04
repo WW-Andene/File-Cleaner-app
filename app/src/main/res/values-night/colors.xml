@@ -1,52 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Primary: Lighter green for dark mode legibility -->
-    <color name="colorPrimary">#66BB9A</color>
-    <color name="colorPrimaryDark">#2E7D5F</color>
-    <color name="colorPrimaryLight">#81C9A8</color>
-    <color name="colorPrimaryContainer">#1A3D2E</color>
-    <color name="colorOnPrimaryContainer">#B8E6D0</color>
+    <color name="colorPrimary">#5ECE9E</color>
+    <color name="colorPrimaryDark">#247A58</color>
+    <color name="colorPrimaryLight">#7BDBB4</color>
+    <color name="colorPrimaryContainer">#183828</color>
+    <color name="colorOnPrimaryContainer">#B0E8CE</color>
 
     <!-- Accent -->
-    <color name="colorAccent">#F0A856</color>
+    <color name="colorAccent">#F2A84E</color>
     <color name="colorAccentLight">#3D2E1A</color>
 
-    <!-- Semantic — warm-shifted for character consistency (§DP3) -->
-    <color name="colorError">#CF5353</color>
+    <!-- Semantic — warm-shifted for character consistency -->
+    <color name="colorError">#EF6B6B</color>
     <color name="colorErrorLight">#3D1F1A</color>
-    <color name="colorSuccess">#66BB78</color>
-    <color name="colorWarning">#FFCA5F</color>
+    <color name="colorSuccess">#5ECE78</color>
+    <color name="colorWarning">#FFD06A</color>
     <color name="colorSuccessLight">#1A3D1F</color>
     <color name="colorWarningLight">#3D331A</color>
 
     <!-- Surface elevation ladder (chromatic near-blacks, ~3-4% lightness steps) -->
-    <color name="surfaceBase">#0E1311</color>
-    <color name="surfaceColor">#161C19</color>
-    <color name="surfaceElevated">#1F2723</color>
-    <color name="surfaceDim">#252E2A</color>
+    <color name="surfaceBase">#0C110F</color>
+    <color name="surfaceColor">#141A17</color>
+    <color name="surfaceElevated">#1C2420</color>
+    <color name="surfaceDim">#232C28</color>
 
     <!-- Text (chromatic green-gray, not pure gray) -->
-    <color name="textPrimary">#E6E4DF</color>
-    <color name="textSecondary">#9FA5A2</color>
-    <color name="textTertiary">#8A918D</color>
-    <color name="textOnPrimary">#0E1311</color>
+    <color name="textPrimary">#ECE9E4</color>
+    <color name="textSecondary">#A2A8A5</color>
+    <color name="textTertiary">#7E8682</color>
+    <color name="textOnPrimary">#0C110F</color>
     <color name="textDisabled">#4A514D</color>
 
     <!-- Borders -->
-    <color name="borderDefault">#2D3531</color>
-    <color name="borderSubtle">#222A26</color>
-    <color name="borderFocus">#66BB9A</color>
+    <color name="borderDefault">#2A322E</color>
+    <color name="borderSubtle">#202820</color>
+    <color name="borderFocus">#5ECE9E</color>
 
     <!-- Selection / highlight -->
-    <color name="selectedBackground">#1A3D2E</color>
+    <color name="selectedBackground">#183828</color>
     <color name="selectedBorder">#2E7D5F</color>
 
     <!-- Bottom nav -->
-    <color name="bottomNavBackground">#171D1A</color>
+    <color name="bottomNavBackground">#151B18</color>
+    <color name="bottomNavDivider">#242C28</color>
 
     <!-- Scan bar -->
-    <color name="scanBarBackground">#1A3D2E</color>
-    <color name="scanBarText">#B8E6D0</color>
+    <color name="scanBarBackground">#183828</color>
+    <color name="scanBarText">#B0E8CE</color>
+
+    <!-- Hero card gradient-like tints -->
+    <color name="heroCardStart">#1E6B4C</color>
+    <color name="heroCardEnd">#165740</color>
+
+    <!-- Card icon tint backgrounds (unique per feature) -->
+    <color name="tintAnalysis">#3D2E1A</color>
+    <color name="tintQuickClean">#3D1F1A</color>
+    <color name="tintTree">#1A2838</color>
+    <color name="tintOptimize">#3D2E1A</color>
+    <color name="tintDualPane">#1A2838</color>
+    <color name="tintCloud">#251A3D</color>
+    <color name="tintAntivirus">#1A3D1F</color>
+    <color name="tintJanitor">#1A2838</color>
 
     <!-- Text on colored backgrounds (e.g. tree view headers) -->
     <color name="textOnColor">#CCFFFFFF</color>
@@ -64,14 +79,14 @@
     <!-- Cloud provider branding (dark mode) -->
     <color name="googleBlue">#8AB4F8</color>
     <color name="googleBlueDark">#669DF6</color>
-    <color name="googleButtonBg">#1F2723</color>
+    <color name="googleButtonBg">#1C2420</color>
     <color name="googleButtonBorder">#3C4043</color>
     <color name="googleButtonText">#E8EAED</color>
     <color name="sftpAccent">#90A4AE</color>
     <color name="sftpAccentLight">#1C2326</color>
     <color name="webdavAccent">#4DD0E1</color>
     <color name="webdavAccentLight">#1A2D30</color>
-    <color name="providerCardIconBg">#252E2A</color>
+    <color name="providerCardIconBg">#232C28</color>
 
     <!-- Category light backgrounds (for analysis bars) -->
     <color name="catImageBg">#1F1A2E</color>
@@ -84,10 +99,10 @@
     <color name="catOtherBg">#1E2527</color>
 
     <!-- Analysis card colors -->
-    <color name="analysisStorageBarBg">#252E2A</color>
-    <color name="analysisStorageBarFill">#66BB9A</color>
+    <color name="analysisStorageBarBg">#232C28</color>
+    <color name="analysisStorageBarFill">#5ECE9E</color>
     <color name="analysisSavingsBackground">#2E261A</color>
-    <color name="analysisSavingsText">#F0A856</color>
+    <color name="analysisSavingsText">#F2A84E</color>
 
     <!-- Duplicate group backgrounds -->
     <color name="dupGroup0">#1B3D28</color>
@@ -110,8 +125,8 @@
     <color name="sizeMedium">#FFEE58</color>
 
     <!-- Legend chip background -->
-    <color name="legendChipBg">#252E2A</color>
-    <color name="legendTextColor">#9FA5A2</color>
+    <color name="legendChipBg">#232C28</color>
+    <color name="legendTextColor">#A2A8A5</color>
 
     <!-- GitHub branding (dark mode) -->
     <color name="githubAccent">#F0F3F6</color>
@@ -139,10 +154,10 @@
     <color name="sizeMediumBg">#2E2C1A</color>
 
     <!-- Google Sign-In button colors (dark mode) -->
-    <color name="googleSignInBg">#1F2723</color>
+    <color name="googleSignInBg">#1C2420</color>
     <color name="googleSignInBorder">#3C4043</color>
 
-    <!-- Syntax highlighting colors (dark mode — lighter for readability on dark surfaces) -->
+    <!-- Syntax highlighting colors (dark mode) -->
     <color name="syntaxKeyword">#B4A0FF</color>
     <color name="syntaxString">#81C995</color>
     <color name="syntaxComment">#7E8E86</color>

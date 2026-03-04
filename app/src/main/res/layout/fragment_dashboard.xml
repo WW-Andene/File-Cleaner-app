@@ -37,17 +37,16 @@
                 android:textAppearance="@style/TextAppearance.FileCleaner.Title" />
         </LinearLayout>
 
-        <!-- Storage usage card -->
+        <!-- Storage usage card — prominent hero card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="@dimen/radius_card"
-            app:cardElevation="@dimen/elevation_none"
+            app:cardCornerRadius="@dimen/radius_header"
+            app:cardElevation="@dimen/elevation_raised"
             app:cardBackgroundColor="@color/colorPrimaryContainer"
-            app:strokeWidth="@dimen/stroke_default"
-            app:strokeColor="@color/borderSubtle"
+            app:strokeWidth="@dimen/stroke_none"
             android:foreground="?attr/selectableItemBackground"
-            android:layout_marginBottom="@dimen/spacing_md">
+            android:layout_marginBottom="@dimen/spacing_lg">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -100,10 +99,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="@dimen/radius_card"
-            app:cardElevation="@dimen/elevation_none"
+            app:cardElevation="@dimen/elevation_subtle"
             app:cardBackgroundColor="@color/analysisSavingsBackground"
-            app:strokeWidth="@dimen/stroke_default"
-            app:strokeColor="@color/borderSubtle"
+            app:strokeWidth="@dimen/stroke_none"
             android:layout_marginBottom="@dimen/spacing_md"
             android:visibility="gone">
 
@@ -129,7 +127,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="@dimen/radius_card"
-            app:cardElevation="@dimen/elevation_none"
+            app:cardElevation="@dimen/elevation_subtle"
             app:cardBackgroundColor="@color/surfaceColor"
             app:strokeWidth="@dimen/stroke_default"
             app:strokeColor="@color/borderSubtle"
@@ -165,7 +163,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="@dimen/radius_card"
-            app:cardElevation="@dimen/elevation_none"
+            app:cardElevation="@dimen/elevation_subtle"
             app:cardBackgroundColor="@color/surfaceColor"
             app:strokeWidth="@dimen/stroke_default"
             app:strokeColor="@color/borderSubtle"
@@ -208,7 +206,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="@dimen/radius_card"
-            app:cardElevation="@dimen/elevation_none"
+            app:cardElevation="@dimen/elevation_subtle"
             app:cardBackgroundColor="@color/surfaceColor"
             app:strokeWidth="@dimen/stroke_default"
             app:strokeColor="@color/borderSubtle"
@@ -243,7 +241,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="@dimen/radius_card"
-            app:cardElevation="@dimen/elevation_none"
+            app:cardElevation="@dimen/elevation_subtle"
             app:cardBackgroundColor="@color/surfaceColor"
             app:strokeWidth="@dimen/stroke_default"
             app:strokeColor="@color/borderSubtle"

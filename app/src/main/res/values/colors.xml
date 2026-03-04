@@ -1,52 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Primary: Deep forest green — woodland raccoon identity -->
-    <color name="colorPrimary">#2E7D5F</color>
-    <color name="colorPrimaryDark">#1B5E42</color>
-    <color name="colorPrimaryLight">#4CAF8B</color>
-    <color name="colorPrimaryContainer">#D4F0E4</color>
-    <color name="colorOnPrimaryContainer">#0A2E1B</color>
+    <color name="colorPrimary">#247A58</color>
+    <color name="colorPrimaryDark">#165740</color>
+    <color name="colorPrimaryLight">#3DA87D</color>
+    <color name="colorPrimaryContainer">#C8EDD9</color>
+    <color name="colorOnPrimaryContainer">#082818</color>
 
     <!-- Accent: Warm amber — raccoon energy -->
-    <color name="colorAccent">#E8913A</color>
-    <color name="colorAccentLight">#FCEBD4</color>
+    <color name="colorAccent">#E8861F</color>
+    <color name="colorAccentLight">#FBE6CF</color>
 
     <!-- Semantic — slightly warm-shifted to stay on-character (§DP3) -->
-    <color name="colorError">#B93B3B</color>
-    <color name="colorErrorLight">#FFF0EE</color>
+    <color name="colorError">#C62828</color>
+    <color name="colorErrorLight">#FFEAEA</color>
     <color name="colorSuccess">#2E7D42</color>
     <color name="colorWarning">#E8A830</color>
-    <color name="colorSuccessLight">#EEF8F0</color>
+    <color name="colorSuccessLight">#E6F5EA</color>
     <color name="colorWarningLight">#FFF8E6</color>
 
     <!-- Surface elevation ladder (chromatic warm-whites) -->
-    <color name="surfaceBase">#F8F6F2</color>
+    <color name="surfaceBase">#F5F3EE</color>
     <color name="surfaceColor">#FEFDFB</color>
-    <color name="surfaceElevated">#FFFEFA</color>
-    <color name="surfaceDim">#EEEAE4</color>
+    <color name="surfaceElevated">#FFFFFF</color>
+    <color name="surfaceDim">#EAE6DF</color>
 
     <!-- Text hierarchy (chromatic, not pure gray) -->
-    <color name="textPrimary">#1C1E1C</color>
-    <color name="textSecondary">#515854</color>
-    <color name="textTertiary">#626966</color>
+    <color name="textPrimary">#161816</color>
+    <color name="textSecondary">#4B524E</color>
+    <color name="textTertiary">#616966</color>
     <color name="textOnPrimary">#FFFFFF</color>
     <color name="textDisabled">#B0B5B2</color>
 
     <!-- Borders -->
-    <color name="borderDefault">#DDD9D3</color>
-    <color name="borderSubtle">#EBE8E3</color>
-    <color name="borderFocus">#2E7D5F</color>
+    <color name="borderDefault">#D8D4CC</color>
+    <color name="borderSubtle">#E8E4DE</color>
+    <color name="borderFocus">#247A58</color>
 
     <!-- Selection / highlight -->
-    <color name="selectedBackground">#E6F2EC</color>
-    <color name="selectedBorder">#A8D5BF</color>
+    <color name="selectedBackground">#DCEFDF</color>
+    <color name="selectedBorder">#8CCFA6</color>
 
     <!-- Bottom nav -->
     <color name="bottomNavBackground">#FEFDFB</color>
+    <color name="bottomNavDivider">#E4E0D9</color>
 
     <!-- Scan bar -->
-    <color name="scanBarBackground">#EBF5F0</color>
-    <color name="scanBarText">#1B5E42</color>
+    <color name="scanBarBackground">#E2F2E9</color>
+    <color name="scanBarText">#165740</color>
+
+    <!-- Hero card gradient-like tints -->
+    <color name="heroCardStart">#247A58</color>
+    <color name="heroCardEnd">#1B6B4D</color>
+
+    <!-- Card icon tint backgrounds (unique per feature) -->
+    <color name="tintAnalysis">#FFF0DA</color>
+    <color name="tintQuickClean">#FFEAEA</color>
+    <color name="tintTree">#DCEEFF</color>
+    <color name="tintOptimize">#FFF0DA</color>
+    <color name="tintDualPane">#D8F0FF</color>
+    <color name="tintCloud">#E8E0FF</color>
+    <color name="tintAntivirus">#DCEFDF</color>
+    <color name="tintJanitor">#DCEEFF</color>
 
     <!-- Text on colored backgrounds (e.g. tree view headers) -->
     <color name="textOnColor">#CCFFFFFF</color>

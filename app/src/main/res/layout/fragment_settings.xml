@@ -17,16 +17,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/settings"
-            android:textAppearance="@style/TextAppearance.FileCleaner.Title"
-            android:layout_marginBottom="@dimen/spacing_lg" />
+            android:textAppearance="@style/TextAppearance.FileCleaner.Headline"
+            android:layout_marginBottom="@dimen/spacing_xl" />
 
         <!-- Appearance section -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/settings_appearance_section"
-            android:textAppearance="@style/TextAppearance.FileCleaner.Body"
-            android:textStyle="bold"
+            android:textAppearance="@style/TextAppearance.FileCleaner.SectionHeader"
             android:layout_marginBottom="@dimen/spacing_md" />
 
         <TextView
@@ -70,8 +69,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/settings_scan_section"
-            android:textAppearance="@style/TextAppearance.FileCleaner.Body"
-            android:textStyle="bold"
+            android:textAppearance="@style/TextAppearance.FileCleaner.SectionHeader"
             android:layout_marginBottom="@dimen/spacing_md" />
 
         <!-- Large file threshold -->
@@ -136,8 +134,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/settings_safety_section"
-            android:textAppearance="@style/TextAppearance.FileCleaner.Body"
-            android:textStyle="bold"
+            android:textAppearance="@style/TextAppearance.FileCleaner.SectionHeader"
             android:layout_marginTop="@dimen/spacing_xl"
             android:layout_marginBottom="@dimen/spacing_md" />
 
@@ -175,8 +172,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/settings_display_section"
-            android:textAppearance="@style/TextAppearance.FileCleaner.Body"
-            android:textStyle="bold"
+            android:textAppearance="@style/TextAppearance.FileCleaner.SectionHeader"
             android:layout_marginTop="@dimen/spacing_xl"
             android:layout_marginBottom="@dimen/spacing_md" />
 
@@ -212,8 +208,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/settings_crash_section"
-            android:textAppearance="@style/TextAppearance.FileCleaner.Body"
-            android:textStyle="bold"
+            android:textAppearance="@style/TextAppearance.FileCleaner.SectionHeader"
             android:layout_marginTop="@dimen/spacing_xl"
             android:layout_marginBottom="@dimen/spacing_md" />
 

@@ -65,13 +65,22 @@
                 android:gravity="center"
                 android:paddingVertical="@dimen/spacing_lg">
 
-                <ImageView
-                    android:id="@+id/iv_shield"
-                    android:layout_width="@dimen/icon_file_list_large"
-                    android:layout_height="@dimen/icon_file_list_large"
-                    android:src="@drawable/ic_shield"
-                    app:tint="@color/colorPrimary"
-                    android:contentDescription="@string/av_title" />
+                <FrameLayout
+                    android:layout_width="@dimen/icon_empty_state"
+                    android:layout_height="@dimen/icon_empty_state"
+                    android:background="@drawable/bg_hub_icon_circle"
+                    android:backgroundTint="@color/tintAntivirus"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:id="@+id/iv_shield"
+                        android:layout_width="@dimen/icon_hub_circle"
+                        android:layout_height="@dimen/icon_hub_circle"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_shield"
+                        app:tint="@color/colorPrimary"
+                        android:contentDescription="@string/av_title" />
+                </FrameLayout>
 
                 <TextView
                     android:id="@+id/tv_status"

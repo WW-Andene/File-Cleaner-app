@@ -266,7 +266,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_clean_junk"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    style="@style/Widget.FileCleaner.Button.Outlined"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/dashboard_clean_junk"
@@ -281,7 +281,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_view_duplicates"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    style="@style/Widget.FileCleaner.Button.Outlined"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/dashboard_view_duplicates"
@@ -296,7 +296,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_view_large"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    style="@style/Widget.FileCleaner.Button.Outlined"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/dashboard_view_large"

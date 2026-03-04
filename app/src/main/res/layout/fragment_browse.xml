@@ -356,7 +356,7 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_select_all_files"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        style="@style/Widget.FileCleaner.Button.Outlined"
                         android:layout_width="wrap_content"
                         android:layout_height="@dimen/button_height_sm"
                         android:text="@string/select_all_files"
@@ -369,7 +369,7 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_select_all_folders"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        style="@style/Widget.FileCleaner.Button.Outlined"
                         android:layout_width="wrap_content"
                         android:layout_height="@dimen/button_height_sm"
                         android:text="@string/select_all_folders"
@@ -382,7 +382,7 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_select_all_browse"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        style="@style/Widget.FileCleaner.Button.Outlined"
                         android:layout_width="wrap_content"
                         android:layout_height="@dimen/button_height_sm"
                         android:text="@string/select_all"
@@ -395,7 +395,7 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_deselect_all_browse"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        style="@style/Widget.FileCleaner.Button.Outlined"
                         android:layout_width="wrap_content"
                         android:layout_height="@dimen/button_height_sm"
                         android:text="@string/deselect_all"
@@ -417,7 +417,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_rename_selected"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    style="@style/Widget.FileCleaner.Button.Text"
                     android:layout_width="wrap_content"
                     android:layout_height="@dimen/button_height_sm"
                     android:text="@string/ctx_rename"
@@ -430,7 +430,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_compress_selected"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    style="@style/Widget.FileCleaner.Button.Text"
                     android:layout_width="wrap_content"
                     android:layout_height="@dimen/button_height_sm"
                     android:text="@string/ctx_compress"
@@ -443,7 +443,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_delete_selected"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    style="@style/Widget.FileCleaner.Button.Text"
                     android:layout_width="wrap_content"
                     android:layout_height="@dimen/button_height_sm"
                     android:text="@string/delete"

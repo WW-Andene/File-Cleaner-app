@@ -62,7 +62,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
+            android:textAppearance="@style/TextAppearance.FileCleaner.Numeric"
             android:textColor="@color/textTertiary"
             tools:text="2.4 GB, 340 files" />
 
@@ -73,7 +73,7 @@
             android:background="@drawable/bg_badge"
             android:paddingHorizontal="@dimen/spacing_sm"
             android:paddingVertical="@dimen/spacing_micro"
-            android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
+            android:textAppearance="@style/TextAppearance.FileCleaner.Numeric"
             android:textColor="@color/colorPrimary"
             android:textStyle="bold"
             tools:text="5/10 selected" />

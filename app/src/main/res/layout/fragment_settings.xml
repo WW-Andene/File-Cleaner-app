@@ -99,7 +99,7 @@
                 android:layout_width="@dimen/seekbar_value_width"
                 android:layout_height="wrap_content"
                 android:gravity="end"
-                android:textAppearance="@style/TextAppearance.FileCleaner.Body" />
+                android:textAppearance="@style/TextAppearance.FileCleaner.NumericBody" />
         </LinearLayout>
 
         <!-- Stale download age -->

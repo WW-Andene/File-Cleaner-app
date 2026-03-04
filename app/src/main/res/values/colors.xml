@@ -142,10 +142,10 @@
     <color name="googleSignInBg">#FFFFFF</color>
     <color name="googleSignInBorder">#DADCE0</color>
 
-    <!-- Syntax highlighting colors (light mode — high contrast on white) -->
-    <color name="syntaxKeyword">#7B68EE</color>
+    <!-- Syntax highlighting colors (light mode — WCAG AA on warm-white surfaces) -->
+    <color name="syntaxKeyword">#6B58D6</color>
     <color name="syntaxString">#2E7D42</color>
-    <color name="syntaxComment">#6B7E75</color>
-    <color name="syntaxNumber">#B8731A</color>
+    <color name="syntaxComment">#5A6E65</color>
+    <color name="syntaxNumber">#9E6210</color>
     <color name="syntaxType">#3A6E96</color>
 </resources>

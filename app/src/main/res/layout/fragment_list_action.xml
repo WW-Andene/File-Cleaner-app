@@ -138,7 +138,7 @@
         app:boxStrokeColor="@color/borderDefault"
         app:hintTextColor="@color/colorPrimary"
         app:startIconTint="@color/textTertiary"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+        style="@style/Widget.FileCleaner.TextInput">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/et_search"
@@ -163,7 +163,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_toggle_filters"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="@style/Widget.FileCleaner.Button.Text"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/button_height_sm"
             android:text="@string/filter_options"
@@ -184,7 +184,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_view_mode"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="@style/Widget.FileCleaner.Button.Text"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/button_height_sm"
             android:text="@string/display_options"
@@ -261,6 +261,7 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/spacing_lg"
         android:indeterminate="true"
+        android:indeterminateTint="@color/colorPrimary"
         android:visibility="gone" />
 
     <!-- Empty state -->
@@ -278,7 +279,7 @@
             android:layout_width="@dimen/icon_empty_state"
             android:layout_height="@dimen/icon_empty_state"
             android:src="@drawable/ic_raccoon_logo"
-            android:alpha="0.55"
+            android:alpha="0.85"
             android:importantForAccessibility="no" />
 
         <TextView

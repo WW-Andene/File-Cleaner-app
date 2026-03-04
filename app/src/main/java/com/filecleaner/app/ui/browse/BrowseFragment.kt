@@ -2,8 +2,6 @@ package com.filecleaner.app.ui.browse
 
 import android.os.Bundle
 import android.os.Environment
-import android.os.Handler
-import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -38,6 +36,10 @@ import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.viewmodel.ScanState
 import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.File
 
 class BrowseFragment : Fragment() {
@@ -50,8 +52,7 @@ class BrowseFragment : Fragment() {
     private var currentViewMode = ViewMode.LIST
     private val selectedExtensions = mutableSetOf<String>()
     private var searchQuery = ""
-    private val handler = Handler(Looper.getMainLooper())
-    private var searchRunnable: Runnable? = null
+    private var searchDebounceJob: Job? = null
     private var shouldScrollToTop = false
     private var dividerDecoration: FileListDividerDecoration? = null
 
@@ -192,15 +193,15 @@ class BrowseFragment : Fragment() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
-                searchRunnable?.let { handler.removeCallbacks(it) }
+                searchDebounceJob?.cancel()
                 val query = s?.toString()?.trim() ?: ""
-                searchRunnable = Runnable {
-                    if (_binding == null) return@Runnable  // Fragment view destroyed
+                searchDebounceJob = viewLifecycleOwner.lifecycleScope.launch {
+                    delay(BaseFileListFragment.SEARCH_DEBOUNCE_MS)
+                    if (_binding == null) return@launch
                     searchQuery = query
                     shouldScrollToTop = true
                     refresh()
                 }
-                handler.postDelayed(searchRunnable!!, BaseFileListFragment.SEARCH_DEBOUNCE_MS)
             }
         })
 
@@ -767,7 +768,7 @@ class BrowseFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        searchRunnable?.let { handler.removeCallbacks(it) }
+        searchDebounceJob?.cancel()
         binding.spinnerCategory.onItemSelectedListener = null
         binding.spinnerSort.onItemSelectedListener = null
         super.onDestroyView()

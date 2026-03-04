@@ -272,86 +272,104 @@
             android:text="@string/settings_crash_section"
             android:textAppearance="@style/TextAppearance.FileCleaner.SectionHeader"
             android:layout_marginTop="@dimen/spacing_xl"
-            android:layout_marginBottom="@dimen/spacing_md" />
+            android:layout_marginBottom="@dimen/spacing_sm" />
 
-        <TextView
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/settings_crash_description"
-            android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
-            android:textColor="@color/textSecondary"
-            android:layout_marginBottom="@dimen/spacing_md" />
+            app:cardCornerRadius="@dimen/radius_card"
+            app:cardElevation="@dimen/elevation_subtle"
+            app:cardBackgroundColor="@color/surfaceColor"
+            app:strokeWidth="@dimen/stroke_default"
+            app:strokeColor="@color/borderSubtle"
+            android:layout_marginBottom="@dimen/spacing_lg">
 
-        <!-- Enable crash reporting toggle -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:minHeight="@dimen/icon_button"
-            android:paddingVertical="@dimen/spacing_sm">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/settings_crash_enable"
-                android:textAppearance="@style/TextAppearance.FileCleaner.Body" />
-
-            <com.google.android.material.switchmaterial.SwitchMaterial
-                android:id="@+id/switch_crash_reporting"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/a11y_switch_crash_reporting" />
-        </LinearLayout>
-
-        <!-- GitHub token input -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/til_github_token"
-            style="@style/Widget.FileCleaner.TextInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_md"
-            android:hint="@string/settings_crash_token_hint"
-            app:endIconMode="password_toggle">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_github_token"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textPassword"
-                android:maxLines="1" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_lg">
 
-        <!-- GitHub repo input -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/til_github_repo"
-            style="@style/Widget.FileCleaner.TextInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:hint="@string/settings_crash_repo_hint">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_crash_description"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                    android:textColor="@color/textSecondary"
+                    android:layout_marginBottom="@dimen/spacing_md" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_github_repo"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="text"
-                android:maxLines="1" />
-        </com.google.android.material.textfield.TextInputLayout>
+                <!-- Enable crash reporting toggle -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:minHeight="@dimen/icon_button"
+                    android:paddingVertical="@dimen/spacing_sm">
 
-        <!-- Pending reports status -->
-        <TextView
-            android:id="@+id/tv_crash_pending"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_md"
-            android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
-            android:textColor="@color/textSecondary"
-            android:visibility="gone" />
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/settings_crash_enable"
+                        android:textAppearance="@style/TextAppearance.FileCleaner.Body" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switch_crash_reporting"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/a11y_switch_crash_reporting" />
+                </LinearLayout>
+
+                <!-- GitHub token input -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_github_token"
+                    style="@style/Widget.FileCleaner.TextInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_md"
+                    android:hint="@string/settings_crash_token_hint"
+                    app:endIconMode="password_toggle">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_github_token"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword"
+                        android:maxLines="1" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- GitHub repo input -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_github_repo"
+                    style="@style/Widget.FileCleaner.TextInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:hint="@string/settings_crash_repo_hint">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_github_repo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:maxLines="1" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Pending reports status -->
+                <TextView
+                    android:id="@+id/tv_crash_pending"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_md"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                    android:textColor="@color/textSecondary"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Note -->
         <TextView

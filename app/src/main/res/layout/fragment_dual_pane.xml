@@ -66,7 +66,7 @@
             <!-- Left pane content mode selector -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_mode_left"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
+                style="@style/Widget.FileCleaner.Button.Text"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/dual_pane_tab_height"
                 android:background="@color/surfaceDim"
@@ -180,7 +180,7 @@
             <!-- Right pane content mode selector -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_mode_right"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
+                style="@style/Widget.FileCleaner.Button.Text"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/dual_pane_tab_height"
                 android:background="@color/surfaceDim"
@@ -336,7 +336,7 @@
                 android:layout_marginEnd="@dimen/spacing_xs"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.FileCleaner.Button.Outlined"
                 app:icon="@drawable/ic_copy"
                 app:iconSize="@dimen/icon_small"
                 app:cornerRadius="@dimen/radius_pill"
@@ -352,7 +352,7 @@
                 android:layout_marginHorizontal="@dimen/spacing_xs"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.FileCleaner.Button.Outlined"
                 app:icon="@drawable/ic_move"
                 app:iconSize="@dimen/icon_small"
                 app:cornerRadius="@dimen/radius_pill"
@@ -368,7 +368,7 @@
                 android:layout_marginStart="@dimen/spacing_xs"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.FileCleaner.Button.Outlined"
                 app:icon="@drawable/ic_delete"
                 app:iconSize="@dimen/icon_small"
                 app:cornerRadius="@dimen/radius_pill"

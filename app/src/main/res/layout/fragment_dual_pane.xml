@@ -61,7 +61,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:background="@color/surfaceColor"
-            android:layout_marginEnd="1dp">
+            android:layout_marginEnd="@dimen/divider_width">
 
             <!-- Left pane content mode selector -->
             <com.google.android.material.button.MaterialButton
@@ -117,7 +117,7 @@
                     android:ellipsize="start"
                     android:layout_marginStart="@dimen/spacing_xs"
                     android:background="?attr/selectableItemBackground"
-                    android:padding="2dp" />
+                    android:padding="@dimen/spacing_micro" />
 
                 <ImageButton
                     android:id="@+id/btn_pick_dir_left"
@@ -147,7 +147,7 @@
                 android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
                 android:textColor="@color/textTertiary"
                 android:gravity="center"
-                android:paddingVertical="2dp"
+                android:paddingVertical="@dimen/spacing_micro"
                 android:background="@color/surfaceDim" />
         </LinearLayout>
 
@@ -161,7 +161,7 @@
 
             <!-- Visual grip dots -->
             <View
-                android:layout_width="4dp"
+                android:layout_width="@dimen/divider_thick"
                 android:layout_height="@dimen/icon_file_list_default"
                 android:layout_gravity="center"
                 android:background="@color/borderDefault" />
@@ -175,7 +175,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:background="@color/surfaceColor"
-            android:layout_marginStart="1dp">
+            android:layout_marginStart="@dimen/divider_width">
 
             <!-- Right pane content mode selector -->
             <com.google.android.material.button.MaterialButton
@@ -231,7 +231,7 @@
                     android:ellipsize="start"
                     android:layout_marginStart="@dimen/spacing_xs"
                     android:background="?attr/selectableItemBackground"
-                    android:padding="2dp" />
+                    android:padding="@dimen/spacing_micro" />
 
                 <ImageButton
                     android:id="@+id/btn_pick_dir_right"
@@ -261,7 +261,7 @@
                 android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
                 android:textColor="@color/textTertiary"
                 android:gravity="center"
-                android:paddingVertical="2dp"
+                android:paddingVertical="@dimen/spacing_micro"
                 android:background="@color/surfaceDim" />
         </LinearLayout>
     </LinearLayout>

@@ -19,6 +19,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingVertical="4dp" />
+        android:paddingVertical="@dimen/spacing_xs" />
 
 </HorizontalScrollView>

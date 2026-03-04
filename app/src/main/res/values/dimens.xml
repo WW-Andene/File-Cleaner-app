@@ -3,6 +3,8 @@
     <!-- Spacing scale -->
     <dimen name="spacing_xs">4dp</dimen>
     <dimen name="spacing_sm">8dp</dimen>
+    <dimen name="spacing_10">10dp</dimen>
+    <dimen name="dot_legend">10dp</dimen>
     <dimen name="spacing_md">12dp</dimen>
     <dimen name="spacing_lg">16dp</dimen>
     <dimen name="spacing_xl">20dp</dimen>
@@ -25,6 +27,8 @@
     <dimen name="spacing_3xl">32dp</dimen>
     <dimen name="spacing_4xl">48dp</dimen>
     <dimen name="spacing_micro">2dp</dimen>
+    <dimen name="divider_width">1dp</dimen>
+    <dimen name="divider_thick">4dp</dimen>
     <dimen name="spacing_bottom_inset">72dp</dimen>
     <dimen name="spacing_above_nav">80dp</dimen>
 

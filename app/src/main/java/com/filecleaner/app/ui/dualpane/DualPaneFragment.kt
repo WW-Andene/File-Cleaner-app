@@ -29,6 +29,7 @@ import com.filecleaner.app.utils.FileScanner
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.google.android.material.button.MaterialButton
+import com.filecleaner.app.utils.styleAsError
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -493,10 +494,13 @@ class DualPaneFragment : Fragment() {
 
     private fun showSimplePathDialog(pane: Pane) {
         val currentPath = if (pane == Pane.LEFT) leftPath else rightPath
+        val px48 = resources.getDimensionPixelSize(R.dimen.spacing_4xl)
+        val px32 = resources.getDimensionPixelSize(R.dimen.spacing_3xl)
+        val px16 = resources.getDimensionPixelSize(R.dimen.spacing_lg)
         val input = android.widget.EditText(requireContext()).apply {
             setText(currentPath)
             setSelectAllOnFocus(true)
-            setPadding(48, 32, 48, 16)
+            setPadding(px48, px32, px48, px16)
         }
 
         MaterialAlertDialogBuilder(requireContext())
@@ -507,7 +511,7 @@ class DualPaneFragment : Fragment() {
                 if (File(path).isDirectory) {
                     loadDirectory(pane, path)
                 } else {
-                    Snackbar.make(binding.root, "Invalid directory", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(binding.root, getString(R.string.dual_pane_invalid_dir), Snackbar.LENGTH_SHORT).styleAsError().show()
                 }
             }
             .setNegativeButton(getString(R.string.cancel), null)

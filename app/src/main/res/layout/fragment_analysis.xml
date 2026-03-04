@@ -60,7 +60,7 @@
                     <!-- Storage bar -->
                     <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="12dp"
+                        android:layout_height="@dimen/spacing_md"
                         android:layout_marginTop="@dimen/spacing_md"
                         android:background="@drawable/bg_storage_bar_track">
 
@@ -75,7 +75,7 @@
                     <LinearLayout
                         android:id="@+id/layout_segmented_bar"
                         android:layout_width="match_parent"
-                        android:layout_height="8dp"
+                        android:layout_height="@dimen/spacing_sm"
                         android:layout_marginTop="@dimen/spacing_sm"
                         android:orientation="horizontal"
                         android:clipChildren="true" />

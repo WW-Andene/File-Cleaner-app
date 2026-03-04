@@ -32,7 +32,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:paddingHorizontal="@dimen/spacing_md"
-            android:paddingVertical="10dp">
+            android:paddingVertical="@dimen/spacing_10">
 
             <!-- Thumbnail / icon -->
             <com.google.android.material.card.MaterialCardView
@@ -76,7 +76,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
-                    android:layout_marginTop="2dp" />
+                    android:layout_marginTop="@dimen/spacing_micro" />
 
             </LinearLayout>
 

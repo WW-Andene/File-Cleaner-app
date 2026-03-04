@@ -115,6 +115,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
+                    android:fontFeatureSettings="tnum"
                     android:textColor="@color/colorPrimary"
                     android:gravity="end"
                     android:layout_marginTop="@dimen/spacing_micro"
@@ -187,6 +188,7 @@
                             android:layout_height="wrap_content"
                             android:text="0"
                             android:textAppearance="@style/TextAppearance.FileCleaner.Title"
+                            android:fontFeatureSettings="tnum"
                             android:textColor="@color/colorError" />
 
                         <TextView
@@ -224,6 +226,7 @@
                             android:layout_height="wrap_content"
                             android:text="0"
                             android:textAppearance="@style/TextAppearance.FileCleaner.Title"
+                            android:fontFeatureSettings="tnum"
                             android:textColor="@color/colorError" />
 
                         <TextView
@@ -261,6 +264,7 @@
                             android:layout_height="wrap_content"
                             android:text="0"
                             android:textAppearance="@style/TextAppearance.FileCleaner.Title"
+                            android:fontFeatureSettings="tnum"
                             android:textColor="@color/catVideo" />
 
                         <TextView
@@ -298,6 +302,7 @@
                             android:layout_height="wrap_content"
                             android:text="0"
                             android:textAppearance="@style/TextAppearance.FileCleaner.Title"
+                            android:fontFeatureSettings="tnum"
                             android:textColor="@color/colorPrimary" />
 
                         <TextView

@@ -78,7 +78,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_sm"
-                    android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.Numeric"
                     android:textColor="@color/colorOnPrimaryContainer"
                     android:textAlignment="center" />
 
@@ -87,7 +87,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_xs"
-                    android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.Numeric"
                     android:textColor="@color/colorOnPrimaryContainer"
                     android:alpha="0.8"
                     android:textAlignment="center" />
@@ -154,7 +154,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_sm"
-                    android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.Numeric"
                     android:accessibilityLiveRegion="polite"
                     android:visibility="gone" />
             </LinearLayout>

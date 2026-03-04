@@ -230,9 +230,11 @@ class AnalysisFragment : Fragment() {
             strokeColor = ContextCompat.getColor(ctx, R.color.borderSubtle)
         }
 
+        val catHPad = resources.getDimensionPixelSize(R.dimen.spacing_lg)
+        val catVPad = resources.getDimensionPixelSize(R.dimen.spacing_md)
         val innerLayout = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dpToPx(14), dpToPx(12), dpToPx(14), dpToPx(12))
+            setPadding(catHPad, catVPad, catHPad, catVPad)
         }
 
         // Top row: emoji + name + size
@@ -258,7 +260,7 @@ class AnalysisFragment : Fragment() {
 
         val sizeLabel = TextView(ctx).apply {
             text = getString(R.string.analysis_category_count, count, UndoHelper.formatBytes(sizeBytes))
-            setTextAppearance(R.style.TextAppearance_FileCleaner_Caption)
+            setTextAppearance(R.style.TextAppearance_FileCleaner_Numeric)
         }
 
         topRow.addView(emojiView)
@@ -335,9 +337,11 @@ class AnalysisFragment : Fragment() {
             strokeColor = ContextCompat.getColor(ctx, R.color.borderSubtle)
         }
 
+        val hPad = resources.getDimensionPixelSize(R.dimen.spacing_md)
+        val vPad = resources.getDimensionPixelSize(R.dimen.spacing_10)
         val innerLayout = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dpToPx(12), dpToPx(10), dpToPx(12), dpToPx(10))
+            setPadding(hPad, vPad, hPad, vPad)
         }
 
         // Top row: rank + emoji + name + size
@@ -348,7 +352,7 @@ class AnalysisFragment : Fragment() {
 
         val rankView = TextView(ctx).apply {
             text = "$rank"
-            setTextAppearance(R.style.TextAppearance_FileCleaner_Caption)
+            setTextAppearance(R.style.TextAppearance_FileCleaner_Numeric)
             layoutParams = LinearLayout.LayoutParams(
                 dpToPx(20), ViewGroup.LayoutParams.WRAP_CONTENT
             )
@@ -375,7 +379,7 @@ class AnalysisFragment : Fragment() {
 
         val sizeView = TextView(ctx).apply {
             text = UndoHelper.formatBytes(file.size)
-            setTextAppearance(R.style.TextAppearance_FileCleaner_Caption)
+            setTextAppearance(R.style.TextAppearance_FileCleaner_Numeric)
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT

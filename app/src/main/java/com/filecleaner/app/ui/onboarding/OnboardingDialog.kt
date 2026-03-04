@@ -39,10 +39,11 @@ object OnboardingDialog {
         val current = steps[step]
         val isLast = step == steps.lastIndex
 
-        val padding = (24 * context.resources.displayMetrics.density).toInt()
+        val padding = context.resources.getDimensionPixelSize(R.dimen.spacing_xxl)
+        val halfPadding = context.resources.getDimensionPixelSize(R.dimen.spacing_md)
         val container = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(padding, padding, padding, padding / 2)
+            setPadding(padding, padding, padding, halfPadding)
         }
 
         val stepIndicator = TextView(context).apply {
@@ -63,7 +64,7 @@ object OnboardingDialog {
             val size = (64 * context.resources.displayMetrics.density).toInt()
             layoutParams = LinearLayout.LayoutParams(size, size).apply {
                 gravity = android.view.Gravity.CENTER_HORIZONTAL
-                topMargin = padding / 2
+                topMargin = halfPadding
             }
             scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
         }
@@ -72,7 +73,7 @@ object OnboardingDialog {
         val bodyView = TextView(context).apply {
             text = current.body
             setTextAppearance(R.style.TextAppearance_FileCleaner_Body)
-            setPadding(0, padding / 2, 0, 0)
+            setPadding(0, halfPadding, 0, 0)
             setLineSpacing(4f, 1.2f)
         }
         container.addView(bodyView)

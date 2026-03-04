@@ -21,7 +21,7 @@
         <View
             android:id="@+id/view_accent_stripe"
             android:layout_width="match_parent"
-            android:layout_height="4dp"
+            android:layout_height="@dimen/spacing_xs"
             android:visibility="gone" />
 
         <com.google.android.material.card.MaterialCardView

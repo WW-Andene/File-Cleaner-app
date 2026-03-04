@@ -94,7 +94,6 @@ object ColorLegendHelper {
 
         val ctx = scrollView.context
         val res = ctx.resources
-        val density = res.displayMetrics.density
 
         // Cached dimension lookups
         val textLabelPx = res.getDimension(R.dimen.text_label)
@@ -114,14 +113,14 @@ object ColorLegendHelper {
 
         // Legend entries
         for (entry in entries) {
-            val chip = buildChip(ctx, entry, density)
+            val chip = buildChip(ctx, entry)
             container.addView(chip)
         }
 
         scrollView.visibility = View.VISIBLE
     }
 
-    private fun buildChip(ctx: Context, entry: LegendEntry, density: Float): LinearLayout {
+    private fun buildChip(ctx: Context, entry: LegendEntry): LinearLayout {
         val res = ctx.resources
 
         // Cached dimension lookups
@@ -130,8 +129,8 @@ object ColorLegendHelper {
         val cornerRadiusPx = res.getDimension(R.dimen.radius_md)
         val textLabelPx = res.getDimension(R.dimen.text_label)
 
-        val vPad = (3 * density).toInt()  // no 3dp token
-        val dotSize = (10 * density).toInt()  // no 10dp token
+        val vPad = res.getDimensionPixelSize(R.dimen.spacing_micro)
+        val dotSize = res.getDimensionPixelSize(R.dimen.dot_legend)
 
         val chipLayout = LinearLayout(ctx).apply {
             orientation = LinearLayout.HORIZONTAL

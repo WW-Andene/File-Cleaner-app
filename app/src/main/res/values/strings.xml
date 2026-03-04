@@ -559,6 +559,7 @@
     <string name="dual_pane_move">Move</string>
     <string name="dual_pane_no_selection">Select files first</string>
     <string name="dual_pane_no_files_to_delete">No files selected (directories cannot be deleted here)</string>
+    <string name="dual_pane_invalid_dir">Invalid directory</string>
     <string name="dual_pane_count">%1$d folders, %2$d files</string>
     <string name="dual_pane_swap">Swap panes</string>
     <string name="dual_pane_pick_directory">Choose folder</string>

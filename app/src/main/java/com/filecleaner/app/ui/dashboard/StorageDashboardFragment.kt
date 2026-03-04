@@ -252,7 +252,7 @@ class StorageDashboardFragment : Fragment() {
                         R.plurals.n_files_with_size, files.size, files.size,
                         UndoHelper.formatBytes(catSize))
                     text = "$countAndSize ($pct%)"
-                    setTextAppearance(R.style.TextAppearance_FileCleaner_BodySmall)
+                    setTextAppearance(R.style.TextAppearance_FileCleaner_Numeric)
                 }
                 infoColumn.addView(detailText)
 
@@ -349,7 +349,7 @@ class StorageDashboardFragment : Fragment() {
                 // Rank number
                 val rank = TextView(ctx).apply {
                     text = "${index + 1}."
-                    setTextAppearance(R.style.TextAppearance_FileCleaner_BodySmall)
+                    setTextAppearance(R.style.TextAppearance_FileCleaner_Numeric)
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT
@@ -386,7 +386,7 @@ class StorageDashboardFragment : Fragment() {
                 // File size
                 val sizeText = TextView(ctx).apply {
                     text = UndoHelper.formatBytes(file.size)
-                    setTextAppearance(R.style.TextAppearance_FileCleaner_BodySmall)
+                    setTextAppearance(R.style.TextAppearance_FileCleaner_Numeric)
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT

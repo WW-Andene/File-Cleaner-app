@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.filecleaner.app.MainActivity
@@ -67,7 +67,7 @@ class ArborescenceFragment : Fragment() {
         binding.arborescenceView.onFileMoveRequested = { filePath, targetDirPath ->
             val fileName = File(filePath).name
             val targetName = File(targetDirPath).name
-            AlertDialog.Builder(requireContext())
+            MaterialAlertDialogBuilder(requireContext())
                 .setTitle(getString(R.string.confirm_move_title))
                 .setMessage(getString(R.string.confirm_move_message, fileName, targetName))
                 .setPositiveButton(getString(R.string.move)) { _, _ ->
@@ -116,7 +116,7 @@ class ArborescenceFragment : Fragment() {
         binding.arborescenceView.onFolderMoveRequested = { folderPath, targetDirPath ->
             val folderName = File(folderPath).name
             val targetName = File(targetDirPath).name
-            AlertDialog.Builder(requireContext())
+            MaterialAlertDialogBuilder(requireContext())
                 .setTitle(getString(R.string.confirm_move_title))
                 .setMessage(getString(R.string.confirm_move_message, folderName, targetName))
                 .setPositiveButton(getString(R.string.move)) { _, _ ->
@@ -367,7 +367,7 @@ class ArborescenceFragment : Fragment() {
 
     private val contextMenuCallback by lazy {
         FileContextMenu.defaultCallback(vm,
-            onOpenInTree = { binding.arborescenceView.highlightFilePath(it.path) },
+            onOpenInTree = { _binding?.arborescenceView?.highlightFilePath(it.path) },
             onMoveTo = { item -> showDirectoryPicker(item) })
     }
 
@@ -394,6 +394,7 @@ class ArborescenceFragment : Fragment() {
         savedExpandedPaths = binding.arborescenceView.getExpandedPaths()
         binding.spinnerTreeCategory.onItemSelectedListener = null
         binding.spinnerTreeSort.onItemSelectedListener = null
+        lastTreeRef = null  // Release reference to prevent tree memory leak
         super.onDestroyView()
         _binding = null
     }

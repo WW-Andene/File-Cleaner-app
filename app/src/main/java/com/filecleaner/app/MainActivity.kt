@@ -9,28 +9,36 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
 import android.view.View
+import android.view.accessibility.AccessibilityEvent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.findNavController
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
+import com.filecleaner.app.utils.MotionUtil
 import com.filecleaner.app.data.UserPreferences
+import com.filecleaner.app.data.cloud.OAuthHelper
 import com.filecleaner.app.databinding.ActivityMainBinding
+import com.filecleaner.app.ui.cloud.CloudSetupDialog
 import com.filecleaner.app.ui.onboarding.OnboardingDialog
 import com.filecleaner.app.utils.UndoHelper
+import com.filecleaner.app.utils.styleAsError
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.viewmodel.ScanPhase
 import com.filecleaner.app.viewmodel.ScanState
 import com.google.android.material.snackbar.Snackbar
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    val viewModel: MainViewModel by viewModels()
+    // Internal access: fragments use activityViewModels() to access the shared ViewModel
+    internal val viewModel: MainViewModel by viewModels()
 
     // Permissions request launcher
     private val permLauncher = registerForActivityResult(
@@ -50,8 +58,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        UserPreferences.init(applicationContext)
-        com.filecleaner.app.data.cloud.CloudConnectionStore.init(applicationContext)
+        // UserPreferences and CloudConnectionStore are initialized in FileCleanerApp
 
         // Apply saved theme before inflating views
         AppCompatDelegate.setDefaultNightMode(
@@ -139,16 +146,16 @@ class MainActivity : AppCompatActivity() {
         navController.addOnDestinationChangedListener { _, dest, _ ->
             if (dest.id in bottomNavIds) {
                 binding.bottomNav.menu.findItem(dest.id)?.isChecked = true
+                // §G1: Announce tab change to TalkBack
+                val tabLabel = dest.label
+                if (tabLabel != null) {
+                    binding.root.announceForAccessibility(tabLabel)
+                }
             }
         }
 
-        // Shared NavOptions for non-tab navigations (arborescence, settings, dashboard)
-        val navAnimOptions = NavOptions.Builder()
-            .setEnterAnim(R.anim.nav_enter)
-            .setExitAnim(R.anim.nav_exit)
-            .setPopEnterAnim(R.anim.nav_pop_enter)
-            .setPopExitAnim(R.anim.nav_pop_exit)
-            .build()
+        // §DM2: Use centralized motion vocabulary NavOptions for consistent page transitions
+        val navAnimOptions = MotionUtil.navOptions()
 
         // Navigate to tree on "Show in Tree"
         viewModel.navigateToTree.observe(this) { filePath ->
@@ -170,15 +177,17 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // §G1: Make scan status announce updates to TalkBack
+        binding.tvScanStatus.accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
+
         // Cancel scan button
         binding.btnCancelScan.setOnClickListener { viewModel.cancelScan() }
 
-        // Scan state observer
+        // Scan state observer — drives the Material LinearProgressIndicator and phase labels
         viewModel.scanState.observe(this) { state ->
             when (state) {
                 is ScanState.Idle     -> {
-                    binding.progressBar.visibility = View.GONE
-                    binding.btnCancelScan.visibility = View.GONE
+                    hideScanProgress()
                     binding.tvScanStatus.text = getString(R.string.scan_prompt)
                     // F3: Make scan bar tappable to start scan
                     binding.tvScanStatus.setOnClickListener {
@@ -186,22 +195,16 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 is ScanState.Scanning -> {
-                    binding.progressBar.visibility = View.VISIBLE
-                    binding.btnCancelScan.visibility = View.VISIBLE
-                    binding.tvScanStatus.text = when (state.phase) {
-                        ScanPhase.INDEXING   -> getString(R.string.scanning_phase_indexing, state.filesFound)
-                        ScanPhase.DUPLICATES -> getString(R.string.scanning_phase_duplicates, state.filesFound)
-                        ScanPhase.ANALYZING  -> getString(R.string.scanning_phase_analyzing, state.filesFound)
-                        ScanPhase.JUNK       -> getString(R.string.scanning_phase_junk, state.filesFound)
-                    }
+                    showScanProgress(state)
                 }
                 is ScanState.Done     -> {
-                    binding.progressBar.visibility = View.GONE
-                    binding.btnCancelScan.visibility = View.GONE
+                    hideScanProgress()
+                    // §G1: Announce scan completion to accessibility services
+                    binding.tvScanStatus.sendAccessibilityEvent(AccessibilityEvent.TYPE_ANNOUNCEMENT)
                     val stats = viewModel.storageStats.value
                     if (stats != null) {
                         val durationText = if (stats.scanDurationMs > 0) {
-                            " in %.1fs".format(stats.scanDurationMs / 1000.0)
+                            getString(R.string.scan_duration_suffix, stats.scanDurationMs / 1000.0)
                         } else ""
                         binding.tvScanStatus.text = resources.getQuantityString(
                             R.plurals.scan_complete,
@@ -229,45 +232,28 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 is ScanState.Cancelled -> {
-                    binding.progressBar.visibility = View.GONE
-                    binding.btnCancelScan.visibility = View.GONE
+                    hideScanProgress()
                     binding.tvScanStatus.text = getString(R.string.scan_cancelled)
                 }
                 is ScanState.Error    -> {
-                    binding.progressBar.visibility = View.GONE
-                    binding.btnCancelScan.visibility = View.GONE
+                    hideScanProgress()
                     binding.tvScanStatus.text = getString(R.string.error_scan_failed)
                     Snackbar.make(binding.root,
                         getString(R.string.error_prefix, state.message),
-                        Snackbar.LENGTH_LONG).show()
+                        Snackbar.LENGTH_LONG).styleAsError().show()
                 }
             }
         }
 
         // Bottom nav badges — show count of actionable items per tab
         viewModel.duplicates.observe(this) { dupes ->
-            val badge = binding.bottomNav.getOrCreateBadge(R.id.duplicatesFragment)
-            badge.backgroundColor = ContextCompat.getColor(this, R.color.colorPrimary)
-            badge.badgeTextColor = ContextCompat.getColor(this, R.color.textOnPrimary)
-            badge.maxCharacterCount = 3
-            badge.isVisible = dupes.isNotEmpty()
-            if (dupes.isNotEmpty()) badge.number = dupes.size
+            updateBadge(R.id.duplicatesFragment, dupes.size)
         }
         viewModel.largeFiles.observe(this) { large ->
-            val badge = binding.bottomNav.getOrCreateBadge(R.id.largeFilesFragment)
-            badge.backgroundColor = ContextCompat.getColor(this, R.color.colorPrimary)
-            badge.badgeTextColor = ContextCompat.getColor(this, R.color.textOnPrimary)
-            badge.maxCharacterCount = 3
-            badge.isVisible = large.isNotEmpty()
-            if (large.isNotEmpty()) badge.number = large.size
+            updateBadge(R.id.largeFilesFragment, large.size)
         }
         viewModel.junkFiles.observe(this) { junk ->
-            val badge = binding.bottomNav.getOrCreateBadge(R.id.junkFragment)
-            badge.backgroundColor = ContextCompat.getColor(this, R.color.colorPrimary)
-            badge.badgeTextColor = ContextCompat.getColor(this, R.color.textOnPrimary)
-            badge.maxCharacterCount = 3
-            badge.isVisible = junk.isNotEmpty()
-            if (junk.isNotEmpty()) badge.number = junk.size
+            updateBadge(R.id.junkFragment, junk.size)
         }
 
         // Settings button
@@ -277,49 +263,101 @@ class MainActivity : AppCompatActivity() {
 
         // First-launch onboarding
         OnboardingDialog.showIfNeeded(this)
+
+        // P3 Security: Privacy disclosure on first launch (F-C6-01)
+        // Only show on fresh launch (not rotation) to prevent duplicate dialogs
+        if (savedInstanceState == null && !UserPreferences.hasSeenPrivacyNotice) {
+            MaterialAlertDialogBuilder(this)
+                .setTitle(getString(R.string.privacy_notice_title))
+                .setMessage(getString(R.string.privacy_notice_message))
+                .setCancelable(false)
+                .setPositiveButton(getString(R.string.privacy_notice_accept)) { _, _ ->
+                    UserPreferences.hasSeenPrivacyNotice = true
+                }
+                .show()
+        }
+
+        // Handle OAuth callback
+        handleOAuthIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleOAuthIntent(intent)
+    }
+
+    private fun handleOAuthIntent(intent: Intent?) {
+        val uri = intent?.data ?: return
+        val code = OAuthHelper.parseCallbackCode(uri) ?: return
+
+        // Try the setup dialog callback first (dialog is still open).
+        // If it returns true, the setup dialog handled the code exchange itself.
+        if (CloudSetupDialog.handleOAuthCallback(code)) {
+            return
+        }
+
+        // No setup dialog was waiting. This was launched from the provider
+        // picker dialog which bypassed the setup dialog. Exchange the code here
+        // and create the connection directly.
+        val pendingProvider = OAuthHelper.getPendingProvider()
+        if (pendingProvider != null) {
+            lifecycleScope.launch {
+                val result = OAuthHelper.exchangeCodeForToken(this@MainActivity, code, pendingProvider)
+                if (result.isSuccess) {
+                    CloudSetupDialog.showOAuthResult(
+                        this@MainActivity,
+                        pendingProvider,
+                        result.accessToken
+                    ) { _ ->
+                        Snackbar.make(
+                            binding.root,
+                            getString(R.string.cloud_oauth_success),
+                            Snackbar.LENGTH_SHORT
+                        ).show()
+                    }
+                } else {
+                    Snackbar.make(
+                        binding.root,
+                        getString(R.string.cloud_oauth_failed, result.error),
+                        Snackbar.LENGTH_LONG
+                    ).styleAsError().show()
+                }
+            }
+        }
     }
 
     fun requestPermissionsAndScan() {
-        when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
-                // Android 11+ needs MANAGE_EXTERNAL_STORAGE
-                if (Environment.isExternalStorageManager()) {
-                    startScan()
-                } else {
-                    AlertDialog.Builder(this)
-                        .setTitle(getString(R.string.storage_access_needed))
-                        .setMessage(getString(R.string.storage_access_message))
-                        .setPositiveButton(getString(R.string.open_settings)) { _, _ ->
-                            manageFilesLauncher.launch(
-                                Intent(
-                                    Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                                    Uri.parse("package:$packageName")
-                                )
+        // minSdk 29 (Android 10). Android 11+ (R) uses MANAGE_EXTERNAL_STORAGE;
+        // Android 10 falls through to legacy READ/WRITE_EXTERNAL_STORAGE.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Android 11+ needs MANAGE_EXTERNAL_STORAGE
+            if (Environment.isExternalStorageManager()) {
+                startScan()
+            } else {
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(getString(R.string.storage_access_needed))
+                    .setMessage(getString(R.string.storage_access_message))
+                    .setPositiveButton(getString(R.string.open_settings)) { _, _ ->
+                        manageFilesLauncher.launch(
+                            Intent(
+                                Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                                Uri.parse("package:$packageName")
                             )
-                        }
-                        .setNegativeButton(getString(R.string.cancel), null)
-                        .show()
-                }
+                        )
+                    }
+                    .setNegativeButton(getString(R.string.cancel), null)
+                    .show()
             }
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
-                // Android 13+
-                permLauncher.launch(arrayOf(
-                    Manifest.permission.READ_MEDIA_IMAGES,
-                    Manifest.permission.READ_MEDIA_VIDEO,
-                    Manifest.permission.READ_MEDIA_AUDIO
-                ))
-            }
-            else -> {
-                // Android 10
-                val needed = arrayOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ).filter {
-                    ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
-                }.toTypedArray()
+        } else {
+            // Android 10 (API 29)
+            val needed = arrayOf(
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ).filter {
+                ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+            }.toTypedArray()
 
-                if (needed.isEmpty()) startScan() else permLauncher.launch(needed)
-            }
+            if (needed.isEmpty()) startScan() else permLauncher.launch(needed)
         }
     }
 
@@ -337,7 +375,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showPermissionDeniedDialog() {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(getString(R.string.permission_required))
             .setMessage(getString(R.string.permission_required_message))
             .setPositiveButton(getString(R.string.settings)) { _, _ ->
@@ -346,5 +384,65 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton(getString(R.string.cancel), null)
             .show()
+    }
+
+    // ── Badge helper ──
+
+    private fun updateBadge(menuItemId: Int, count: Int) {
+        val badge = binding.bottomNav.getOrCreateBadge(menuItemId)
+        badge.backgroundColor = ContextCompat.getColor(this, R.color.colorPrimary)
+        badge.badgeTextColor = ContextCompat.getColor(this, R.color.textOnPrimary)
+        badge.maxCharacterCount = 3
+        badge.isVisible = count > 0
+        if (count > 0) badge.number = count
+    }
+
+    // ── Progress indicator helpers ──
+
+    private fun showScanProgress(state: ScanState.Scanning) {
+        binding.btnCancelScan.visibility = View.VISIBLE
+        binding.scanProgressIndicator.visibility = View.VISIBLE
+        binding.scanPhaseRow.visibility = View.VISIBLE
+
+        binding.tvScanStatus.text = when (state.phase) {
+            ScanPhase.INDEXING   -> getString(R.string.scanning_phase_indexing, state.filesFound)
+            ScanPhase.DUPLICATES -> getString(R.string.scanning_phase_duplicates, state.filesFound)
+            ScanPhase.ANALYZING  -> getString(R.string.scanning_phase_analyzing, state.filesFound)
+            ScanPhase.JUNK       -> getString(R.string.scanning_phase_junk, state.filesFound)
+        }
+
+        val indicator = binding.scanProgressIndicator
+        if (state.progressPercent < 0) {
+            indicator.isIndeterminate = true
+            binding.tvScanPercent.visibility = View.GONE
+        } else {
+            if (indicator.isIndeterminate) {
+                indicator.isIndeterminate = false
+                indicator.max = 100
+            }
+            indicator.setProgressCompat(state.progressPercent, true)
+            binding.tvScanPercent.visibility = View.VISIBLE
+            binding.tvScanPercent.text = getString(R.string.scan_percent, state.progressPercent)
+        }
+
+        binding.tvPhaseLabel.text = when (state.phase) {
+            ScanPhase.INDEXING   -> getString(R.string.phase_label_indexing)
+            ScanPhase.DUPLICATES -> getString(R.string.phase_label_duplicates)
+            ScanPhase.ANALYZING  -> getString(R.string.phase_label_analyzing)
+            ScanPhase.JUNK       -> getString(R.string.phase_label_junk)
+        }
+        binding.tvPhaseStep.text = getString(
+            R.string.phase_step,
+            state.phase.order + 1,
+            state.phase.totalPhases
+        )
+    }
+
+    private fun hideScanProgress() {
+        binding.btnCancelScan.visibility = View.GONE
+        binding.scanProgressIndicator.visibility = View.GONE
+        binding.scanPhaseRow.visibility = View.GONE
+        binding.tvScanPercent.visibility = View.GONE
+        binding.scanProgressIndicator.isIndeterminate = true
     }
 }

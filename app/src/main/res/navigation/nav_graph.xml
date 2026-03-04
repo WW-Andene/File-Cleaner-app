@@ -1,28 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    §DM2: All fragment destinations declare consistent enter/exit animations
+    from the motion vocabulary so that every navigation — even those triggered
+    without explicit NavOptions — gets the standard page transition.
+-->
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
     app:startDestination="@id/raccoonManagerFragment">
 
     <fragment
+        android:id="@+id/analysisFragment"
+        android:name="com.filecleaner.app.ui.analysis.AnalysisFragment"
+        android:label="@string/nav_analysis" />
+
+    <fragment
         android:id="@+id/browseFragment"
         android:name="com.filecleaner.app.ui.browse.BrowseFragment"
-        android:label="Browse" />
+        android:label="@string/nav_browse" />
 
     <fragment
         android:id="@+id/duplicatesFragment"
         android:name="com.filecleaner.app.ui.duplicates.DuplicatesFragment"
-        android:label="Duplicates" />
+        android:label="@string/nav_duplicates" />
 
     <fragment
         android:id="@+id/largeFilesFragment"
         android:name="com.filecleaner.app.ui.large.LargeFilesFragment"
-        android:label="Large Files" />
+        android:label="@string/nav_large" />
 
     <fragment
         android:id="@+id/junkFragment"
         android:name="com.filecleaner.app.ui.junk.JunkFragment"
-        android:label="Junk" />
+        android:label="@string/nav_junk" />
 
     <fragment
         android:id="@+id/raccoonManagerFragment"

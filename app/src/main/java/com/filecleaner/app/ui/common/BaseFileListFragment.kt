@@ -1,8 +1,6 @@
 package com.filecleaner.app.ui.common
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -10,16 +8,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.filecleaner.app.MainActivity
 import com.filecleaner.app.R
 import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.databinding.FragmentListActionBinding
+import android.widget.HorizontalScrollView
+import androidx.annotation.StringRes
+import android.widget.PopupMenu
+import com.filecleaner.app.ui.adapters.ColorMode
 import com.filecleaner.app.ui.adapters.FileAdapter
 import com.filecleaner.app.ui.adapters.ViewMode
 import com.filecleaner.app.utils.FileOpener
@@ -29,7 +32,11 @@ import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.ui.common.FileListDividerDecoration
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.viewmodel.ScanState
+import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Shared base for Junk / Large / Duplicates screens (F-039).
@@ -56,8 +63,7 @@ abstract class BaseFileListFragment : Fragment() {
     // Search state
     private var searchQuery = ""
     private var rawItems = listOf<FileItem>()
-    private val handler = Handler(Looper.getMainLooper())
-    private var searchRunnable: Runnable? = null
+    private var searchDebounceJob: Job? = null
     private var dividerDecoration: FileListDividerDecoration? = null
 
     /** Screen title shown in the header. */
@@ -90,6 +96,16 @@ abstract class BaseFileListFragment : Fragment() {
     /** Empty state text when scan completed but category is clean (positive framing). */
     abstract val emptyPostScan: String
 
+    /** Color-coding mode for the accent stripe on each file card. Override per-screen. */
+    open val colorMode: ColorMode get() = ColorMode.NONE
+
+    /** Legend entries to display below the header card. Override per-screen. */
+    open fun legendEntries(): List<ColorLegendHelper.LegendEntry> = emptyList()
+
+    /** Legend title string resource. Override per-screen. */
+    @get:StringRes
+    open val legendTitleRes: Int? get() = null
+
     /** Called when "Select All" is tapped. Override for custom behavior (e.g. duplicates). */
     open fun onSelectAll() {
         adapter.selectAll()
@@ -119,7 +135,8 @@ abstract class BaseFileListFragment : Fragment() {
             binding.btnBatchCompress.visibility = if (sel.isNotEmpty()) View.VISIBLE else View.GONE
         }
         adapter.viewMode = currentViewMode
-        adapter.onItemClick = { item -> FileOpener.open(requireContext(), item.file) }
+        adapter.colorMode = colorMode
+        adapter.onItemClick = { item -> FileOpener.openInViewer(requireContext(), item.file) }
         adapter.onItemLongClick = { item, anchor ->
             FileContextMenu.show(requireContext(), anchor, item, contextMenuCallback,
                 hasClipboard = vm.clipboardEntry.value != null)
@@ -128,6 +145,14 @@ abstract class BaseFileListFragment : Fragment() {
         applyLayoutManager()
         binding.recyclerView.setHasFixedSize(true)
         binding.recyclerView.adapter = adapter
+
+        // Populate color legend strip
+        val legendScroll = binding.root.findViewById<HorizontalScrollView>(R.id.legend_scroll)
+        if (legendScroll != null) {
+            val entries = legendEntries()
+            ColorLegendHelper.populate(legendScroll, entries, legendTitleRes)
+        }
+
         // Disable stagger animation when user prefers reduced motion (§G4)
         if (MotionUtil.isReducedMotion(requireContext())) {
             binding.recyclerView.layoutAnimation = null
@@ -171,9 +196,14 @@ abstract class BaseFileListFragment : Fragment() {
             override fun onNothingSelected(p: AdapterView<*>?) {}
         }
 
-        // View mode toggle
-        binding.btnViewMode.setOnClickListener { cycleViewMode() }
-        updateViewModeIcon()
+        // Collapsible filter panel toggle
+        binding.btnToggleFilters.setOnClickListener { toggleFilterPanel() }
+
+        // View mode popup menu
+        binding.btnViewMode.setOnClickListener { showViewModePopup() }
+
+        // Grid columns chips
+        setupGridColumnChips()
 
         // Empty state "Scan Now" button
         binding.btnScanNow.setOnClickListener {
@@ -185,13 +215,14 @@ abstract class BaseFileListFragment : Fragment() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
-                searchRunnable?.let { handler.removeCallbacks(it) }
+                searchDebounceJob?.cancel()
                 val query = s?.toString()?.trim() ?: ""
-                searchRunnable = Runnable {
+                searchDebounceJob = viewLifecycleOwner.lifecycleScope.launch {
+                    delay(SEARCH_DEBOUNCE_MS)
+                    if (_binding == null) return@launch
                     searchQuery = query
                     applySearch()
                 }
-                handler.postDelayed(searchRunnable!!, SEARCH_DEBOUNCE_MS)
             }
         })
 
@@ -235,8 +266,10 @@ abstract class BaseFileListFragment : Fragment() {
         val searched = SearchQueryParser.filterItems(rawItems, searchQuery)
         val filtered = SearchQueryParser.sortItems(searched, binding.spinnerSort.selectedItemPosition)
 
+        // Show filtered count when a search is active, raw count otherwise
+        val displayItems = if (searchQuery.isNotEmpty()) filtered else rawItems
         binding.tvSummary.text = if (rawItems.isEmpty()) emptySummary
-        else summaryText(rawItems.size, UndoHelper.totalSize(rawItems))
+        else summaryText(displayItems.size, UndoHelper.totalSize(displayItems))
 
         // Toggle empty/list visibility BEFORE submitting items so the RecyclerView
         // measures at its correct height (fixes items appearing too low on first scan).
@@ -262,11 +295,14 @@ abstract class BaseFileListFragment : Fragment() {
     }
 
     private fun confirmDelete() {
+        // Re-read selection from adapter to avoid stale state
+        val selected = adapter.getSelectedItems()
+        if (selected.isEmpty()) return
         val totalSize = com.filecleaner.app.utils.UndoHelper.totalSize(selected)
         val undoSeconds = try { com.filecleaner.app.data.UserPreferences.undoTimeoutMs / 1000 } catch (_: Exception) { 8 }
         val detailMessage = resources.getQuantityString(com.filecleaner.app.R.plurals.confirm_delete_detail,
             selected.size, selected.size, totalSize, undoSeconds)
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(confirmTitle(selected.size))
             .setMessage(detailMessage)
             .setPositiveButton(confirmPositiveLabel) { _, _ ->
@@ -291,34 +327,102 @@ abstract class BaseFileListFragment : Fragment() {
         }
     }
 
-    private fun cycleViewMode() {
-        val modes = ViewMode.entries
-        val nextIndex = (modes.indexOf(currentViewMode) + 1) % modes.size
-        currentViewMode = modes[nextIndex]
-        adapter.viewMode = currentViewMode
-        applyLayoutManager()
-        updateViewModeIcon()
+    private var filtersExpanded = false
+
+    private fun toggleFilterPanel() {
+        filtersExpanded = !filtersExpanded
+        binding.filterPanel.visibility = if (filtersExpanded) View.VISIBLE else View.GONE
+        binding.btnToggleFilters.setIconResource(
+            if (filtersExpanded) R.drawable.ic_chevron_up else R.drawable.ic_arrow_down
+        )
+    }
+
+    private fun showViewModePopup() {
+        val popup = PopupMenu(requireContext(), binding.btnViewMode)
+        val modes = listOf(
+            getString(R.string.sort_name_asc).let { "List" } to ViewMode.LIST,
+            "Compact" to ViewMode.LIST_COMPACT,
+            "Thumbnails" to ViewMode.LIST_WITH_THUMBNAILS,
+            "Grid 2" to ViewMode.GRID_LARGE,
+            "Grid 3" to ViewMode.GRID_MEDIUM,
+            "Grid 4" to ViewMode.GRID_SMALL
+        )
+        modes.forEachIndexed { index, (label, _) ->
+            popup.menu.add(0, index, index, label)
+        }
+        popup.setOnMenuItemClickListener { item ->
+            val (_, mode) = modes[item.itemId]
+            currentViewMode = mode
+            adapter.viewMode = currentViewMode
+            applyLayoutManager()
+            updateGridColumnsVisibility()
+            true
+        }
+        popup.show()
     }
 
     private fun applyLayoutManager() {
-        val spanCount = currentViewMode.spanCount
         dividerDecoration?.let { binding.recyclerView.removeItemDecoration(it) }
-        binding.recyclerView.layoutManager = if (spanCount == 1) {
-            LinearLayoutManager(requireContext())
+        val isGridMode = currentViewMode in setOf(ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE, ViewMode.GRID_XLARGE)
+        binding.recyclerView.layoutManager = if (isGridMode && currentViewMode.spanCount > 1) {
+            GridLayoutManager(requireContext(), currentViewMode.spanCount)
         } else {
-            GridLayoutManager(requireContext(), spanCount)
+            // List modes and GRID_XLARGE (single-column grid cards)
+            LinearLayoutManager(requireContext())
         }
-        if (spanCount == 1) {
+        if (!isGridMode) {
             dividerDecoration?.let { binding.recyclerView.addItemDecoration(it) }
         }
     }
 
-    private fun updateViewModeIcon() {
-        val iconRes = when (currentViewMode) {
-            ViewMode.LIST, ViewMode.LIST_WITH_THUMBNAILS -> R.drawable.ic_view_list
-            ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE -> R.drawable.ic_view_grid
+    private var suppressGridChipListener = false
+
+    private fun setupGridColumnChips() {
+        val chipGroup = binding.chipGroupGridColumns
+        val gridModes = listOf(
+            "1" to ViewMode.GRID_XLARGE,
+            "2" to ViewMode.GRID_LARGE,
+            "3" to ViewMode.GRID_MEDIUM,
+            "4" to ViewMode.GRID_SMALL
+        )
+        for ((label, mode) in gridModes) {
+            val chip = Chip(requireContext()).apply {
+                text = label
+                isCheckable = true
+                isChecked = currentViewMode == mode
+                tag = mode
+            }
+            chipGroup.addView(chip)
         }
-        binding.btnViewMode.setImageResource(iconRes)
+        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
+            if (suppressGridChipListener) return@setOnCheckedStateChangeListener
+            if (checkedIds.isNotEmpty()) {
+                val selectedChip = group.findViewById<Chip>(checkedIds.first())
+                val mode = selectedChip?.tag as? ViewMode ?: return@setOnCheckedStateChangeListener
+                if (mode != currentViewMode) {
+                    currentViewMode = mode
+                    adapter.viewMode = currentViewMode
+                    applyLayoutManager()
+                    updateGridColumnsVisibility()
+                }
+            }
+        }
+        updateGridColumnsVisibility()
+    }
+
+    private fun updateGridColumnsVisibility() {
+        val isGrid = currentViewMode in setOf(ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE, ViewMode.GRID_XLARGE)
+        binding.gridColumnsRow.visibility = if (isGrid) View.VISIBLE else View.GONE
+        // Sync chip selection to current mode
+        if (isGrid) {
+            suppressGridChipListener = true
+            val chipGroup = binding.chipGroupGridColumns
+            for (i in 0 until chipGroup.childCount) {
+                val chip = chipGroup.getChildAt(i) as? Chip ?: continue
+                chip.isChecked = chip.tag == currentViewMode
+            }
+            suppressGridChipListener = false
+        }
     }
 
     // B5: Save all user-visible state for config change survival
@@ -333,7 +437,7 @@ abstract class BaseFileListFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        searchRunnable?.let { handler.removeCallbacks(it) }
+        searchDebounceJob?.cancel()
         binding.spinnerSort.onItemSelectedListener = null
         super.onDestroyView()
         _binding = null

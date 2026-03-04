@@ -10,6 +10,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import android.os.Environment
 import com.filecleaner.app.R
 import com.filecleaner.app.data.DirectoryNode
@@ -109,7 +110,7 @@ object DirectoryPickerDialog {
             scrollView.addView(listLayout)
             container.addView(scrollView)
 
-            currentDialog = AlertDialog.Builder(context)
+            currentDialog = MaterialAlertDialogBuilder(context)
                 .setTitle(context.getString(R.string.move_to_title))
                 .setView(container)
                 .setPositiveButton(context.getString(R.string.select_directory)) { _, _ ->

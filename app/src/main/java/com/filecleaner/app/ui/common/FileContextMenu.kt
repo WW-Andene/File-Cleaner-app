@@ -12,7 +12,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.filecleaner.app.R
@@ -21,8 +21,10 @@ import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.data.UserPreferences
 import com.filecleaner.app.utils.FileOpener
 import com.filecleaner.app.utils.UndoHelper
+import com.filecleaner.app.viewmodel.ClipboardManager
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.filecleaner.app.utils.styleAsError
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.text.DateFormat
@@ -65,11 +67,11 @@ object FileContextMenu {
         override fun onPaste(targetDirPath: String) {
             val entry = vm.clipboardEntry.value ?: return
             when (entry.mode) {
-                MainViewModel.ClipboardMode.CUT -> {
+                ClipboardManager.ClipboardMode.CUT -> {
                     vm.moveFile(entry.item.path, targetDirPath)
                     vm.clearClipboard()
                 }
-                MainViewModel.ClipboardMode.COPY -> {
+                ClipboardManager.ClipboardMode.COPY -> {
                     vm.copyFile(entry.item.path, targetDirPath)
                 }
             }
@@ -102,8 +104,22 @@ object FileContextMenu {
         }
         ivIcon.setImageResource(iconRes)
 
+        // §G1: Set contentDescription on the header icon
+        ivIcon.contentDescription = context.getString(R.string.a11y_file_icon,
+            context.getString(item.category.displayNameRes))
+
         val container = contentView.findViewById<LinearLayout>(R.id.menu_container)
-        val dp = context.resources.displayMetrics.density
+        val res = context.resources
+        val buttonHeight = res.getDimensionPixelSize(R.dimen.button_height)
+        // §H3: Ensure minimum 48dp touch target for menu items
+        val minTouchTarget = (48 * res.displayMetrics.density).toInt()
+        val effectiveHeight = maxOf(buttonHeight, minTouchTarget)
+        val spacingXl = res.getDimensionPixelSize(R.dimen.spacing_xl)
+        val spacingLg = res.getDimensionPixelSize(R.dimen.spacing_lg)
+        val spacingXs = res.getDimensionPixelSize(R.dimen.spacing_xs)
+        val iconNav = res.getDimensionPixelSize(R.dimen.icon_nav)
+        val strokeDefault = res.getDimensionPixelSize(R.dimen.stroke_default)
+        val bodySize = res.getDimension(R.dimen.text_body)
 
         fun addItem(label: String, iconDrawable: Int, action: () -> Unit) {
             val row = LinearLayout(context).apply {
@@ -111,14 +127,15 @@ object FileContextMenu {
                 gravity = Gravity.CENTER_VERTICAL
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    (48 * dp).toInt()
+                    effectiveHeight  // §H3: Ensure minimum 48dp touch target
                 )
-                setPadding((20 * dp).toInt(), 0, (20 * dp).toInt(), 0)
+                setPadding(spacingXl, 0, spacingXl, 0)
                 val outValue = TypedValue()
                 context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
                 setBackgroundResource(outValue.resourceId)
                 isClickable = true
                 isFocusable = true
+                contentDescription = label
                 setOnClickListener {
                     dialog.dismiss()
                     action()
@@ -126,17 +143,18 @@ object FileContextMenu {
             }
 
             val icon = ImageView(context).apply {
-                layoutParams = LinearLayout.LayoutParams((24 * dp).toInt(), (24 * dp).toInt())
+                layoutParams = LinearLayout.LayoutParams(iconNav, iconNav)
                 setImageResource(iconDrawable)
                 setColorFilter(ContextCompat.getColor(context, R.color.textSecondary))
                 scaleType = ImageView.ScaleType.CENTER_INSIDE
+                // §G1: Icon is decorative; row has contentDescription
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
             }
             row.addView(icon)
 
-            val bodySize = context.resources.getDimension(R.dimen.text_body)
             val text = TextView(context).apply {
                 layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
-                    marginStart = (16 * dp).toInt()
+                    marginStart = spacingLg
                 }
                 this.text = label
                 setTextColor(ContextCompat.getColor(context, R.color.textPrimary))
@@ -150,12 +168,12 @@ object FileContextMenu {
         fun addDivider() {
             val div = View(context).apply {
                 layoutParams = LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, (1 * dp).toInt()
+                    ViewGroup.LayoutParams.MATCH_PARENT, strokeDefault
                 ).apply {
-                    topMargin = (4 * dp).toInt()
-                    bottomMargin = (4 * dp).toInt()
-                    marginStart = (20 * dp).toInt()
-                    marginEnd = (20 * dp).toInt()
+                    topMargin = spacingXs
+                    bottomMargin = spacingXs
+                    marginStart = spacingXl
+                    marginEnd = spacingXl
                 }
                 setBackgroundColor(ContextCompat.getColor(context, R.color.borderDefault))
             }
@@ -209,7 +227,7 @@ object FileContextMenu {
                 setText(item.name)
                 selectAll()
             }
-            AlertDialog.Builder(context)
+            MaterialAlertDialogBuilder(context)
                 .setTitle(context.getString(R.string.ctx_rename))
                 .setView(editText)
                 .setPositiveButton(android.R.string.ok) { _, _ ->
@@ -217,7 +235,7 @@ object FileContextMenu {
                     // C2: UI-layer defense-in-depth for invalid filesystem characters
                     val invalidChars = charArrayOf('/', '\u0000', ':', '*', '?', '"', '<', '>', '|')
                     if (newName.isNotEmpty() && invalidChars.any { it in newName }) {
-                        Snackbar.make(anchor, context.getString(R.string.op_invalid_name), Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(anchor, context.getString(R.string.op_invalid_name), Snackbar.LENGTH_SHORT).styleAsError().show()
                     } else if (newName.isNotEmpty() && newName != item.name) {
                         callback.onRename(item, newName)
                     }
@@ -304,20 +322,21 @@ object FileContextMenu {
             gravity = Gravity.CENTER_VERTICAL
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                (48 * dp).toInt()
+                effectiveHeight  // §H3: Ensure minimum 48dp touch target
             )
-            setPadding((20 * dp).toInt(), 0, (20 * dp).toInt(), 0)
+            setPadding(spacingXl, 0, spacingXl, 0)
             val outValue = TypedValue()
             context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
             setBackgroundResource(outValue.resourceId)
             isClickable = true
             isFocusable = true
+            contentDescription = context.getString(R.string.ctx_delete)
             setOnClickListener {
                 dialog.dismiss()
                 val undoSec = try { UserPreferences.undoTimeoutMs / 1000 } catch (_: Exception) { 8 }
                 val detail = context.resources.getQuantityString(
                     R.plurals.confirm_delete_detail, 1, 1, UndoHelper.formatBytes(item.size), undoSec)
-                AlertDialog.Builder(context)
+                MaterialAlertDialogBuilder(context)
                     .setTitle(context.resources.getQuantityString(R.plurals.delete_n_files_title, 1, 1))
                     .setMessage("${item.name}\n\n$detail")
                     .setPositiveButton(context.getString(R.string.delete)) { _, _ ->
@@ -328,19 +347,21 @@ object FileContextMenu {
             }
         }
         val deleteIcon = ImageView(context).apply {
-            layoutParams = LinearLayout.LayoutParams((24 * dp).toInt(), (24 * dp).toInt())
+            layoutParams = LinearLayout.LayoutParams(iconNav, iconNav)
             setImageResource(R.drawable.ic_delete)
             setColorFilter(ContextCompat.getColor(context, R.color.colorError))
             scaleType = ImageView.ScaleType.CENTER_INSIDE
+            // §G1: Icon is decorative; row has contentDescription
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
         }
         deleteRow.addView(deleteIcon)
         val deleteText = TextView(context).apply {
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
-                marginStart = (16 * dp).toInt()
+                marginStart = spacingLg
             }
             text = context.getString(R.string.ctx_delete)
             setTextColor(ContextCompat.getColor(context, R.color.colorError))
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.text_body))
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, bodySize)
             typeface = Typeface.DEFAULT_BOLD
         }
         deleteRow.addView(deleteText)
@@ -365,7 +386,7 @@ object FileContextMenu {
             appendLine("${context.getString(R.string.prop_folder)}: $parentDir")
         }
 
-        AlertDialog.Builder(context)
+        MaterialAlertDialogBuilder(context)
             .setTitle(context.getString(R.string.ctx_properties))
             .setMessage(info)
             .setPositiveButton(android.R.string.ok, null)

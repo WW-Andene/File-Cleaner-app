@@ -13,7 +13,8 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingHorizontal="@dimen/spacing_md"
-        android:paddingVertical="@dimen/spacing_sm">
+        android:paddingVertical="@dimen/spacing_sm"
+        android:minHeight="@dimen/touch_target_min">
 
         <ImageButton
             android:id="@+id/btn_back"
@@ -32,7 +33,8 @@
             android:text="@string/av_title"
             android:textAppearance="@style/TextAppearance.FileCleaner.Subtitle"
             android:textColor="@color/textPrimary"
-            android:layout_marginStart="@dimen/spacing_sm" />
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:accessibilityHeading="true" />
 
         <ImageButton
             android:id="@+id/btn_history"
@@ -49,12 +51,15 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        android:scrollbarStyle="outsideOverlay">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/spacing_bottom_inset">
 
             <!-- Shield icon + status area -->
             <LinearLayout
@@ -63,15 +68,27 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:paddingVertical="@dimen/spacing_lg">
+                android:paddingVertical="@dimen/spacing_lg"
+                android:contentDescription="@string/a11y_shield_status"
+                android:focusable="true">
 
-                <ImageView
-                    android:id="@+id/iv_shield"
-                    android:layout_width="72dp"
-                    android:layout_height="72dp"
-                    android:src="@drawable/ic_shield"
-                    app:tint="@color/colorPrimary"
-                    android:contentDescription="@string/av_title" />
+                <FrameLayout
+                    android:layout_width="@dimen/icon_empty_state"
+                    android:layout_height="@dimen/icon_empty_state"
+                    android:background="@drawable/bg_hub_icon_circle"
+                    android:backgroundTint="@color/tintAntivirus"
+                    android:gravity="center"
+                    android:importantForAccessibility="no">
+
+                    <ImageView
+                        android:id="@+id/iv_shield"
+                        android:layout_width="@dimen/icon_hub_circle"
+                        android:layout_height="@dimen/icon_hub_circle"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_shield"
+                        app:tint="@color/colorPrimary"
+                        android:contentDescription="@string/a11y_shield_status" />
+                </FrameLayout>
 
                 <TextView
                     android:id="@+id/tv_status"
@@ -82,7 +99,8 @@
                     android:textColor="@color/textPrimary"
                     android:gravity="center"
                     android:layout_marginTop="@dimen/spacing_sm"
-                    android:paddingHorizontal="@dimen/spacing_lg" />
+                    android:paddingHorizontal="@dimen/spacing_lg"
+                    android:accessibilityLiveRegion="polite" />
 
                 <TextView
                     android:id="@+id/tv_last_scan"
@@ -101,14 +119,30 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:paddingHorizontal="@dimen/spacing_lg"
-                android:visibility="gone">
+                android:visibility="gone"
+                android:accessibilityLiveRegion="assertive"
+                android:contentDescription="@string/a11y_scan_phase_progress"
+                android:focusable="true">
 
                 <ProgressBar
                     android:id="@+id/progress"
                     style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:max="100" />
+                    android:max="100"
+                    android:progressTint="@color/colorPrimary"
+                    android:contentDescription="@string/a11y_scan_progress" />
+
+                <TextView
+                    android:id="@+id/tv_progress_pct"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.Numeric"
+                    android:textColor="@color/colorPrimary"
+                    android:gravity="end"
+                    android:layout_marginTop="@dimen/spacing_micro"
+                    android:text="0%"
+                    android:accessibilityLiveRegion="polite" />
 
                 <TextView
                     android:id="@+id/tv_phase"
@@ -116,7 +150,8 @@
                     android:layout_height="wrap_content"
                     android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
                     android:textColor="@color/textSecondary"
-                    android:layout_marginTop="@dimen/spacing_xs" />
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:accessibilityLiveRegion="polite" />
 
                 <TextView
                     android:id="@+id/tv_phase_desc"
@@ -124,12 +159,13 @@
                     android:layout_height="wrap_content"
                     android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
                     android:textColor="@color/textTertiary"
-                    android:layout_marginTop="2dp" />
+                    android:layout_marginTop="@dimen/spacing_micro" />
             </LinearLayout>
 
             <!-- Start scan / scan again button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_scan"
+                style="@style/Widget.FileCleaner.Button"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/button_height"
                 android:layout_marginHorizontal="@dimen/spacing_lg"
@@ -150,7 +186,10 @@
                 android:orientation="horizontal"
                 android:paddingHorizontal="@dimen/spacing_lg"
                 android:paddingTop="@dimen/spacing_md"
-                android:visibility="gone">
+                android:visibility="gone"
+                android:contentDescription="@string/a11y_scan_results_summary"
+                android:focusable="true"
+                android:accessibilityLiveRegion="polite">
 
                 <!-- Critical card -->
                 <com.google.android.material.card.MaterialCardView
@@ -162,21 +201,24 @@
                     app:cardElevation="@dimen/elevation_none"
                     app:cardBackgroundColor="@color/colorErrorLight"
                     app:strokeWidth="@dimen/stroke_default"
-                    app:strokeColor="@color/colorError">
+                    app:strokeColor="@color/colorError"
+                    android:focusable="true"
+                    android:contentDescription="@string/a11y_scan_threat_count">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:gravity="center"
-                        android:padding="@dimen/spacing_sm">
+                        android:padding="@dimen/spacing_sm"
+                        android:minHeight="@dimen/touch_target_min">
 
                         <TextView
                             android:id="@+id/tv_critical_count"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
-                            android:textAppearance="@style/TextAppearance.FileCleaner.Title"
+                            android:textAppearance="@style/TextAppearance.FileCleaner.NumericTitle"
                             android:textColor="@color/colorError" />
 
                         <TextView
@@ -184,8 +226,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/av_critical"
                             android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
-                            android:textColor="@color/colorError"
-                            android:textSize="10sp" />
+                            android:textColor="@color/colorError" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -199,30 +240,31 @@
                     app:cardElevation="@dimen/elevation_none"
                     app:cardBackgroundColor="@color/surfaceColor"
                     app:strokeWidth="@dimen/stroke_default"
-                    app:strokeColor="@color/borderSubtle">
+                    app:strokeColor="@color/borderSubtle"
+                    android:focusable="true">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:gravity="center"
-                        android:padding="@dimen/spacing_sm">
+                        android:padding="@dimen/spacing_sm"
+                        android:minHeight="@dimen/touch_target_min">
 
                         <TextView
                             android:id="@+id/tv_high_count"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
-                            android:textAppearance="@style/TextAppearance.FileCleaner.Title"
-                            android:textColor="@color/colorError" />
+                            android:textAppearance="@style/TextAppearance.FileCleaner.NumericTitle"
+                            android:textColor="@color/colorAccent" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/av_high"
                             android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
-                            android:textColor="@color/textTertiary"
-                            android:textSize="10sp" />
+                            android:textColor="@color/textTertiary" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -236,30 +278,31 @@
                     app:cardElevation="@dimen/elevation_none"
                     app:cardBackgroundColor="@color/surfaceColor"
                     app:strokeWidth="@dimen/stroke_default"
-                    app:strokeColor="@color/borderSubtle">
+                    app:strokeColor="@color/borderSubtle"
+                    android:focusable="true">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:gravity="center"
-                        android:padding="@dimen/spacing_sm">
+                        android:padding="@dimen/spacing_sm"
+                        android:minHeight="@dimen/touch_target_min">
 
                         <TextView
                             android:id="@+id/tv_medium_count"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
-                            android:textAppearance="@style/TextAppearance.FileCleaner.Title"
-                            android:textColor="@color/catVideo" />
+                            android:textAppearance="@style/TextAppearance.FileCleaner.NumericTitle"
+                            android:textColor="@color/colorWarning" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/av_medium"
                             android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
-                            android:textColor="@color/textTertiary"
-                            android:textSize="10sp" />
+                            android:textColor="@color/textTertiary" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -273,21 +316,23 @@
                     app:cardElevation="@dimen/elevation_none"
                     app:cardBackgroundColor="@color/surfaceColor"
                     app:strokeWidth="@dimen/stroke_default"
-                    app:strokeColor="@color/borderSubtle">
+                    app:strokeColor="@color/borderSubtle"
+                    android:focusable="true">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:gravity="center"
-                        android:padding="@dimen/spacing_sm">
+                        android:padding="@dimen/spacing_sm"
+                        android:minHeight="@dimen/touch_target_min">
 
                         <TextView
                             android:id="@+id/tv_clean_count"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
-                            android:textAppearance="@style/TextAppearance.FileCleaner.Title"
+                            android:textAppearance="@style/TextAppearance.FileCleaner.NumericTitle"
                             android:textColor="@color/colorPrimary" />
 
                         <TextView
@@ -295,8 +340,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/av_clean"
                             android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
-                            android:textColor="@color/textTertiary"
-                            android:textSize="10sp" />
+                            android:textColor="@color/textTertiary" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
@@ -313,7 +357,8 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 android:visibility="gone"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:contentDescription="@string/a11y_fix_all_threats"
+                style="@style/Widget.FileCleaner.Button.Outlined"
                 app:cornerRadius="@dimen/radius_pill"
                 app:strokeColor="@color/colorError"
                 android:textColor="@color/colorError" />
@@ -326,7 +371,9 @@
                 android:scrollbars="none"
                 android:paddingHorizontal="@dimen/spacing_lg"
                 android:paddingTop="@dimen/spacing_sm"
-                android:visibility="gone">
+                android:visibility="gone"
+                android:contentDescription="@string/a11y_filter_threats"
+                android:clipToPadding="false">
 
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/chip_group_filter"
@@ -340,7 +387,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/av_filter_all"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        style="@style/Widget.FileCleaner.Chip.Choice"
                         android:checked="true" />
 
                     <com.google.android.material.chip.Chip
@@ -348,28 +395,28 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/av_critical"
-                        style="@style/Widget.MaterialComponents.Chip.Choice" />
+                        style="@style/Widget.FileCleaner.Chip.Choice" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_high"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/av_high"
-                        style="@style/Widget.MaterialComponents.Chip.Choice" />
+                        style="@style/Widget.FileCleaner.Chip.Choice" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_medium"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/av_medium"
-                        style="@style/Widget.MaterialComponents.Chip.Choice" />
+                        style="@style/Widget.FileCleaner.Chip.Choice" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_low_info"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/av_filter_low_info"
-                        style="@style/Widget.MaterialComponents.Chip.Choice" />
+                        style="@style/Widget.FileCleaner.Chip.Choice" />
                 </com.google.android.material.chip.ChipGroup>
             </HorizontalScrollView>
 
@@ -380,6 +427,7 @@
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false"
                 android:clipToPadding="false"
+                android:layoutAnimation="@anim/layout_item_stagger"
                 android:paddingHorizontal="@dimen/spacing_md"
                 android:paddingTop="@dimen/spacing_sm"
                 android:paddingBottom="@dimen/spacing_above_nav"

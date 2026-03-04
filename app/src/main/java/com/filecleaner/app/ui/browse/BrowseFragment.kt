@@ -23,6 +23,7 @@ import com.filecleaner.app.databinding.FragmentBrowseBinding
 import com.filecleaner.app.data.UserPreferences
 import com.filecleaner.app.ui.adapters.BrowseAdapter
 import com.filecleaner.app.ui.adapters.ViewMode
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.filecleaner.app.ui.common.BaseFileListFragment
 import com.filecleaner.app.ui.common.FileContextMenu
 import com.filecleaner.app.ui.common.FileListDividerDecoration
@@ -119,7 +120,7 @@ class BrowseFragment : Fragment() {
             val items = adapter.getSelectedItems()
             if (items.isNotEmpty()) {
                 val totalSize = UndoHelper.totalSize(items)
-                androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                MaterialAlertDialogBuilder(requireContext())
                     .setTitle(resources.getQuantityString(R.plurals.delete_n_files_title, items.size, items.size))
                     .setMessage(getString(R.string.confirm_delete_message, 8))
                     .setPositiveButton(R.string.delete) { _, _ ->

@@ -350,7 +350,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/av_filter_all"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        style="@style/Widget.FileCleaner.Chip.Choice"
                         android:checked="true" />
 
                     <com.google.android.material.chip.Chip
@@ -358,28 +358,28 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/av_critical"
-                        style="@style/Widget.MaterialComponents.Chip.Choice" />
+                        style="@style/Widget.FileCleaner.Chip.Choice" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_high"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/av_high"
-                        style="@style/Widget.MaterialComponents.Chip.Choice" />
+                        style="@style/Widget.FileCleaner.Chip.Choice" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_medium"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/av_medium"
-                        style="@style/Widget.MaterialComponents.Chip.Choice" />
+                        style="@style/Widget.FileCleaner.Chip.Choice" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_low_info"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/av_filter_low_info"
-                        style="@style/Widget.MaterialComponents.Chip.Choice" />
+                        style="@style/Widget.FileCleaner.Chip.Choice" />
                 </com.google.android.material.chip.ChipGroup>
             </HorizontalScrollView>
 

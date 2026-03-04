@@ -243,7 +243,7 @@ class AnalysisFragment : Fragment() {
 
         val emojiView = TextView(ctx).apply {
             text = cat.emoji
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+            setTextAppearance(R.style.TextAppearance_FileCleaner_Emoji)
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -253,14 +253,12 @@ class AnalysisFragment : Fragment() {
         val nameView = TextView(ctx).apply {
             text = getString(cat.displayNameRes)
             setTextAppearance(R.style.TextAppearance_FileCleaner_Body)
-            setTextColor(ContextCompat.getColor(ctx, R.color.textPrimary))
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
         }
 
         val sizeLabel = TextView(ctx).apply {
             text = getString(R.string.analysis_category_count, count, UndoHelper.formatBytes(sizeBytes))
             setTextAppearance(R.style.TextAppearance_FileCleaner_Caption)
-            setTextColor(ContextCompat.getColor(ctx, R.color.textTertiary))
         }
 
         topRow.addView(emojiView)
@@ -351,7 +349,6 @@ class AnalysisFragment : Fragment() {
         val rankView = TextView(ctx).apply {
             text = "$rank"
             setTextAppearance(R.style.TextAppearance_FileCleaner_Caption)
-            setTextColor(ContextCompat.getColor(ctx, R.color.textTertiary))
             layoutParams = LinearLayout.LayoutParams(
                 dpToPx(20), ViewGroup.LayoutParams.WRAP_CONTENT
             )
@@ -360,7 +357,7 @@ class AnalysisFragment : Fragment() {
 
         val emojiView = TextView(ctx).apply {
             text = file.category.emoji
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            setTextAppearance(R.style.TextAppearance_FileCleaner_Body)
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -379,7 +376,6 @@ class AnalysisFragment : Fragment() {
         val sizeView = TextView(ctx).apply {
             text = UndoHelper.formatBytes(file.size)
             setTextAppearance(R.style.TextAppearance_FileCleaner_Caption)
-            setTextColor(ContextCompat.getColor(ctx, R.color.textTertiary))
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT

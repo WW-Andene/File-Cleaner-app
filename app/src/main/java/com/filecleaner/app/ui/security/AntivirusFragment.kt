@@ -14,8 +14,8 @@ import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.ScaleAnimation
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -313,7 +313,7 @@ class AntivirusFragment : Fragment() {
             recycler.adapter = HistoryAdapter(history)
         }
 
-        AlertDialog.Builder(ctx)
+        MaterialAlertDialogBuilder(ctx)
             .setView(dialogView)
             .setPositiveButton(R.string.av_dismiss, null)
             .setNeutralButton(R.string.av_clear_history) { _, _ ->
@@ -338,7 +338,7 @@ class AntivirusFragment : Fragment() {
             if (uninstall.isNotEmpty()) append(resources.getQuantityString(R.plurals.av_fix_uninstall, uninstall.size, uninstall.size))
         }.trim()
 
-        AlertDialog.Builder(ctx)
+        MaterialAlertDialogBuilder(ctx)
             .setTitle(getString(R.string.av_fix_all))
             .setMessage(getString(R.string.av_fix_all_confirm, summary))
             .setPositiveButton(getString(R.string.av_proceed)) { _, _ ->
@@ -435,7 +435,7 @@ class AntivirusFragment : Fragment() {
         // Category
         tvCategory.text = categoryLabel(ctx, threat.category)
 
-        val dialog = AlertDialog.Builder(ctx)
+        val dialog = MaterialAlertDialogBuilder(ctx)
             .setView(dialogView)
             .create()
 
@@ -502,7 +502,7 @@ class AntivirusFragment : Fragment() {
 
     private fun confirmDelete(filePath: String) {
         val ctx = context ?: return
-        AlertDialog.Builder(ctx)
+        MaterialAlertDialogBuilder(ctx)
             .setTitle(getString(R.string.delete))
             .setMessage(getString(R.string.av_confirm_delete, File(filePath).name))
             .setPositiveButton(getString(R.string.delete)) { _, _ ->

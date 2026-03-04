@@ -232,7 +232,7 @@
                     android:letterSpacing="0.01"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-                    style="@style/Widget.MaterialComponents.Button"
+                    style="@style/Widget.FileCleaner.Button"
                     app:icon="@drawable/ic_archive"
                     app:iconGravity="textStart"
                     app:iconSize="20dp"

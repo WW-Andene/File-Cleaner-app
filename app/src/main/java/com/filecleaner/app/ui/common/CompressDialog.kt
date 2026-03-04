@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.filecleaner.app.R
 import com.filecleaner.app.data.FileItem
 import java.io.File
@@ -67,7 +67,7 @@ object CompressDialog {
         }
         container.addView(previewText)
 
-        AlertDialog.Builder(context)
+        MaterialAlertDialogBuilder(context)
             .setTitle(context.getString(R.string.compress_title))
             .setView(container)
             .setPositiveButton(context.getString(R.string.ctx_compress)) { _, _ ->

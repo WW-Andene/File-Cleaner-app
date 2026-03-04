@@ -12,7 +12,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.filecleaner.app.R
@@ -217,7 +217,7 @@ object FileContextMenu {
                 setText(item.name)
                 selectAll()
             }
-            AlertDialog.Builder(context)
+            MaterialAlertDialogBuilder(context)
                 .setTitle(context.getString(R.string.ctx_rename))
                 .setView(editText)
                 .setPositiveButton(android.R.string.ok) { _, _ ->
@@ -326,7 +326,7 @@ object FileContextMenu {
                 val undoSec = try { UserPreferences.undoTimeoutMs / 1000 } catch (_: Exception) { 8 }
                 val detail = context.resources.getQuantityString(
                     R.plurals.confirm_delete_detail, 1, 1, UndoHelper.formatBytes(item.size), undoSec)
-                AlertDialog.Builder(context)
+                MaterialAlertDialogBuilder(context)
                     .setTitle(context.resources.getQuantityString(R.plurals.delete_n_files_title, 1, 1))
                     .setMessage("${item.name}\n\n$detail")
                     .setPositiveButton(context.getString(R.string.delete)) { _, _ ->
@@ -374,7 +374,7 @@ object FileContextMenu {
             appendLine("${context.getString(R.string.prop_folder)}: $parentDir")
         }
 
-        AlertDialog.Builder(context)
+        MaterialAlertDialogBuilder(context)
             .setTitle(context.getString(R.string.ctx_properties))
             .setMessage(info)
             .setPositiveButton(android.R.string.ok, null)

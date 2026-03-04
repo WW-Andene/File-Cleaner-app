@@ -4,7 +4,6 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.os.StatFs
-import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -243,8 +242,7 @@ class StorageDashboardFragment : Fragment() {
                 // Category name with emoji and file count
                 val nameText = TextView(ctx).apply {
                     text = "${cat.emoji} ${getString(cat.displayNameRes)}"
-                    setTextColor(ContextCompat.getColor(ctx, R.color.textPrimary))
-                    setTextSize(TypedValue.COMPLEX_UNIT_PX, ctx.resources.getDimension(R.dimen.text_body))
+                    setTextAppearance(R.style.TextAppearance_FileCleaner_Body)
                 }
                 infoColumn.addView(nameText)
 
@@ -254,8 +252,7 @@ class StorageDashboardFragment : Fragment() {
                         R.plurals.n_files_with_size, files.size, files.size,
                         UndoHelper.formatBytes(catSize))
                     text = "$countAndSize ($pct%)"
-                    setTextColor(ContextCompat.getColor(ctx, R.color.textSecondary))
-                    setTextSize(TypedValue.COMPLEX_UNIT_PX, ctx.resources.getDimension(R.dimen.text_body_small))
+                    setTextAppearance(R.style.TextAppearance_FileCleaner_BodySmall)
                 }
                 infoColumn.addView(detailText)
 
@@ -352,8 +349,7 @@ class StorageDashboardFragment : Fragment() {
                 // Rank number
                 val rank = TextView(ctx).apply {
                     text = "${index + 1}."
-                    setTextColor(ContextCompat.getColor(ctx, R.color.textSecondary))
-                    setTextSize(TypedValue.COMPLEX_UNIT_PX, ctx.resources.getDimension(R.dimen.text_body_small))
+                    setTextAppearance(R.style.TextAppearance_FileCleaner_BodySmall)
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT
@@ -367,7 +363,7 @@ class StorageDashboardFragment : Fragment() {
                 // Category emoji
                 val emoji = TextView(ctx).apply {
                     text = file.category.emoji
-                    setTextSize(TypedValue.COMPLEX_UNIT_PX, ctx.resources.getDimension(R.dimen.text_body))
+                    setTextAppearance(R.style.TextAppearance_FileCleaner_Body)
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT
@@ -380,8 +376,7 @@ class StorageDashboardFragment : Fragment() {
                 // File name (truncated)
                 val nameText = TextView(ctx).apply {
                     text = file.name
-                    setTextColor(ContextCompat.getColor(ctx, R.color.textPrimary))
-                    setTextSize(TypedValue.COMPLEX_UNIT_PX, ctx.resources.getDimension(R.dimen.text_chip))
+                    setTextAppearance(R.style.TextAppearance_FileCleaner_Body)
                     maxLines = 1
                     ellipsize = android.text.TextUtils.TruncateAt.MIDDLE
                     layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
@@ -391,8 +386,7 @@ class StorageDashboardFragment : Fragment() {
                 // File size
                 val sizeText = TextView(ctx).apply {
                     text = UndoHelper.formatBytes(file.size)
-                    setTextColor(ContextCompat.getColor(ctx, R.color.textSecondary))
-                    setTextSize(TypedValue.COMPLEX_UNIT_PX, ctx.resources.getDimension(R.dimen.text_body_small))
+                    setTextAppearance(R.style.TextAppearance_FileCleaner_BodySmall)
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT

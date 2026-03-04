@@ -31,7 +31,7 @@
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_sftp"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                style="@style/Widget.FileCleaner.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/cloud_type_sftp"
@@ -39,14 +39,14 @@
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_webdav"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                style="@style/Widget.FileCleaner.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/cloud_type_webdav" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_gdrive"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                style="@style/Widget.FileCleaner.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/cloud_type_google_drive" />

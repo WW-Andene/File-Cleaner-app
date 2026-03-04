@@ -225,4 +225,49 @@
         <item name="android:textSize">22sp</item>
         <item name="android:textColor">@color/textPrimary</item>
     </style>
+
+    <!-- Selected Card — highlighted state for file cards -->
+    <style name="Widget.FileCleaner.Card.Selected" parent="Widget.FileCleaner.Card">
+        <item name="cardBackgroundColor">@color/selectedBackground</item>
+        <item name="strokeColor">@color/selectedBorder</item>
+    </style>
+
+    <!-- Elevated Card — hero/raised cards -->
+    <style name="Widget.FileCleaner.Card.Elevated" parent="Widget.FileCleaner.Card">
+        <item name="cardElevation">@dimen/elevation_raised</item>
+        <item name="strokeWidth">@dimen/stroke_none</item>
+    </style>
+
+    <!-- Choice Chip — single-select chips (antivirus severity, cloud setup) -->
+    <style name="Widget.FileCleaner.Chip.Choice" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="chipCornerRadius">@dimen/radius_pill</item>
+        <item name="chipBackgroundColor">@color/chip_bg_color</item>
+        <item name="chipStrokeWidth">@dimen/stroke_default</item>
+        <item name="chipStrokeColor">@color/chip_stroke_color</item>
+        <item name="checkedIconVisible">false</item>
+        <item name="chipMinHeight">@dimen/button_height_sm</item>
+        <item name="android:textSize">@dimen/text_chip</item>
+        <item name="android:textColor">@color/chip_text_color</item>
+    </style>
+
+    <!-- Action Chip — interactive action chips -->
+    <style name="Widget.FileCleaner.Chip.Action" parent="Widget.MaterialComponents.Chip.Action">
+        <item name="chipCornerRadius">@dimen/radius_pill</item>
+        <item name="chipBackgroundColor">@color/chip_bg_color</item>
+        <item name="chipStrokeWidth">@dimen/stroke_default</item>
+        <item name="chipStrokeColor">@color/chip_stroke_color</item>
+        <item name="chipMinHeight">@dimen/button_height_sm</item>
+        <item name="android:textSize">@dimen/text_chip</item>
+        <item name="android:textColor">@color/chip_text_color</item>
+    </style>
+
+    <!-- Numeric: tabular numerals for aligned numeric data displays -->
+    <style name="TextAppearance.FileCleaner.Numeric" parent="TextAppearance.FileCleaner.BodySmall">
+        <item name="android:fontFeatureSettings">tnum</item>
+    </style>
+
+    <!-- NumericBody: tabular numerals for larger numeric displays -->
+    <style name="TextAppearance.FileCleaner.NumericBody" parent="TextAppearance.FileCleaner.Body">
+        <item name="android:fontFeatureSettings">tnum</item>
+    </style>
 </resources>

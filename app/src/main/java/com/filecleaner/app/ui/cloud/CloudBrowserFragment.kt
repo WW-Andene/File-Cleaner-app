@@ -13,7 +13,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.AdapterView
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -405,7 +405,7 @@ class CloudBrowserFragment : Fragment() {
         val conn = connections[idx]
 
         val ctx = context ?: return
-        AlertDialog.Builder(ctx)
+        MaterialAlertDialogBuilder(ctx)
             .setTitle(getString(R.string.cloud_remove))
             .setMessage(getString(R.string.cloud_remove_confirm, conn.displayName))
             .setPositiveButton(getString(R.string.delete)) { _, _ ->

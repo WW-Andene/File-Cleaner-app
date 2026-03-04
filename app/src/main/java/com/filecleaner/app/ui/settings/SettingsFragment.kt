@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -149,7 +149,7 @@ class SettingsFragment : Fragment() {
             }
             clearButton.setOnClickListener {
                 val ctx = context ?: return@setOnClickListener
-                AlertDialog.Builder(ctx)
+                MaterialAlertDialogBuilder(ctx)
                     .setTitle(getString(R.string.settings_clear_data_confirm_title))
                     .setMessage(getString(R.string.settings_clear_data_confirm_message))
                     .setPositiveButton(getString(R.string.delete)) { _, _ ->

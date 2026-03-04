@@ -146,6 +146,7 @@
                     android:layout_width="@dimen/icon_button"
                     android:layout_height="@dimen/icon_button"
                     android:background="@drawable/bg_icon_circle"
+                    android:backgroundTint="@color/colorPrimaryContainer"
                     android:gravity="center">
 
                     <ImageView
@@ -211,6 +212,7 @@
                     android:layout_width="@dimen/icon_button"
                     android:layout_height="@dimen/icon_button"
                     android:background="@drawable/bg_icon_circle"
+                    android:backgroundTint="@color/colorPrimaryContainer"
                     android:gravity="center">
 
                     <ImageView
@@ -276,6 +278,7 @@
                     android:layout_width="@dimen/icon_button"
                     android:layout_height="@dimen/icon_button"
                     android:background="@drawable/bg_icon_circle"
+                    android:backgroundTint="@color/colorPrimaryContainer"
                     android:gravity="center">
 
                     <ImageView
@@ -352,6 +355,7 @@
                     android:layout_width="@dimen/icon_button"
                     android:layout_height="@dimen/icon_button"
                     android:background="@drawable/bg_icon_circle"
+                    android:backgroundTint="@color/colorPrimaryContainer"
                     android:gravity="center">
 
                     <ImageView
@@ -417,6 +421,7 @@
                     android:layout_width="@dimen/icon_button"
                     android:layout_height="@dimen/icon_button"
                     android:background="@drawable/bg_icon_circle"
+                    android:backgroundTint="@color/colorPrimaryContainer"
                     android:gravity="center">
 
                     <ImageView
@@ -481,6 +486,7 @@
                     android:layout_width="@dimen/icon_button"
                     android:layout_height="@dimen/icon_button"
                     android:background="@drawable/bg_icon_circle"
+                    android:backgroundTint="@color/colorPrimaryContainer"
                     android:gravity="center">
 
                     <ImageView
@@ -545,6 +551,7 @@
                     android:layout_width="@dimen/icon_button"
                     android:layout_height="@dimen/icon_button"
                     android:background="@drawable/bg_icon_circle"
+                    android:backgroundTint="@color/colorPrimaryContainer"
                     android:gravity="center">
 
                     <ImageView
@@ -609,6 +616,7 @@
                     android:layout_width="@dimen/icon_button"
                     android:layout_height="@dimen/icon_button"
                     android:background="@drawable/bg_icon_circle"
+                    android:backgroundTint="@color/colorPrimaryContainer"
                     android:gravity="center">
 
                     <ImageView

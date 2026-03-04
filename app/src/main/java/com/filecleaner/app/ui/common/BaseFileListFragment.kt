@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
@@ -302,7 +302,7 @@ abstract class BaseFileListFragment : Fragment() {
         val undoSeconds = try { com.filecleaner.app.data.UserPreferences.undoTimeoutMs / 1000 } catch (_: Exception) { 8 }
         val detailMessage = resources.getQuantityString(com.filecleaner.app.R.plurals.confirm_delete_detail,
             selected.size, selected.size, totalSize, undoSeconds)
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(confirmTitle(selected.size))
             .setMessage(detailMessage)
             .setPositiveButton(confirmPositiveLabel) { _, _ ->

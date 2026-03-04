@@ -1,11 +1,10 @@
 package com.filecleaner.app.ui.onboarding
 
 import android.content.Context
-import android.util.TypedValue
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.filecleaner.app.R
 import com.filecleaner.app.data.UserPreferences
 
@@ -48,7 +47,7 @@ object OnboardingDialog {
 
         val stepIndicator = TextView(context).apply {
             text = context.getString(R.string.onboarding_step, step + 1, steps.size)
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.text_body_small))
+            setTextAppearance(R.style.TextAppearance_FileCleaner_BodySmall)
             setTextColor(context.getColor(R.color.textTertiary))
         }
         container.addView(stepIndicator)
@@ -72,13 +71,13 @@ object OnboardingDialog {
 
         val bodyView = TextView(context).apply {
             text = current.body
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.text_body))
+            setTextAppearance(R.style.TextAppearance_FileCleaner_Body)
             setPadding(0, padding / 2, 0, 0)
             setLineSpacing(4f, 1.2f)
         }
         container.addView(bodyView)
 
-        val builder = AlertDialog.Builder(context)
+        val builder = MaterialAlertDialogBuilder(context)
             .setTitle(current.title)
             .setView(container)
             .setCancelable(false)

@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import com.filecleaner.app.MainActivity
@@ -18,6 +19,10 @@ import com.filecleaner.app.utils.antivirus.*
 import kotlinx.coroutines.*
 
 class ScanService : Service() {
+
+    private companion object {
+        private const val TAG = "ScanService"
+    }
 
     companion object {
         const val CHANNEL_ID = "antivirus_scan"
@@ -154,9 +159,10 @@ class ScanService : Service() {
                 showCompletionNotification(threats)
 
             } catch (e: CancellationException) {
-                // Scan was cancelled
+                Log.d(TAG, "Scan was cancelled", e)
+                throw e
             } catch (e: Exception) {
-                // Scan failed
+                Log.e(TAG, "Scan failed", e)
             } finally {
                 isRunning = false
                 stopForeground(STOP_FOREGROUND_REMOVE)
@@ -250,6 +256,12 @@ class ScanService : Service() {
         scanJob?.cancel()
         serviceScope.cancel()
         isRunning = false
+        // Clear static references to prevent memory retention after service destruction
+        if (!scanComplete) {
+            scanResults = null
+            currentProgress = 0
+            currentPhase = ""
+        }
         super.onDestroy()
     }
 }

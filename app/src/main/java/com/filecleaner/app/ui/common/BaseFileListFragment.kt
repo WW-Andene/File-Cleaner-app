@@ -1,8 +1,6 @@
 package com.filecleaner.app.ui.common
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -14,6 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.filecleaner.app.MainActivity
@@ -35,6 +34,9 @@ import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.viewmodel.ScanState
 import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Shared base for Junk / Large / Duplicates screens (F-039).
@@ -61,8 +63,7 @@ abstract class BaseFileListFragment : Fragment() {
     // Search state
     private var searchQuery = ""
     private var rawItems = listOf<FileItem>()
-    private val handler = Handler(Looper.getMainLooper())
-    private var searchRunnable: Runnable? = null
+    private var searchDebounceJob: Job? = null
     private var dividerDecoration: FileListDividerDecoration? = null
 
     /** Screen title shown in the header. */
@@ -214,14 +215,14 @@ abstract class BaseFileListFragment : Fragment() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
-                searchRunnable?.let { handler.removeCallbacks(it) }
+                searchDebounceJob?.cancel()
                 val query = s?.toString()?.trim() ?: ""
-                searchRunnable = Runnable {
-                    if (_binding == null) return@Runnable  // Fragment view destroyed
+                searchDebounceJob = viewLifecycleOwner.lifecycleScope.launch {
+                    delay(SEARCH_DEBOUNCE_MS)
+                    if (_binding == null) return@launch
                     searchQuery = query
                     applySearch()
                 }
-                handler.postDelayed(searchRunnable!!, SEARCH_DEBOUNCE_MS)
             }
         })
 
@@ -436,7 +437,7 @@ abstract class BaseFileListFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        searchRunnable?.let { handler.removeCallbacks(it) }
+        searchDebounceJob?.cancel()
         binding.spinnerSort.onItemSelectedListener = null
         super.onDestroyView()
         _binding = null

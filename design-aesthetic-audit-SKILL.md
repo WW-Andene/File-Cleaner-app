@@ -383,6 +383,11 @@ Style-appropriate execution: [2–3 sentences on whether the style's specific ru
 - **Style inflection points**: Identify every component that breaks the established visual language. Document: what style it belongs to, what style the rest of the app uses, and the specific change that would bring it into alignment.
 - **Intentional tension vs accidental mixing**: Neo-brutalism may intentionally mix conventions — but if the style is intended to be coherent, any mixing is a bug. Determine intent before flagging.
 - **Style-appropriate detail level**: Minimal design requires extraordinarily precise spacing (every 1px off is visible). Material design requires precisely calibrated shadow elevation. Cyberpunk requires consistent glow calibration. Is the craft level appropriate for the style?
+- **Material Design version mixing** *(Android)*: Are Material 2 and Material 3 components used on the same screen? `MaterialCardView` (M2) next to `MaterialToolbar` with M3 theming signals an incomplete migration. Grep for `com.google.android.material` imports and check which version each component targets. M2 components use `Widget.MaterialComponents.*` styles; M3 uses `Widget.Material3.*`.
+- **XML View + Compose interop coherence** *(Android)*: If the app uses both XML layouts and Jetpack Compose, are the design tokens shared? Compose `MaterialTheme.colorScheme` and XML `?attr/colorPrimary` should resolve to the same values. Check for `MaterialTheme { }` wrapping `AndroidView` — without it, Compose and XML will drift visually.
+- **Theme attribute vs hardcoded value audit** *(Android)*: Grep for hardcoded `#RRGGBB` in XML layouts and `Color(0xFF...)` in Kotlin. Every hardcoded color is a style coherence break — it won't respond to theme changes, dark mode, or Dynamic Color. Should reference `?attr/colorSurface`, `?attr/colorOnSurface`, etc.
+- **Shape system consistency** *(Android)*: Material 3 defines shape families (`ShapeAppearance.Material3.Corner.Small`, `.Medium`, `.Large`, `.ExtraLarge`). Are components using consistent shape families for their size class, or are `cornerRadius` values scattered arbitrarily? Buttons/chips → Small, Cards → Medium, Sheets → Large.
+- **Elevation vs tonal surface mixing**: In Material 3 dark mode, elevation is expressed through tonal surface color (lighter = higher), not shadow. If some components use `android:elevation` shadows while others use `?attr/colorSurfaceContainerHigh`, the depth language is incoherent.
 
 ---
 
@@ -453,9 +458,13 @@ The elevation-as-lightness system: in dark mode, elevation is communicated by li
 
 ### §DC4. Brand Color Distinctiveness
 
-- **Hue ownership**: Does the primary accent hue feel distinctive in the competitive landscape? Or is it "another blue SaaS"?
+- **Hue ownership**: Does the primary accent hue feel distinctive in the competitive landscape? Or is it "another blue SaaS"? For Android file managers: is it "another teal/blue Material app"?
 - **Calibration signature**: The specific saturation and lightness of the accent is the brand signature — not just the hue. `#3b82f6` (Tailwind blue-500) is generic. A carefully calibrated `oklch(62% 0.22 256)` can own the same family while feeling distinct.
 - **Recommendation format**: When suggesting palette improvements, always provide specific values in both `oklch()` and hex. OKLCH reasoning + hex for implementation.
+- **Dynamic Color interaction** *(Android)*: If the app uses `DynamicColors.applyToActivitiesIfAvailable()`, the brand color is device-dependent. Assess: does the app have a fallback identity when Dynamic Color is unavailable (API < 31)? Is the custom theme distinctive enough to justify NOT using Dynamic Color? Some apps are better served by owning their color than by adapting to the wallpaper.
+- **Platform default detection** *(Android)*: Material 3's default `colorPrimary` is `#6750A4` (purple). If the app ships with this or any unmodified Material default, it has zero color identity. Grep `colors.xml` for the Material baseline values: `#6750A4`, `#625B71`, `#7D5260`, `#B3261E`.
+- **Competitive hue mapping**: List the top 5 apps in the same category. Map each to its primary accent hue. If the current app's accent falls within 15° of any competitor's hue in OKLCH space, it risks visual confusion. The fix is recalibration — shift hue, adjust chroma, or move to a different hue region entirely.
+- **Icon → accent coherence**: The launcher icon (adaptive icon foreground) establishes the first color association. Does the in-app accent color match the icon's dominant color? A mismatch between icon color and in-app accent creates brand fragmentation — the user associates one color in the app drawer and encounters a different one inside.
 
 ### §DC5. Color as Narrative
 
@@ -691,10 +700,18 @@ For the current app: does the motion character match the correct row above given
 
 ### §DM3. Motion Performance Audit
 
-- **Compositor-only properties**: Smooth 60fps animation uses only `transform` and `opacity`. Animating `height`, `width`, `top`, `left`, `background-color`, `box-shadow` triggers layout/paint — jank risk.
-- **GPU layer promotion**: `will-change: transform` tells the browser to create a composite layer. Over-use wastes memory; under-use causes jank on complex animations. Use only where actually needed.
-- **Stagger patterns**: Sequential element entrances (lists, grids) should stagger by 30–50ms per element. Less = no visible stagger. More = feels slow. Cap at 150ms total regardless of count.
-- **Reduced motion compliance**: Every animation must have a `prefers-reduced-motion` alternative — not just CSS transitions. JS-driven animations (canvas, requestAnimationFrame) need an explicit media query check.
+- **Compositor-only properties** *(Web)*: Smooth 60fps animation uses only `transform` and `opacity`. Animating `height`, `width`, `top`, `left`, `background-color`, `box-shadow` triggers layout/paint — jank risk.
+- **Hardware-accelerated properties** *(Android)*: `ObjectAnimator` on `translationX`, `translationY`, `alpha`, `scaleX`, `scaleY`, `rotation` runs on the RenderThread — 60fps even if the main thread is busy. Animating `width`, `height`, `padding`, or calling `requestLayout()` during animation triggers expensive measure/layout passes. Use `ViewPropertyAnimator` (`view.animate().translationX().alpha()`) for the simplest hardware-accelerated path.
+- **GPU layer promotion** *(Web)*: `will-change: transform` tells the browser to create a composite layer. Over-use wastes memory; under-use causes jank on complex animations. Use only where actually needed.
+- **Hardware layer hint** *(Android)*: `view.setLayerType(View.LAYER_TYPE_HARDWARE, null)` during animation renders the view to an off-screen buffer — equivalent to GPU layer promotion. Set it before animation starts, clear it (`LAYER_TYPE_NONE`) when animation ends. `ViewPropertyAnimator` does this automatically with `.withLayer()`.
+- **Stagger patterns**: Sequential element entrances (lists, grids) should stagger by 30–50ms per element. Less = no visible stagger. More = feels slow. Cap at 150ms total regardless of count. On Android, use `LayoutAnimationController` with `android:delay="0.15"` (15% of duration) or `RecyclerView.ItemAnimator` with staggered `startDelay`.
+- **Reduced motion compliance**: Every animation must have an accessibility alternative.
+  - *Web*: `prefers-reduced-motion` media query — not just CSS transitions; JS-driven animations need an explicit check.
+  - *Android*: Check `Settings.Global.ANIMATOR_DURATION_SCALE`. When `0f`, all `ObjectAnimator`/`ValueAnimator` durations are automatically zeroed. But custom animations using `postDelayed()` or manual frame calculations must check this value explicitly: `val scale = Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)`.
+  - *iOS*: `UIAccessibility.isReduceMotionEnabled` / `accessibilityReduceMotion` environment value.
+- **MotionLayout performance** *(Android)*: `MotionLayout` is powerful but expensive — it inflates a `MotionScene` and calculates constraint interpolation every frame. For simple translations/fades, `ViewPropertyAnimator` is significantly cheaper. Reserve `MotionLayout` for complex multi-property coordinated transitions (e.g., toolbar collapse with parallax + fade + scale).
+- **RecyclerView animation jank** *(Android)*: `DefaultItemAnimator` runs change/add/remove animations. If the adapter calls `notifyDataSetChanged()` instead of granular `notifyItemInserted()`/`notifyItemRemoved()`, all item animations are lost and a full rebind occurs. Use `DiffUtil` or `ListAdapter` for smooth, animated list updates. Check for `setHasStableIds(true)` to enable cross-dataset animation.
+- **Frame profiling** *(Android)*: Use `FrameMetrics` API (API 24+) or `adb shell dumpsys gfxinfo <package>` to identify frames exceeding 16ms. GPU rendering profile bars (`Settings > Developer Options > Profile GPU Rendering`) give real-time visual feedback during animation review.
 
 ### §DM4. Micro-interaction Design
 
@@ -702,9 +719,9 @@ Micro-interactions are the interactions that happen at the human scale — the 5
 
 **The five micro-interaction domains to audit:**
 
-**1. Hover states** (the most important and most neglected)
+**1. Hover states** *(Web)* **/ Touch feedback states** *(Android/iOS)* — the most important and most neglected
 
-Every interactive element should have a hover state that:
+*Web:* Every interactive element should have a hover state that:
 - Communicates "I am clickable" through a change beyond cursor
 - Expresses the product's motion character (instant = mechanical/expert; fade 150ms = considered)
 - Is consistent: all buttons of the same type respond identically
@@ -715,7 +732,12 @@ Common hover failures:
 - No hover state on interactive-but-not-visually-obvious elements (list rows, card clicks, icon buttons)
 - Hover state that breaks text contrast or border legibility
 
-**Assess:** Does every interactive element have a hover state? Is the hover motion consistent and appropriate to the product character?
+*Android (no hover — touch feedback replaces it):*
+- **Ripple effect** is the primary touch feedback mechanism. Every interactive element must have a ripple: `android:foreground="?attr/selectableItemBackground"` (bounded) or `?attr/selectableItemBackgroundBorderless` (unbounded for icons). Assess: are all clickable views showing ripple on tap? Custom views that set `OnClickListener` without a ripple background feel broken.
+- **StateListDrawable / ColorStateList**: For elements that need state-dependent appearance beyond ripple (pressed, focused, selected, disabled), use `<selector>` drawables or `ColorStateList` in `res/color/`. Assess: do buttons have distinct pressed/disabled/focused appearances?
+- **Ripple color calibration**: Default Material ripple is `?attr/colorControlHighlight`. For character-expressive apps, override per-component: accent-tinted ripple on primary actions, neutral ripple on secondary elements. `RippleDrawable` accepts a `ColorStateList` for the ripple layer.
+
+**Assess:** *Web*: Does every interactive element have a hover state? *Android*: Does every tappable element show ripple or equivalent touch feedback? Is the feedback motion consistent and appropriate to the product character?
 
 **2. Focus rings** (accessibility-critical craft element)
 
@@ -737,18 +759,29 @@ The default browser focus ring is functional but often ugly. A custom focus ring
 }
 ```
 
-**Assess:** Does the app have custom focus styles? Do they match the product's visual character? Do they meet WCAG 3:1 contrast ratio against adjacent background?
+*Android focus indication:*
+- Focus rings matter on Android for keyboard navigation (Bluetooth keyboards, ChromeOS), Switch Access, and D-pad (Android TV). The default Material focus indicator is a color state change — often insufficient for visibility.
+- Override `android:stateListAnimator` or use `ColorStateList` with `android:state_focused="true"` to provide a visible focus ring. Material 3 components use `?attr/colorSecondary` for focus indication.
+- In Compose: `Modifier.focusable()` with `Modifier.border()` in focused state, or `indication = rememberRipple()` which shows a persistent highlight on focus.
 
-**3. Active/press states** (the "click confirmation")
+**Assess:** Does the app have custom focus styles? Do they match the product's visual character? Do they meet WCAG 3:1 contrast ratio against adjacent background? *(Android)*: Is focus visible when navigating with a keyboard or Switch Access?
+
+**3. Active/press states** (the "click/tap confirmation")
 
 The moment between pressing and releasing — 50–100ms — is the most visceral feedback moment. If nothing visually changes on press, the UI feels unresponsive.
 
-Active state convention:
+*Web* active state convention:
 - Scale: `scale(0.97)` — subtle compression communicates "pressed into the surface"
 - Brightness: `brightness(0.92)` — slight darkening confirms contact
 - Both: produces the most convincing physical feedback
 
-**Assess:** Do interactive elements have active states beyond hover? Is the scale/brightness compression appropriate to the element's visual weight (small buttons need less compression than large CTAs)?
+*Android* press feedback layers:
+- **Ripple** provides the primary visual feedback (see domain 1 above)
+- **Elevation change**: Material buttons reduce elevation on press (`stateListAnimator` drops from `2dp` to `0dp`). Custom elevated views should follow the same pattern — press = closer to surface.
+- **Haptic feedback**: `view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)` adds tactile confirmation. Use sparingly — on primary actions, destructive confirmations, and toggle state changes. Overuse makes every tap feel the same.
+- **Scale on long press**: For draggable items (file manager drag-to-move), a subtle `scaleX/scaleY` increase to `1.02–1.05` with `MotionLayout` or `ViewPropertyAnimator` signals "I am now being held."
+
+**Assess:** Do interactive elements have active states beyond hover/ripple? Is the feedback intensity appropriate to the element's visual weight and action importance?
 
 **4. Loading and skeleton states**
 
@@ -772,7 +805,12 @@ Character-expressive skeleton:
 }
 ```
 
-**Assess:** Do skeleton states match content geometry? Are loading animations character-appropriate? Is the skeleton color from the product palette or from a UI kit default?
+*Android loading patterns:*
+- **ShimmerLayout** (Facebook Shimmer library or custom): Apply shimmer over placeholder shapes that match the final layout geometry. The shimmer gradient color should derive from the app's surface palette — not the library default gray.
+- **Placeholder drawables**: Use `ShapeDrawable` or `GradientDrawable` in the product's surface color as placeholder backgrounds. `Glide.with(ctx).load(url).placeholder(R.drawable.placeholder_surface)`.
+- **CircularProgressIndicator** (Material 3): For indeterminate loading, the indicator color should be `?attr/colorPrimary`. For determinate, show actual progress. Assess: is the progress indicator styled with the app theme or using the Material default?
+
+**Assess:** Do skeleton states match content geometry? Are loading animations character-appropriate? Is the skeleton/placeholder color from the product palette or from a UI kit default?
 
 **5. Scroll behavior**
 
@@ -782,7 +820,13 @@ Scroll behavior is motion design at the page level:
 - **Scroll-linked effects** (parallax, progress indicators): only appropriate when the product's A5 axis is "Aesthetic IS the value" — otherwise they slow down task completion
 - **Overflow scroll behavior**: `-webkit-overflow-scrolling: touch` for smooth iOS momentum scroll; `scrollbar-width: thin` (Firefox) + custom scrollbar styling for consistent cross-browser craft
 
-**Assess:** Is scroll behavior declared at all? Does it match the product character? Are there scroll-triggered effects, and are they appropriate given the axis profile?
+*Android scroll behaviors:*
+- **CoordinatorLayout + AppBarLayout**: Collapsing toolbar with `scroll|enterAlways|snap` flags is the primary scroll-linked motion on Android. Assess: is the collapse animation smooth? Does the toolbar title size transition feel intentional? Is `app:liftOnScroll` enabled for surface elevation changes?
+- **RecyclerView overscroll**: The default edge glow (`EdgeEffect`) or stretch overscroll (API 31+) should use the app's accent color, not the system default. Set via `RecyclerView.setEdgeEffectFactory()` or theme attribute `android:colorEdgeEffect`.
+- **NestedScrollView vs RecyclerView**: Nested scrollable containers (`RecyclerView` inside `NestedScrollView`) create scroll jank and broken fling physics. Each screen should have one primary scrollable container.
+- **Pull-to-refresh**: `SwipeRefreshLayout` indicator color should be `?attr/colorPrimary`. The refresh threshold and indicator size are character moments.
+
+**Assess:** Is scroll behavior declared at all? Does it match the product character? Are there scroll-triggered effects, and are they appropriate given the axis profile? *(Android)*: Is `CoordinatorLayout` scroll behavior configured? Does overscroll use the app's accent color?
 
 ### §DM5. Motion Signature
 
@@ -807,10 +851,18 @@ MOTION SIGNATURE BRIEF
   Easing: [specific cubic-bezier or spring parameters]
   What it says non-verbally: [the implicit message this motion communicates]
   Implementation:
-    [specific CSS/JS code]
+    Web:     [specific CSS/JS code]
+    Android: [ObjectAnimator / SpringAnimation / MotionLayout code]
+    iOS:     [UIView.animate / SwiftUI withAnimation code]
   Where it appears: [exact components/moments]
   What it must NEVER do: [the anti-pattern that would break it]
 ```
+
+**Android motion signature opportunities** *(file manager-specific)*:
+- **File operation completion**: The moment a copy/move/delete finishes. A distinctive animation here (item shrink + fade, checkmark scale-in with spring overshoot) brands every file operation.
+- **Navigation drawer reveal**: The drawer open animation — standard `DrawerLayout` slide, or a custom `MotionLayout` with parallax content shift and scrim fade. The drawer is opened hundreds of times; its motion IS the app's signature.
+- **FAB transformation**: `FloatingActionButton` → `BottomSheetDialog` or extended FAB expansion. Material's `MaterialContainerTransform` makes this a smooth morph — the FAB becomes the container. If the app doesn't use this, it's missing its strongest motion moment.
+- **List item swipe actions**: Swipe-to-delete/archive with `ItemTouchHelper` — the background reveal color, the icon animation, the snap-back spring all carry character.
 
 ---
 
@@ -843,6 +895,15 @@ Assess each primary screen:
 **F-pattern (text-heavy layouts):** Users scan in an F: across the top, then down the left edge with occasional rightward sweeps. In list views, content feeds, settings — is the most important content left-aligned, with secondary content in the right 40%?
 
 **Gaze path obstruction:** Identify any element whose visual weight draws the eye away from the intended reading path before the user has completed the primary task.
+
+**Mobile thumb zone analysis** *(Android/iOS)*: On handheld devices, reading patterns are modified by reachability. The natural thumb arc creates three zones:
+- **Easy zone** (bottom-center, bottom-right for right-handed): Primary actions and navigation belong here. On Android, this is why `BottomNavigationView` and FABs live at the bottom. Assess: are the most frequent actions in the easy zone?
+- **Stretch zone** (top corners, far left): Acceptable for secondary actions. The app bar / toolbar falls here — appropriate for infrequent actions like search or settings.
+- **Hard zone** (top-left corner on right hand, top-right on left): The worst position for frequent actions. If a critical action (like "back" or "create") lives here without also being reachable from the easy zone, it's a usability failure.
+
+**List-dominant reading pattern** *(Android file managers, email, messaging)*: In list-heavy apps, the dominant reading pattern is a vertical scan of the left 60% of each row. The eye anchors on the leading icon/thumbnail, then sweeps right to the title, then optionally to metadata. Assess: is the most important information (file name, sender, subject) in the first 60% of the row? Is secondary metadata (date, size, count) right-aligned and visually subordinated?
+
+**Safe area awareness** *(mobile)*: On modern Android (edge-to-edge with `WindowInsetsCompat`) and iOS (Dynamic Island, home indicator), content near screen edges may be obscured. Assess: do critical reading paths avoid the system gesture inset areas? Is `fitsSystemWindows` or `ViewCompat.setOnApplyWindowInsetsListener` used correctly?
 
 ### §DH3. Visual Weight Distribution
 
@@ -932,10 +993,14 @@ A coherent elevation system makes the Z-axis legible. Assess whether each layer 
 
 These micro-decisions separate "functional" from "refined":
 
-- **Grain/noise overlay** `(0–4% opacity)`: A subtle noise layer on solid backgrounds prevents the flat, sterile look. Use `background-image: url("noise.svg")` or CSS filter. Appropriate for most design styles except pure minimal.
-- **Gradient directionality**: Linear gradients should use a consistent angle or metaphor (top = sky/light, bottom = ground/weight). Radial gradients should have a meaningful center.
-- **Color temperature shift with depth**: Elements deeper in the stack (modals, drawers) can subtly shift temperature (slightly cooler = "deeper"). Adds spatial dimension without explicit depth cues.
-- **Border opacity treatment**: Semi-transparent borders `rgba(255,255,255,0.08)` on dark surfaces feel more refined than solid hardcoded borders — they adapt to the surface color underneath.
+- **Grain/noise overlay** `(0–4% opacity)`: A subtle noise layer on solid backgrounds prevents the flat, sterile look. *Web*: `background-image: url("noise.svg")` or CSS filter. *Android*: Use a `BitmapShader` with `TileMode.REPEAT` on a custom `Drawable`, or overlay a tiled noise PNG in an `ImageView` with `android:alpha="0.03"`. Appropriate for most design styles except pure minimal.
+- **Gradient directionality**: Linear gradients should use a consistent angle or metaphor (top = sky/light, bottom = ground/weight). Radial gradients should have a meaningful center. *Android*: `GradientDrawable` with `android:angle` (must be a multiple of 45). For radial: `android:gradientRadius` with `android:type="radial"`. For sweeping gradients in Compose: `Brush.linearGradient()` or `Brush.radialGradient()`.
+- **Color temperature shift with depth**: Elements deeper in the stack (modals, drawers) can subtly shift temperature (slightly cooler = "deeper"). Adds spatial dimension without explicit depth cues. *Android M3*: The `colorSurfaceContainer` → `colorSurfaceContainerHigh` → `colorSurfaceContainerHighest` progression achieves this through tonal elevation. Check that bottom sheets use `?attr/colorSurfaceContainerHigh` and dialogs use `?attr/colorSurfaceContainerHighest`.
+- **Border opacity treatment**: Semi-transparent borders on dark surfaces feel more refined than solid hardcoded borders — they adapt to the surface color underneath. *Web*: `rgba(255,255,255,0.08)`. *Android*: Use `<stroke>` in a `GradientDrawable` with a color like `#14FFFFFF` (8% white). Or use `MaterialShapeDrawable` which handles elevation overlay tinting automatically.
+- **Scrim quality** *(Android)*: Material dialogs and bottom sheets use a scrim (semi-transparent overlay behind the foreground element). The default is `#52000000` (32% black). A refined scrim uses the app's dark surface color at reduced opacity instead of pure black — `#40` + the hex of `colorSurface`. This makes the scrim feel integrated rather than like a generic system overlay. Check `android:backgroundDimAmount` in theme and `BottomSheetDialog` scrim color.
+- **Ripple color calibration** *(Android)*: The default Material ripple is `?attr/colorControlHighlight` — typically 12% of `colorOnSurface`. A refined approach tints the ripple to match the element's accent: `RippleDrawable` with `ColorStateList.valueOf(Color.argb(0x1A, r, g, b))` using a desaturated version of the element's primary color. This makes touch feedback feel intentional rather than system-default.
+- **Status bar / navigation bar blending** *(Android)*: With edge-to-edge (`enableEdgeToEdge()`), the status bar and navigation bar overlay app content. The system bar colors should match or complement the surface beneath them — not be a jarring opaque block. Check `WindowInsetsControllerCompat.setAppearanceLightStatusBars()` and ensure the scrim (if any) is the surface color at appropriate opacity, not hardcoded black.
+- **Elevation overlay in dark mode** *(Android M3)*: Material 3 dark mode applies a semi-transparent white overlay to elevated surfaces — the higher the elevation, the lighter the surface. This is automatic with Material components but custom views using `android:elevation` may not get the overlay. Check that custom elevated views in dark mode use `MaterialShapeDrawable` or manually apply `ElevationOverlayProvider.compositeOverlayWithThemeSurfaceColorIfNeeded()`.
 
 ### §DSA4. Light Physics
 
@@ -1006,6 +1071,8 @@ Audit the current icon usage:
 - What is the icon style? Line / Filled / Duotone / Bold / Mixed
 - Is there a consistent visual weight (stroke width for line icons, optical fill weight for filled icons)?
 - Are corner treatments consistent? Fully rounded vs sharp-capped endpoints read as different personalities.
+- *(Android)* Are icons using `VectorDrawable` (`res/drawable/*.xml`) or PNG assets? `VectorDrawable` scales perfectly across density buckets and is the correct choice for UI icons. PNGs require `mdpi`/`hdpi`/`xhdpi`/`xxhdpi`/`xxxhdpi` variants and still risk blurriness.
+- *(Android)* Is the app using Material Symbols (variable font icons with adjustable weight/fill/grade/optical size) or static Material Icons? Material Symbols allow character-aligned icon weight matching — e.g., `weight=300` for a light/editorial feel, `weight=600` for bold/confident.
 
 ### §DI2. Icon Grid & Optical Sizing
 
@@ -1015,7 +1082,7 @@ Audit the current icon usage:
 
 **Icon-to-text alignment:** Icons alongside text must be optically centered — not mathematically centered. A vertically centered 16px icon next to 16px text will look low because the text's cap-height is shorter than its line-height. Correction: apply `margin-top: -1px` or `align-items: baseline`.
 
-**Interactive icon states:** Icon-only buttons must have all five states. The icon should change subtly on hover/active (not just the background). A color shift on the icon itself, not just the container, reads as more responsive.
+**Interactive icon states:** Icon-only buttons must have all five states. *Web*: The icon should change subtly on hover/active (not just the background). A color shift on the icon itself, not just the container, reads as more responsive. *Android*: Icon buttons (`MaterialButton` with `app:icon` or `IconButton` in Compose) should use `?attr/selectableItemBackgroundBorderless` for ripple. The icon tint should use a `ColorStateList` that shifts for pressed/focused/disabled states — not a static `android:tint` color. For `ImageButton` and `IconButton`, ensure the touch target is at least 48×48dp regardless of visual icon size (`android:minWidth="48dp"`, `android:minHeight="48dp"`).
 
 ### §DI3. Icon Expressiveness Spectrum
 
@@ -1321,6 +1388,9 @@ Fix: Derive placeholder color from the input background with a specific ratio: i
 - `border: 1px solid rgba(255,255,255,0.1)` everywhere — this exact value appears on hundreds of dark-mode dashboards; use the specific hue from the palette
 - Text contrast 60% white everywhere — undifferentiated muted text reads as lazy; use OKLCH to create a genuine hierarchy
 - `blue-400` / `#60a5fa` as the dark-mode accent — the most common dark-mode genericness signal; recalibrate to own it
+- *(Android)* Unmodified `values-night/` colors — if `values-night/colors.xml` only overrides `colorPrimary` and `colorSurface` while leaving everything else at Material 3 defaults, the dark mode looks like every other Material 3 dark app. Check: `colorSurfaceContainer`, `colorSurfaceContainerHigh`, `colorOutline`, `colorOnSurfaceVariant` — all should be intentionally calibrated.
+- *(Android)* `android:forceDarkAllowed="true"` reliance — Force Dark is a system-level inversion that produces generic, uncontrolled dark mode. An app with design identity should implement its own dark theme via `values-night/` and set `android:forceDarkAllowed="false"`.
+- *(Android)* Default Material 3 dark surface `#1C1B1F` — this is the baseline `colorSurface` from the Material 3 default dark palette. If the app uses this without modification, the dark mode has zero identity.
 
 ---
 
@@ -2211,12 +2281,20 @@ The empty state is the first experience new users see. It sets the product's cha
 | **Playful/consumer** | Custom character illustration; upbeat copy; color matches the celebration of eventually filling it |
 | **Minimal** | Pure type, maximum whitespace; the emptiness is intentional — it's a promise |
 
+*Android empty state specifics:*
+- **File manager empty states**: Empty folder, empty recycle bin, no search results, no favorites — each is a distinct character moment. The empty folder state is seen frequently and should feel intentional, not broken.
+- **Vector illustration vs icon**: A `VectorDrawable` illustration at ~120×120dp is the appropriate scale for an Android empty state. Avoid full-raster illustrations that blur across density buckets.
+- **Empty state layout**: Center the illustration + text + action vertically in the available space (between toolbar and bottom nav). Use `ConstraintLayout` with vertical bias `0.4` (slightly above center) for optical balance.
+- **Action button**: The primary CTA in an empty state should use `MaterialButton` with the app's accent color — not a text link. The action should be specific ("Create a folder", "Add files") not generic ("Get started").
+
 **Assess:** For every empty state in the app:
 ```
 State location: [which screen/component]
 Current treatment: [describe exactly what appears]
 Character consistency: [does it match §DP2? what specific elements break or maintain character?]
 Recommendation: [specific visual change — including any copy changes]
+Platform check (Android): [Is the illustration a VectorDrawable? Is the CTA a styled MaterialButton?
+                           Is the layout vertically balanced?]
 ```
 
 ---
@@ -2331,12 +2409,32 @@ SUCCESS MOMENT BRIEF
 For each major breakpoint: does the design character hold?
 
 **Breakpoint definitions:**
+
+*Web (CSS media queries):*
 ```
 Desktop large:  1440px+ — full design expression; typically where character is strongest
 Desktop normal: 1024–1440px — standard laptop; assess for character degradation
 Tablet:         768–1024px — mixed; navigation and layout changes most affect character
 Mobile:         375–768px — smallest canvas; most character compromises happen here
 Mobile small:   320–375px — edge case; character elements must survive extreme compression
+```
+
+*Android (resource qualifiers + WindowSizeClass):*
+```
+Compact width:   < 600dp   — phone portrait; single-pane layout; BottomNavigationView
+Medium width:    600–840dp — large phone landscape, small tablet; optional list-detail
+Expanded width:  > 840dp   — tablet, foldable open, desktop; NavigationRail or permanent drawer
+Compact height:  < 480dp   — phone landscape; collapse vertical chrome, hide app bar on scroll
+Foldable states: FLAT / HALF_OPENED — use WindowInfoTracker for fold position + hinge bounds
+```
+Check `layout-sw600dp/`, `layout-w840dp/` resource qualifiers. Modern approach: `WindowSizeClass` from `androidx.compose.material3.windowsizeclass` (Compose) or `WindowMetrics` + `WindowSizeClass` from `androidx.window` (Views). Grep for `calculateWindowSizeClass` or `WindowMetricsCalculator`.
+
+*iOS:*
+```
+iPhone SE:      375×667pt — smallest modern; character under maximum compression
+iPhone std:     390×844pt — standard target; assess character here first
+iPhone Pro Max: 430×932pt — largest phone; assess for excess whitespace / underleveraged space
+iPad:           1024×1366pt — full expression; Split View / Slide Over modes add complexity
 ```
 
 **For each breakpoint, assess:**
@@ -2355,6 +2453,8 @@ Mobile small:   320–375px — edge case; character elements must survive extre
 | **Shadow loss** | Elevation signals disappear on mobile | Use border or lightness instead — the Z-signal must survive |
 | **Character element omission** | Distinctive borders/textures/atmospheres removed "to simplify" | Simplify where necessary, but keep 1 character-marker per screen |
 | **Navigation character loss** | Mobile nav defaults to hamburger menu with zero design character | The navigation pattern is the most-seen interaction — it must carry character |
+| **Density bucket mismatch** *(Android)* | Assets designed for one density look blurry or oversized on others | Provide drawables at `mdpi` through `xxxhdpi`, or use vector `VectorDrawable` which scales perfectly |
+| **Foldable character collapse** *(Android)* | App ignores fold state, wastes half the screen when unfolded | Use `WindowInfoTracker` to adapt layout at fold boundaries; treat the expanded state as a character opportunity, not just "bigger phone" |
 
 ---
 
@@ -2363,13 +2463,15 @@ Mobile small:   320–375px — edge case; character elements must survive extre
 Mobile is not a constrained desktop — it is a different context with different opportunities. Some character elements that are subtle on desktop can be *intensified* on mobile because the viewing context is closer and more intimate.
 
 **Mobile character opportunities:**
-- **Touch feedback** can be more expressive than hover (tap ripple with character color)
-- **Gesture transitions** (swipe, pull-to-refresh) can carry character through motion physics
-- **Bottom sheet presentations** replace modals — the bottom sheet's design is a character moment
-- **Safe area handling** (iPhone notch/island) can be addressed with character (some products use the safe area color as a design element)
-- **Pull-to-refresh** animation is a personality moment — almost no products design it
+- **Touch feedback** can be more expressive than hover (tap ripple with character color). *Android*: Override `?attr/colorControlHighlight` per-component for character-tinted ripples.
+- **Gesture transitions** (swipe, pull-to-refresh) can carry character through motion physics. *Android*: `ItemTouchHelper` swipe callbacks, `SwipeRefreshLayout` color scheme, predictive back animation (API 34+).
+- **Bottom sheet presentations** replace modals — the bottom sheet's design is a character moment. *Android*: `BottomSheetDialogFragment` with `app:shapeAppearanceOverlay` for custom top corners, scrim color override, peek height calibration. The bottom sheet's corner radius and background color are high-visibility character decisions.
+- **Safe area handling**: *(Android)* Edge-to-edge with `enableEdgeToEdge()` — the status bar and navigation bar become part of the app's canvas. The color that shows behind the transparent system bars is a character decision. *(iOS)* iPhone notch/island — some products use the safe area color as a design element.
+- **Pull-to-refresh** animation is a personality moment — almost no products design it. *Android*: `SwipeRefreshLayout.setColorSchemeColors()` accepts up to 4 colors that cycle during the refresh animation — use the brand palette, not the Material default.
+- **Navigation pattern as character** *(Android)*: `BottomNavigationView` with `app:itemIconTint` and `app:itemTextColor` as `ColorStateList` — the selected/unselected icon colors carry character. The label visibility mode (`labeled`/`unlabeled`/`selected`) is a character-appropriate choice: productivity apps often hide labels; consumer apps show them.
+- **Haptic feedback moments** *(Android)*: Long press, drag threshold, toggle state changes, destructive action confirmation — each can have calibrated haptic feedback via `HapticFeedbackConstants.LONG_PRESS`, `.CONTEXT_CLICK`, `.CONFIRM`, `.REJECT` (API 30+). Most apps use none; the best apps use haptics as a design material.
 
-**Assess:** Does the mobile experience feel like the same product at a different viewport, or a different product? List the 3 most significant character gaps.
+**Assess:** Does the mobile experience feel like the same product at a different viewport, or a different product? List the 3 most significant character gaps. *(Android)*: Are Material components using themed `ColorStateList` values or system defaults? Is edge-to-edge implemented with intentional system bar treatment?
 
 ---
 
@@ -2603,10 +2705,15 @@ The toast must match the product's voice simultaneously in:
 | **Neutral** | Gray fill | Surface elevation color — the product's elevated surface |
 
 **Motion requirements for toasts:**
-- Entry: from the correct edge (top-right for desktop, top for mobile)
-- Duration: 3–5 seconds for success; persistent for errors (require manual dismiss)
+- Entry: from the correct edge. *Web*: top-right for desktop, top for mobile. *Android*: `Snackbar` enters from the **bottom** (anchored above `BottomNavigationView` if present via `snackbar.setAnchorView()`). `Toast` fades in-place at the bottom — no directional entry. *iOS*: system banners enter from top.
+- Duration: 3–5 seconds for success; persistent for errors (require manual dismiss). *Android*: `Snackbar.LENGTH_SHORT` = ~1.5s, `LENGTH_LONG` = ~2.75s, `LENGTH_INDEFINITE` = persistent. For custom durations: `snackbar.duration = 4000`.
 - Exit: faster than entry (150ms) — exits are less important than entrances
-- Stacking: when multiple toasts queue, they should stack with consistent spacing, newest on top
+- Stacking: when multiple toasts queue, they should stack with consistent spacing, newest on top. *Android*: `Snackbar` does NOT stack by default — a new Snackbar dismisses the previous one. If stacking is needed, use a custom implementation or queue system.
+
+**Android Toast vs Snackbar distinction** *(critical for Android audits)*:
+- `Toast`: System-level, no action, no swipe-to-dismiss, positioned at bottom center, cannot be styled (pre-API 30). Use only for minor confirmations that need no user action. **After API 30, custom toast views are deprecated** — use `Snackbar` instead.
+- `Snackbar`: App-level, supports one action button, swipe-to-dismiss, anchored to `CoordinatorLayout`. This is the correct component for almost all in-app feedback. Assess: is the app using `Toast` where `Snackbar` would be more appropriate? Is the `Snackbar` styled with the app's theme (`snackbarStyle` in `themes.xml`) or does it use the Material default appearance?
+- **Snackbar character**: The default Material `Snackbar` uses `colorOnSurface` text on `colorSurfaceInverse` background. To add character: override `snackbarStyle`, `snackbarButtonStyle`, and `snackbarTextViewStyle` in `themes.xml`. The action button color should be the accent — not the default `colorPrimary`.
 
 ---
 
@@ -2981,6 +3088,53 @@ Component tokens reference semantic tokens and make component-specific assignmen
 
 **Assess:** Which layers exist in the codebase? An app with only raw hex values in component classes has no token system. An app with CSS variables that reference other CSS variables has reached Layer 2. An app with component-scoped variables that reference semantic variables has reached Layer 3.
 
+**Android token layer equivalents:**
+
+The same three-layer model applies to Android, using the resource system instead of CSS:
+
+*Layer 1 — Primitives (`colors.xml`):*
+```xml
+<!-- Named by value, not meaning -->
+<color name="blue_60">#3D6DB5</color>
+<color name="blue_40">#2A4D80</color>
+<color name="gray_95">#F2F2F2</color>
+<color name="gray_20">#333333</color>
+```
+
+*Layer 2 — Semantic (`themes.xml` attributes):*
+```xml
+<!-- Meaning assigned via theme attributes -->
+<style name="Theme.App" parent="Theme.Material3.DayNight">
+    <item name="colorPrimary">@color/blue_60</item>
+    <item name="colorOnPrimary">@color/gray_95</item>
+    <item name="colorSurface">@color/gray_20</item>
+    <item name="colorSurfaceVariant">@color/gray_25</item>
+</style>
+```
+Layouts reference `?attr/colorPrimary` — never the primitive directly.
+
+*Layer 3 — Component (`styles.xml`):*
+```xml
+<!-- Component-scoped tokens referencing semantic layer -->
+<style name="Widget.App.Button" parent="Widget.Material3.Button">
+    <item name="backgroundTint">?attr/colorPrimary</item>
+    <item name="cornerSize">6dp</item>
+</style>
+<style name="Widget.App.Card" parent="Widget.Material3.CardView.Elevated">
+    <item name="cardBackgroundColor">?attr/colorSurfaceVariant</item>
+    <item name="cardCornerRadius">10dp</item>
+</style>
+```
+
+*Jetpack Compose equivalent:*
+```kotlin
+// Layer 1: primitives in a Palette object
+// Layer 2: MaterialTheme.colorScheme (semantic)
+// Layer 3: Component defaults via MaterialTheme overrides or custom CompositionLocal
+```
+
+**Assess (Android-specific):** Does `colors.xml` contain only primitives, or is it a mix of primitives and semantic names? Are layouts referencing `?attr/` theme attributes or hardcoded `@color/` resources? Does `styles.xml` define component-level overrides, or are components using bare Material defaults?
+
 **Gap findings:**
 ```
 Layer 1 (primitives): PRESENT / PARTIAL / ABSENT
@@ -2990,6 +3144,8 @@ Layer 3 (component):  PRESENT / PARTIAL / ABSENT
 Highest-impact gap: [which missing layer would produce the most value]
 Migration path: [how to add the missing layer without a full rewrite — incremental approach]
 ```
+
+*Android migration path note:* The lowest-effort, highest-impact migration for Android apps is adding Layer 2 — moving from `@color/blue_500` references in layouts to `?attr/colorPrimary` references. This single change enables dark mode, Dynamic Color, and theme overlays for free. Grep for `@color/` in layout XML files to find all direct primitive references that should be `?attr/`.
 
 ---
 

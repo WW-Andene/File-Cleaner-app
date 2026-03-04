@@ -282,9 +282,9 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Tree View card — blue tint icon -->
+        <!-- Optimize Storage card — amber tint icon -->
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_arborescence"
+            android:id="@+id/card_optimize"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/spacing_lg"
@@ -292,7 +292,7 @@
             android:foreground="?attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
-            android:contentDescription="@string/raccoon_action_arborescence"
+            android:contentDescription="@string/optimize_title"
             app:cardCornerRadius="@dimen/radius_card"
             app:cardElevation="@dimen/elevation_subtle"
             app:cardBackgroundColor="@color/surfaceColor"
@@ -310,17 +310,17 @@
                     android:layout_width="@dimen/icon_hub_circle"
                     android:layout_height="@dimen/icon_hub_circle"
                     android:background="@drawable/bg_hub_icon_circle"
-                    android:backgroundTint="@color/tintTree"
+                    android:backgroundTint="@color/tintOptimize"
                     android:gravity="center">
 
                     <ImageView
                         android:layout_width="@dimen/hub_card_icon_inner"
                         android:layout_height="@dimen/hub_card_icon_inner"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_tree_structure"
+                        android:src="@drawable/ic_storage"
                         android:scaleType="centerInside"
                         android:importantForAccessibility="no"
-                        app:tint="@color/catDocument" />
+                        app:tint="@color/colorAccent" />
                 </FrameLayout>
 
                 <LinearLayout
@@ -334,14 +334,15 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/raccoon_action_arborescence"
+                        android:text="@string/optimize_title"
                         android:textAppearance="@style/TextAppearance.FileCleaner.Subtitle"
                         android:textColor="@color/textPrimary" />
 
                     <TextView
+                        android:id="@+id/tv_optimize_desc"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/raccoon_action_arborescence_desc"
+                        android:text="@string/optimize_desc"
                         android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
                         android:textColor="@color/textSecondary"
                         android:layout_marginTop="@dimen/spacing_xs" />
@@ -373,9 +374,9 @@
             android:layout_marginBottom="@dimen/spacing_md"
             android:baselineAligned="false">
 
-            <!-- Optimize Storage card -->
+            <!-- Tree View card -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_optimize"
+                android:id="@+id/card_arborescence"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
@@ -383,7 +384,7 @@
                 android:foreground="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true"
-                android:contentDescription="@string/optimize_title"
+                android:contentDescription="@string/raccoon_action_arborescence"
                 app:cardCornerRadius="@dimen/radius_card"
                 app:cardElevation="@dimen/elevation_subtle"
                 app:cardBackgroundColor="@color/surfaceColor"
@@ -400,32 +401,31 @@
                         android:layout_width="@dimen/icon_hub_circle"
                         android:layout_height="@dimen/icon_hub_circle"
                         android:background="@drawable/bg_hub_icon_circle"
-                        android:backgroundTint="@color/tintOptimize"
+                        android:backgroundTint="@color/tintTree"
                         android:gravity="center">
 
                         <ImageView
                             android:layout_width="@dimen/hub_card_icon_inner"
                             android:layout_height="@dimen/hub_card_icon_inner"
                             android:layout_gravity="center"
-                            android:src="@drawable/ic_storage"
+                            android:src="@drawable/ic_tree_structure"
                             android:scaleType="centerInside"
                             android:importantForAccessibility="no"
-                            app:tint="@color/colorAccent" />
+                            app:tint="@color/catDocument" />
                     </FrameLayout>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/spacing_md"
-                        android:text="@string/optimize_title"
+                        android:text="@string/raccoon_action_arborescence"
                         android:textAppearance="@style/TextAppearance.FileCleaner.Subtitle"
                         android:textColor="@color/textPrimary" />
 
                     <TextView
-                        android:id="@+id/tv_optimize_desc"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/optimize_desc"
+                        android:text="@string/raccoon_action_arborescence_desc"
                         android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
                         android:textColor="@color/textSecondary"
                         android:layout_marginTop="@dimen/spacing_xs"

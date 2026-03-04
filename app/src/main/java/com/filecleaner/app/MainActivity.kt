@@ -240,28 +240,13 @@ class MainActivity : AppCompatActivity() {
 
         // Bottom nav badges — show count of actionable items per tab
         viewModel.duplicates.observe(this) { dupes ->
-            val badge = binding.bottomNav.getOrCreateBadge(R.id.duplicatesFragment)
-            badge.backgroundColor = ContextCompat.getColor(this, R.color.colorPrimary)
-            badge.badgeTextColor = ContextCompat.getColor(this, R.color.textOnPrimary)
-            badge.maxCharacterCount = 3
-            badge.isVisible = dupes.isNotEmpty()
-            if (dupes.isNotEmpty()) badge.number = dupes.size
+            updateBadge(R.id.duplicatesFragment, dupes.size)
         }
         viewModel.largeFiles.observe(this) { large ->
-            val badge = binding.bottomNav.getOrCreateBadge(R.id.largeFilesFragment)
-            badge.backgroundColor = ContextCompat.getColor(this, R.color.colorPrimary)
-            badge.badgeTextColor = ContextCompat.getColor(this, R.color.textOnPrimary)
-            badge.maxCharacterCount = 3
-            badge.isVisible = large.isNotEmpty()
-            if (large.isNotEmpty()) badge.number = large.size
+            updateBadge(R.id.largeFilesFragment, large.size)
         }
         viewModel.junkFiles.observe(this) { junk ->
-            val badge = binding.bottomNav.getOrCreateBadge(R.id.junkFragment)
-            badge.backgroundColor = ContextCompat.getColor(this, R.color.colorPrimary)
-            badge.badgeTextColor = ContextCompat.getColor(this, R.color.textOnPrimary)
-            badge.maxCharacterCount = 3
-            badge.isVisible = junk.isNotEmpty()
-            if (junk.isNotEmpty()) badge.number = junk.size
+            updateBadge(R.id.junkFragment, junk.size)
         }
 
         // Settings button
@@ -401,6 +386,17 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton(getString(R.string.cancel), null)
             .show()
+    }
+
+    // ── Badge helper ──
+
+    private fun updateBadge(menuItemId: Int, count: Int) {
+        val badge = binding.bottomNav.getOrCreateBadge(menuItemId)
+        badge.backgroundColor = ContextCompat.getColor(this, R.color.colorPrimary)
+        badge.badgeTextColor = ContextCompat.getColor(this, R.color.textOnPrimary)
+        badge.maxCharacterCount = 3
+        badge.isVisible = count > 0
+        if (count > 0) badge.number = count
     }
 
     // ── Progress indicator helpers ──

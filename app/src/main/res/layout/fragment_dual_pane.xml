@@ -6,14 +6,14 @@
     android:orientation="vertical"
     android:background="@color/surfaceBase">
 
-    <!-- Toolbar -->
+    <!-- Top toolbar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingHorizontal="@dimen/spacing_md"
-        android:paddingVertical="@dimen/spacing_sm">
+        android:paddingHorizontal="@dimen/spacing_sm"
+        android:paddingVertical="@dimen/spacing_xs">
 
         <ImageButton
             android:id="@+id/btn_back"
@@ -32,7 +32,18 @@
             android:text="@string/dual_pane_title"
             android:textAppearance="@style/TextAppearance.FileCleaner.Subtitle"
             android:textColor="@color/textPrimary"
-            android:layout_marginStart="@dimen/spacing_sm" />
+            android:layout_marginStart="@dimen/spacing_xs" />
+
+        <!-- Swap panes button -->
+        <ImageButton
+            android:id="@+id/btn_swap_panes"
+            android:layout_width="@dimen/icon_button"
+            android:layout_height="@dimen/icon_button"
+            android:src="@drawable/ic_swap_horiz"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/dual_pane_swap"
+            android:scaleType="centerInside"
+            app:tint="@color/textSecondary" />
     </LinearLayout>
 
     <!-- Dual panes side by side -->
@@ -52,25 +63,54 @@
             android:background="@color/surfaceColor"
             android:layout_marginEnd="1dp">
 
-            <!-- Left pane path bar -->
+            <!-- Left pane content mode selector -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:paddingHorizontal="@dimen/spacing_sm"
+                android:paddingHorizontal="@dimen/spacing_xs"
+                android:paddingVertical="2dp"
+                android:background="@color/surfaceDim">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_mode_left"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="28dp"
+                    android:text="@string/dual_pane_mode_browser"
+                    android:textAllCaps="false"
+                    android:textSize="@dimen/text_caption"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="@dimen/spacing_sm"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    app:icon="@drawable/ic_arrow_down"
+                    app:iconSize="14dp"
+                    app:iconGravity="end"
+                    app:iconTint="@color/textTertiary" />
+            </LinearLayout>
+
+            <!-- Left pane path bar -->
+            <LinearLayout
+                android:id="@+id/path_bar_left"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="@dimen/spacing_xs"
                 android:paddingVertical="@dimen/spacing_xs"
                 android:background="@color/surfaceDim">
 
                 <ImageButton
                     android:id="@+id/btn_up_left"
-                    android:layout_width="@dimen/icon_button"
-                    android:layout_height="@dimen/icon_button"
-                    android:src="@drawable/ic_folder"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_arrow_up"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/dual_pane_go_up"
                     android:scaleType="centerInside"
-                    android:padding="12dp"
+                    android:padding="6dp"
                     app:tint="@color/textSecondary" />
 
                 <TextView
@@ -80,10 +120,23 @@
                     android:layout_height="wrap_content"
                     android:text="/"
                     android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
-                    android:textColor="@color/textSecondary"
+                    android:textColor="@color/colorPrimary"
                     android:singleLine="true"
                     android:ellipsize="start"
-                    android:layout_marginStart="@dimen/spacing_xs" />
+                    android:layout_marginStart="@dimen/spacing_xs"
+                    android:background="?attr/selectableItemBackground"
+                    android:padding="2dp" />
+
+                <ImageButton
+                    android:id="@+id/btn_pick_dir_left"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_folder"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/dual_pane_pick_directory"
+                    android:scaleType="centerInside"
+                    android:padding="6dp"
+                    app:tint="@color/textSecondary" />
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
@@ -102,16 +155,25 @@
                 android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
                 android:textColor="@color/textTertiary"
                 android:gravity="center"
-                android:paddingVertical="@dimen/spacing_xs"
+                android:paddingVertical="2dp"
                 android:background="@color/surfaceDim" />
         </LinearLayout>
 
-        <!-- Splitter / divider -->
-        <View
-            android:id="@+id/splitter"
-            android:layout_width="4dp"
+        <!-- Divider handle -->
+        <FrameLayout
+            android:id="@+id/divider_handle"
+            android:layout_width="12dp"
             android:layout_height="match_parent"
-            android:background="@color/borderDefault" />
+            android:background="@color/surfaceDim"
+            android:contentDescription="@string/dual_pane_divider_handle">
+
+            <!-- Visual grip dots -->
+            <View
+                android:layout_width="4dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:background="@color/borderDefault" />
+        </FrameLayout>
 
         <!-- Right pane -->
         <LinearLayout
@@ -123,25 +185,54 @@
             android:background="@color/surfaceColor"
             android:layout_marginStart="1dp">
 
-            <!-- Right pane path bar -->
+            <!-- Right pane content mode selector -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:paddingHorizontal="@dimen/spacing_sm"
+                android:paddingHorizontal="@dimen/spacing_xs"
+                android:paddingVertical="2dp"
+                android:background="@color/surfaceDim">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_mode_right"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="28dp"
+                    android:text="@string/dual_pane_mode_browser"
+                    android:textAllCaps="false"
+                    android:textSize="@dimen/text_caption"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="@dimen/spacing_sm"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    app:icon="@drawable/ic_arrow_down"
+                    app:iconSize="14dp"
+                    app:iconGravity="end"
+                    app:iconTint="@color/textTertiary" />
+            </LinearLayout>
+
+            <!-- Right pane path bar -->
+            <LinearLayout
+                android:id="@+id/path_bar_right"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="@dimen/spacing_xs"
                 android:paddingVertical="@dimen/spacing_xs"
                 android:background="@color/surfaceDim">
 
                 <ImageButton
                     android:id="@+id/btn_up_right"
-                    android:layout_width="@dimen/icon_button"
-                    android:layout_height="@dimen/icon_button"
-                    android:src="@drawable/ic_folder"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_arrow_up"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/dual_pane_go_up"
                     android:scaleType="centerInside"
-                    android:padding="12dp"
+                    android:padding="6dp"
                     app:tint="@color/textSecondary" />
 
                 <TextView
@@ -151,10 +242,23 @@
                     android:layout_height="wrap_content"
                     android:text="/"
                     android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
-                    android:textColor="@color/textSecondary"
+                    android:textColor="@color/colorPrimary"
                     android:singleLine="true"
                     android:ellipsize="start"
-                    android:layout_marginStart="@dimen/spacing_xs" />
+                    android:layout_marginStart="@dimen/spacing_xs"
+                    android:background="?attr/selectableItemBackground"
+                    android:padding="2dp" />
+
+                <ImageButton
+                    android:id="@+id/btn_pick_dir_right"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_folder"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/dual_pane_pick_directory"
+                    android:scaleType="centerInside"
+                    android:padding="6dp"
+                    app:tint="@color/textSecondary" />
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
@@ -173,62 +277,120 @@
                 android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
                 android:textColor="@color/textTertiary"
                 android:gravity="center"
-                android:paddingVertical="@dimen/spacing_xs"
+                android:paddingVertical="2dp"
                 android:background="@color/surfaceDim" />
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Bottom action bar -->
+    <!-- Floating selection action bar (hidden by default) -->
     <LinearLayout
+        android:id="@+id/selection_action_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:paddingHorizontal="@dimen/spacing_md"
-        android:paddingVertical="@dimen/spacing_sm"
-        android:background="@color/surfaceDim">
+        android:orientation="vertical"
+        android:background="@color/surfaceColor"
+        android:elevation="8dp"
+        android:visibility="gone">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_copy_to_other"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="@dimen/button_height_sm"
-            android:text="@string/dual_pane_copy"
-            android:textAllCaps="false"
-            android:layout_marginEnd="@dimen/spacing_xs"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            app:cornerRadius="@dimen/radius_pill"
-            app:strokeColor="@color/borderDefault" />
+        <!-- Selection info row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="@dimen/spacing_md"
+            android:paddingVertical="@dimen/spacing_xs">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_move_to_other"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="@dimen/button_height_sm"
-            android:text="@string/dual_pane_move"
-            android:textAllCaps="false"
-            android:layout_marginHorizontal="@dimen/spacing_xs"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            app:cornerRadius="@dimen/radius_pill"
-            app:strokeColor="@color/borderDefault" />
+            <TextView
+                android:id="@+id/tv_selection_count"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                android:textColor="@color/colorPrimary"
+                android:textStyle="bold" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_delete_selected"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="@dimen/button_height_sm"
-            android:text="@string/delete"
-            android:textAllCaps="false"
-            android:layout_marginStart="@dimen/spacing_xs"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            app:cornerRadius="@dimen/radius_pill"
-            app:strokeColor="@color/colorError"
-            android:textColor="@color/colorError" />
+            <ImageButton
+                android:id="@+id/btn_select_all"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_select_all"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/dual_pane_select_all"
+                android:scaleType="centerInside"
+                android:padding="8dp"
+                app:tint="@color/textSecondary" />
+
+            <ImageButton
+                android:id="@+id/btn_clear_selection"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_close"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/dual_pane_deselect_all"
+                android:scaleType="centerInside"
+                android:padding="8dp"
+                app:tint="@color/textSecondary" />
+        </LinearLayout>
+
+        <!-- Action buttons row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:paddingHorizontal="@dimen/spacing_md"
+            android:paddingBottom="@dimen/spacing_sm">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_copy_to_other"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="@dimen/button_height_sm"
+                android:text="@string/dual_pane_copy"
+                android:textAllCaps="false"
+                android:layout_marginEnd="@dimen/spacing_xs"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                app:icon="@drawable/ic_copy"
+                app:iconSize="16dp"
+                app:cornerRadius="@dimen/radius_pill"
+                app:strokeColor="@color/borderDefault" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_move_to_other"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="@dimen/button_height_sm"
+                android:text="@string/dual_pane_move"
+                android:textAllCaps="false"
+                android:layout_marginHorizontal="@dimen/spacing_xs"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                app:icon="@drawable/ic_move"
+                app:iconSize="16dp"
+                app:cornerRadius="@dimen/radius_pill"
+                app:strokeColor="@color/borderDefault" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_delete_selected"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="@dimen/button_height_sm"
+                android:text="@string/delete"
+                android:textAllCaps="false"
+                android:layout_marginStart="@dimen/spacing_xs"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                app:icon="@drawable/ic_delete"
+                app:iconSize="16dp"
+                app:cornerRadius="@dimen/radius_pill"
+                app:strokeColor="@color/colorError"
+                android:textColor="@color/colorError"
+                app:iconTint="@color/colorError" />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

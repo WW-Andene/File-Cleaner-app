@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/item_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -8,18 +9,12 @@
     android:paddingHorizontal="@dimen/spacing_sm"
     android:paddingVertical="@dimen/spacing_xs"
     android:background="?attr/selectableItemBackground"
-    android:minHeight="48dp">
-
-    <CheckBox
-        android:id="@+id/cb_select"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/spacing_xs" />
+    android:minHeight="44dp">
 
     <ImageView
         android:id="@+id/iv_icon"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
         android:scaleType="centerInside"
         android:importantForAccessibility="no"
         app:tint="@color/textSecondary" />
@@ -48,4 +43,15 @@
             android:textColor="@color/textTertiary"
             android:singleLine="true" />
     </LinearLayout>
+
+    <!-- Chevron for directories -->
+    <ImageView
+        android:id="@+id/iv_chevron"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/ic_chevron_right"
+        android:scaleType="centerInside"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:tint="@color/textTertiary" />
 </LinearLayout>

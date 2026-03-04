@@ -5,6 +5,7 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
+    android:minHeight="@dimen/button_height"
     android:paddingHorizontal="@dimen/spacing_lg"
     android:paddingTop="@dimen/spacing_lg"
     android:paddingBottom="@dimen/spacing_sm"

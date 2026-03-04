@@ -4,14 +4,14 @@
 
     <!-- Scan -->
     <string name="scan_storage">Scan Storage</string>
-    <string name="scan_prompt">Tap here to scan your storage</string>
+    <string name="scan_prompt">Tap here to let Raccoon scan your storage</string>
     <string name="scanning_progress">Scanning\u2026 %d files found</string>
     <plurals name="scan_complete">
         <item quantity="one">Scan complete \u2014 %1$d file found (%2$s)</item>
         <item quantity="other">Scan complete \u2014 %1$d files found (%2$s)</item>
     </plurals>
     <string name="scan_complete_simple">Scan complete</string>
-    <string name="scanning_in_progress">Scanning in progress</string>
+    <string name="scanning_in_progress">Raccoon is rummaging through your files\u2026</string>
     <string name="scan_cancel">Cancel scan</string>
     <string name="scan_cancelled">Scan cancelled</string>
     <string name="scanning_phase_indexing">Scanning\u2026 %d files found</string>
@@ -120,9 +120,9 @@
         <item quantity="one">%1$d duplicate file \u2014 %2$s in duplicates</item>
         <item quantity="other">%1$d duplicate files \u2014 %2$s in duplicates</item>
     </plurals>
-    <string name="no_junk_found">No junk files found</string>
-    <string name="no_large_found">No large files found</string>
-    <string name="no_duplicates_found">No duplicates found</string>
+    <string name="no_junk_found">No junk in sight \u2014 Raccoon is impressed!</string>
+    <string name="no_large_found">No space hogs here \u2014 your storage is lean!</string>
+    <string name="no_duplicates_found">Zero copycats found \u2014 every file is unique!</string>
     <plurals name="action_delete_n">
         <item quantity="one">Delete %1$d selected (%2$s)</item>
         <item quantity="other">Delete %1$d selected (%2$s)</item>
@@ -457,11 +457,11 @@
     <string name="onboarding_next">Next</string>
     <string name="onboarding_skip">Skip</string>
     <string name="onboarding_back">Back</string>
-    <string name="onboarding_done">Scan My Storage</string>
-    <string name="onboarding_title_1">Welcome to Raccoon</string>
-    <string name="onboarding_body_1">Raccoon helps you manage your device storage by finding duplicates, large files, and junk.\n\nYour data stays on-device \u2014 nothing is uploaded.</string>
+    <string name="onboarding_done">Let Raccoon Scan!</string>
+    <string name="onboarding_title_1">Hey there! Meet Raccoon</string>
+    <string name="onboarding_body_1">Raccoon is your friendly storage sidekick! It sniffs out duplicates, hunts down large files, and sweeps away junk.\n\nEverything stays on your device \u2014 your data never leaves.</string>
     <string name="onboarding_title_2">Navigate with Tabs</string>
-    <string name="onboarding_body_2">Use the bottom tabs to explore:\n\n\u2022 Browse \u2014 all your files by category\n\u2022 Duplicates \u2014 files with identical content\n\u2022 Manager \u2014 scan, clean, and manage\n\u2022 Large Files \u2014 your biggest files\n\u2022 Junk Files \u2014 caches, temp files, old downloads</string>
+    <string name="onboarding_body_2">Use the bottom tabs to explore:\n\n\u2022 Browse \u2014 all your files by category\n\u2022 Duplicates \u2014 files with identical content\n\u2022 Manager \u2014 Raccoon\'s control center\n\u2022 Large Files \u2014 the biggest space hogs\n\u2022 Junk Files \u2014 caches, temp files, old downloads</string>
     <!-- Dashboard (P2) -->
     <string name="dashboard_title">Storage Dashboard</string>
     <string name="dashboard_storage_title">Device Storage</string>
@@ -478,22 +478,22 @@
     <string name="dashboard_scanning">Scanning\u2026 Results will appear when complete.</string>
 
     <string name="onboarding_title_3">Raccoon Manager</string>
-    <string name="onboarding_body_3">Tap the Manager tab for quick actions: Scan, Analysis, Quick Clean, Tree View, and Janitor.\n\nYour one-stop control center for file management.</string>
+    <string name="onboarding_body_3">Tap the Manager tab for quick actions: Scan, Analysis, Quick Clean, Tree View, and Janitor.\n\nRaccoon\'s den \u2014 your one-stop control center for tidy storage.</string>
 
     <!-- Raccoon Manager Hub -->
     <string name="nav_raccoon">Manager</string>
     <string name="raccoon_manager_title">Raccoon Manager</string>
-    <string name="raccoon_manager_subtitle">Your file management control center</string>
+    <string name="raccoon_manager_subtitle">Raccoon\'s den \u2014 your tidy-up command center</string>
     <string name="raccoon_action_scan">Scan Storage</string>
-    <string name="raccoon_action_scan_desc">Scan your storage for duplicates, junk, and large files</string>
+    <string name="raccoon_action_scan_desc">Let Raccoon sniff out duplicates, junk, and large files</string>
     <string name="raccoon_action_analysis">Analysis</string>
-    <string name="raccoon_action_analysis_desc">View storage dashboard and category breakdown</string>
+    <string name="raccoon_action_analysis_desc">See where your space goes with a full breakdown</string>
     <string name="raccoon_action_quick_clean">Quick Clean</string>
-    <string name="raccoon_action_quick_clean_desc">One-tap removal of junk files and caches</string>
+    <string name="raccoon_action_quick_clean_desc">One-tap sweep of junk files and caches</string>
     <string name="raccoon_action_arborescence">Tree View</string>
-    <string name="raccoon_action_arborescence_desc">Interactive file tree visualization</string>
+    <string name="raccoon_action_arborescence_desc">Explore your files in an interactive tree map</string>
     <string name="raccoon_action_janitor">Janitor</string>
-    <string name="raccoon_action_janitor_desc">Deep clean and file restructuring</string>
+    <string name="raccoon_action_janitor_desc">Deep clean \u2014 Raccoon goes through everything</string>
     <string name="raccoon_quick_clean_title">Quick Clean</string>
     <plurals name="raccoon_quick_clean_confirm">
         <item quantity="one">Clean %1$d junk file (%2$s)?</item>
@@ -504,7 +504,7 @@
     <string name="raccoon_janitor_desc">Deep clean finds duplicate files, oversized downloads, and old caches across your entire storage. Review and select what to remove.</string>
     <string name="raccoon_janitor_start">Start Deep Clean</string>
     <string name="raccoon_janitor_started">Starting deep clean\u2026 Review results in the Duplicates, Large, and Junk tabs.</string>
-    <string name="raccoon_scan_needed">Run a scan first to enable this feature.</string>
+    <string name="raccoon_scan_needed">Raccoon needs a scan first \u2014 tap Scan Storage to get started!</string>
 
     <!-- F1: Section labels -->
     <string name="raccoon_section_advanced">Advanced</string>
@@ -516,11 +516,11 @@
     <string name="a11y_settings_toggle_hidden">Toggle show hidden files</string>
 
     <!-- F6: Engagement & reward moments -->
-    <string name="scan_complete_celebration">All done! Found %1$d files using %2$s.</string>
-    <string name="clean_success">Cleaned up %s. Nice work!</string>
-    <string name="raccoon_greeting_pre_scan">Ready to tidy up? Tap Scan to get started.</string>
-    <string name="raccoon_greeting_post_scan">Looking good! %s free on your device.</string>
-    <string name="dashboard_scan_stats_empty">Scan your storage to see a summary here.</string>
+    <string name="scan_complete_celebration">Raccoon is done rummaging! Found %1$d files using %2$s.</string>
+    <string name="clean_success">Raccoon swept away %s \u2014 nice and tidy!</string>
+    <string name="raccoon_greeting_pre_scan">Raccoon is ready to tidy up! Tap Scan to get started.</string>
+    <string name="raccoon_greeting_post_scan">Looking good! %s free \u2014 Raccoon approves.</string>
+    <string name="dashboard_scan_stats_empty">Let Raccoon scan your storage to see a summary here.</string>
 
     <!-- Storage Optimizer -->
     <string name="optimize_title">Optimize Storage</string>

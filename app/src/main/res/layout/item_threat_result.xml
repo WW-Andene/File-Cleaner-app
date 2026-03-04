@@ -27,7 +27,8 @@
                 android:id="@+id/severity_dot"
                 android:layout_width="@dimen/spacing_md"
                 android:layout_height="@dimen/spacing_md"
-                android:background="@drawable/bg_icon_circle" />
+                android:background="@drawable/bg_icon_circle"
+                android:importantForAccessibility="no" />
 
             <TextView
                 android:id="@+id/tv_name"
@@ -42,9 +43,7 @@
                 android:id="@+id/tv_severity"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
-                android:textAllCaps="true"
-                android:letterSpacing="0.05" />
+                android:textAppearance="@style/TextAppearance.FileCleaner.Label" />
         </LinearLayout>
 
         <TextView

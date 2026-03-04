@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -21,7 +22,8 @@
         <CheckBox
             android:id="@+id/cb_category_select"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/a11y_optimize_select_category" />
 
         <TextView
             android:id="@+id/tv_header_title"
@@ -41,7 +43,8 @@
             android:src="@drawable/ic_arrow_back"
             android:rotation="-90"
             android:contentDescription="@string/collapse_expand"
-            android:layout_marginStart="@dimen/spacing_sm" />
+            android:layout_marginStart="@dimen/spacing_sm"
+            app:tint="@color/textTertiary" />
     </LinearLayout>
 
     <!-- Bottom row: Size info + Selection count badge -->

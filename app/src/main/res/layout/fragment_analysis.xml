@@ -86,7 +86,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/spacing_sm"
-                        android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                        android:textAppearance="@style/TextAppearance.FileCleaner.Numeric"
                         android:textColor="@color/colorOnPrimaryContainer"
                         android:alpha="0.8" />
 

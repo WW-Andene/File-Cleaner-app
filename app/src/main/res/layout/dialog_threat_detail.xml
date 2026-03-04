@@ -18,7 +18,8 @@
             android:id="@+id/severity_dot"
             android:layout_width="@dimen/icon_severity_dot"
             android:layout_height="@dimen/icon_severity_dot"
-            android:background="@drawable/bg_icon_circle" />
+            android:background="@drawable/bg_icon_circle"
+            android:importantForAccessibility="no" />
 
         <TextView
             android:id="@+id/tv_severity"
@@ -153,7 +154,7 @@
             android:textAllCaps="false"
             android:insetTop="0dp"
             android:insetBottom="0dp"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="@style/Widget.FileCleaner.Button.Text"
             android:textColor="@color/textSecondary" />
 
         <com.google.android.material.button.MaterialButton
@@ -163,6 +164,7 @@
             android:textAllCaps="false"
             android:insetTop="0dp"
             android:insetBottom="0dp"
+            style="@style/Widget.FileCleaner.Button.Destructive"
             android:layout_marginStart="@dimen/spacing_sm"
             android:visibility="gone"
             app:cornerRadius="@dimen/radius_pill"

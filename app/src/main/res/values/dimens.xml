@@ -18,6 +18,9 @@
     <dimen name="radius_header">16dp</dimen>
     <dimen name="radius_modal">20dp</dimen>
     <dimen name="radius_pill">24dp</dimen>
+    <!-- Bar / progress radii -->
+    <dimen name="radius_bar">6dp</dimen>
+    <dimen name="radius_bar_sm">4dp</dimen>
     <!-- Legacy aliases -->
     <dimen name="radius_sm">8dp</dimen>
     <dimen name="radius_md">12dp</dimen>
@@ -67,7 +70,7 @@
     <dimen name="icon_tree_node">22dp</dimen>
     <dimen name="icon_compact">28dp</dimen>
     <dimen name="icon_severity_dot">16dp</dimen>
-    <dimen name="icon_test_result">18dp</dimen>
+    <dimen name="icon_test_result">20dp</dimen>
     <dimen name="icon_audio_art">200dp</dimen>
     <dimen name="icon_audio_play">56dp</dimen>
     <dimen name="grid_thumbnail_min_height">120dp</dimen>

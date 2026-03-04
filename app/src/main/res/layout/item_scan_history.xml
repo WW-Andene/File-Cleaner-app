@@ -27,7 +27,7 @@
                 android:id="@+id/tv_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                android:textAppearance="@style/TextAppearance.FileCleaner.Numeric"
                 android:textColor="@color/textPrimary" />
 
             <TextView
@@ -44,6 +44,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.FileCleaner.Title"
+            android:fontFeatureSettings="tnum"
             android:textColor="@color/colorError"
             android:layout_marginStart="@dimen/spacing_sm" />
     </LinearLayout>

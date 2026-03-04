@@ -25,7 +25,7 @@
             <ImageView
                 android:layout_width="@dimen/icon_raccoon"
                 android:layout_height="@dimen/icon_raccoon"
-                android:src="@drawable/ic_raccoon_face"
+                android:src="@drawable/ic_raccoon_logo"
                 android:scaleType="fitCenter"
                 android:importantForAccessibility="no" />
 
@@ -188,30 +188,6 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         app:defaultNavHost="true"
         app:navGraph="@navigation/nav_graph" />
-
-    <!-- Raccoon bubble: draggable floating toggle for tree view -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/raccoon_bubble_card"
-        android:layout_width="@dimen/icon_raccoon"
-        android:layout_height="@dimen/icon_raccoon"
-        android:layout_gravity="bottom|start"
-        android:layout_marginStart="@dimen/spacing_lg"
-        android:layout_marginBottom="@dimen/spacing_above_nav"
-        app:cardCornerRadius="26dp"
-        app:cardElevation="@dimen/elevation_floating"
-        app:cardBackgroundColor="@color/surfaceColor"
-        app:strokeWidth="@dimen/stroke_default"
-        app:strokeColor="@color/colorPrimaryContainer">
-
-        <ImageView
-            android:id="@+id/raccoon_bubble"
-            android:layout_width="@dimen/icon_raccoon_bubble"
-            android:layout_height="@dimen/icon_raccoon_bubble"
-            android:layout_gravity="center"
-            android:src="@drawable/ic_raccoon_face"
-            android:contentDescription="@string/open_arborescence"
-            android:importantForAccessibility="yes" />
-    </com.google.android.material.card.MaterialCardView>
 
     <!-- Bottom nav -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

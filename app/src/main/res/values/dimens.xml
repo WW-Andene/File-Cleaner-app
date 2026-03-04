@@ -45,7 +45,7 @@
     <dimen name="icon_file_list_large">72dp</dimen>
     <dimen name="icon_file_grid">140dp</dimen>
     <dimen name="icon_nav">24dp</dimen>
-    <dimen name="icon_raccoon_bubble">36dp</dimen>
+
     <dimen name="icon_button">48dp</dimen>
     <dimen name="icon_raccoon_inner">46dp</dimen>
     <dimen name="icon_raccoon">52dp</dimen>

@@ -113,6 +113,10 @@
     <color name="legendChipBg">#252E2A</color>
     <color name="legendTextColor">#9FA5A2</color>
 
+    <!-- GitHub branding (dark mode) -->
+    <color name="githubAccent">#F0F3F6</color>
+    <color name="githubAccentLight">#1C2128</color>
+
     <!-- Overlay -->
     <color name="overlayDark">#80000000</color>
 

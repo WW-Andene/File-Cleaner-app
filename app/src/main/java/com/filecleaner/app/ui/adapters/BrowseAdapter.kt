@@ -315,7 +315,8 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
 
     private fun bindFile(holder: FileViewHolder, item: FileItem) {
         holder.name.text = item.name
-        val c = colors ?: FileItemUtils.resolveColorsWithSelection(holder.itemView.context).also { colors = it }
+        val ctx = holder.itemView.context
+        val c = colors ?: FileItemUtils.resolveColorsWithSelection(ctx).also { colors = it }
         val isSelected = item.path in selectedPaths
 
         // Reset icon size for recycled views; enlarge only for thumbnail mode
@@ -389,7 +390,6 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
             true
         }
 
-        val ctx = holder.itemView.context
         holder.itemView.contentDescription = ctx.getString(
             if (isSelected) R.string.a11y_file_selected else R.string.a11y_file_info,
             item.name, holder.meta?.text ?: item.sizeReadable)

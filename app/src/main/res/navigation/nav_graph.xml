@@ -83,12 +83,4 @@
             app:argType="string" />
     </fragment>
 
-    <!-- §DM2: Default action with consistent page transition animations -->
-    <action
-        android:id="@+id/action_global_default"
-        app:enterAnim="@anim/nav_enter"
-        app:exitAnim="@anim/nav_exit"
-        app:popEnterAnim="@anim/nav_pop_enter"
-        app:popExitAnim="@anim/nav_pop_exit" />
-
 </navigation>

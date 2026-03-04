@@ -146,6 +146,7 @@
 
     <!-- Overlay -->
     <color name="overlayDark">#80000000</color>
+    <color name="statsOverlay">#CC165740</color>
 
     <!-- Brand / Provider ripple colors -->
     <color name="rippleGoogle">#1A4285F4</color>

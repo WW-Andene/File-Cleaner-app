@@ -79,7 +79,9 @@
                         android:layout_height="@dimen/spacing_sm"
                         android:layout_marginTop="@dimen/spacing_sm"
                         android:orientation="horizontal"
-                        android:clipChildren="true" />
+                        android:background="@drawable/bg_storage_bar_track"
+                        android:clipChildren="true"
+                        android:clipToOutline="true" />
 
                     <TextView
                         android:id="@+id/tv_total_files"

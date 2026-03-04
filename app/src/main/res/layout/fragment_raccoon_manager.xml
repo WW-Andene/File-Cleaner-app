@@ -282,6 +282,81 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Janitor card — blue tint icon -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_janitor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_md"
+            android:minHeight="@dimen/card_min_height"
+            android:foreground="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="@string/raccoon_action_janitor"
+            app:cardCornerRadius="@dimen/radius_card"
+            app:cardElevation="@dimen/elevation_subtle"
+            app:cardBackgroundColor="@color/surfaceColor"
+            app:strokeWidth="@dimen/stroke_default"
+            app:strokeColor="@color/borderSubtle">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="@dimen/spacing_lg">
+
+                <FrameLayout
+                    android:layout_width="@dimen/icon_hub_circle"
+                    android:layout_height="@dimen/icon_hub_circle"
+                    android:background="@drawable/bg_hub_icon_circle"
+                    android:backgroundTint="@color/tintJanitor"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="@dimen/hub_card_icon_inner"
+                        android:layout_height="@dimen/hub_card_icon_inner"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_janitor"
+                        android:scaleType="centerInside"
+                        android:importantForAccessibility="no"
+                        app:tint="@color/catDocument" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:layout_marginStart="@dimen/spacing_lg">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/raccoon_action_janitor"
+                        android:textAppearance="@style/TextAppearance.FileCleaner.Subtitle"
+                        android:textColor="@color/textPrimary" />
+
+                    <TextView
+                        android:id="@+id/tv_janitor_desc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/raccoon_action_janitor_desc"
+                        android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                        android:textColor="@color/textSecondary"
+                        android:layout_marginTop="@dimen/spacing_xs" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="@dimen/icon_nav"
+                    android:layout_height="@dimen/icon_nav"
+                    android:src="@drawable/ic_chevron_right"
+                    android:importantForAccessibility="no"
+                    app:tint="@color/textTertiary" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Optimize Storage card — amber tint icon -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_optimize"
@@ -619,80 +694,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
-
-        <!-- Janitor card — full width, unique blue tint -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_janitor"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/spacing_md"
-            android:foreground="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:contentDescription="@string/raccoon_action_janitor"
-            app:cardCornerRadius="@dimen/radius_card"
-            app:cardElevation="@dimen/elevation_subtle"
-            app:cardBackgroundColor="@color/surfaceColor"
-            app:strokeWidth="@dimen/stroke_default"
-            app:strokeColor="@color/borderSubtle">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="@dimen/spacing_lg">
-
-                <FrameLayout
-                    android:layout_width="@dimen/icon_hub_circle"
-                    android:layout_height="@dimen/icon_hub_circle"
-                    android:background="@drawable/bg_hub_icon_circle"
-                    android:backgroundTint="@color/tintJanitor"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="@dimen/hub_card_icon_inner"
-                        android:layout_height="@dimen/hub_card_icon_inner"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_janitor"
-                        android:scaleType="centerInside"
-                        android:importantForAccessibility="no"
-                        app:tint="@color/catDocument" />
-                </FrameLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center_vertical"
-                    android:layout_marginStart="@dimen/spacing_lg">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/raccoon_action_janitor"
-                        android:textAppearance="@style/TextAppearance.FileCleaner.Subtitle"
-                        android:textColor="@color/textPrimary" />
-
-                    <TextView
-                        android:id="@+id/tv_janitor_desc"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/raccoon_action_janitor_desc"
-                        android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
-                        android:textColor="@color/textSecondary"
-                        android:layout_marginTop="@dimen/spacing_xs" />
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="@dimen/icon_nav"
-                    android:layout_height="@dimen/icon_nav"
-                    android:src="@drawable/ic_chevron_right"
-                    android:importantForAccessibility="no"
-                    app:tint="@color/textTertiary" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 </ScrollView>

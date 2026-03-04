@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/surfaceBase"
-        app:elevation="0dp">
+        app:elevation="@dimen/elevation_none">
 
         <!-- Clean header with app branding -->
         <LinearLayout
@@ -18,21 +18,22 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingHorizontal="20dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="4dp">
+            android:paddingHorizontal="@dimen/spacing_xl"
+            android:paddingTop="@dimen/spacing_md"
+            android:paddingBottom="@dimen/spacing_xs">
 
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+                android:layout_width="@dimen/icon_raccoon"
+                android:layout_height="@dimen/icon_raccoon"
                 android:src="@drawable/ic_raccoon_face"
+                android:scaleType="fitCenter"
                 android:importantForAccessibility="no" />
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="@dimen/spacing_md"
                 android:orientation="vertical">
 
                 <TextView
@@ -47,17 +48,21 @@
                     android:id="@+id/tv_version"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
-                    android:textColor="@color/textTertiary" />
+                    android:textSize="@dimen/text_body_small"
+                    android:textColor="@color/textSecondary"
+                    android:fontFamily="sans-serif-medium" />
             </LinearLayout>
 
             <ImageButton
                 android:id="@+id/btn_settings"
                 android:layout_width="@dimen/icon_button"
                 android:layout_height="@dimen/icon_button"
+                android:layout_marginStart="@dimen/spacing_sm"
                 android:src="@drawable/ic_settings"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/settings"
+                android:scaleType="centerInside"
+                android:padding="@dimen/spacing_sm"
                 app:tint="@color/textSecondary" />
         </LinearLayout>
 
@@ -65,21 +70,21 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="4dp"
+            android:layout_marginHorizontal="@dimen/spacing_lg"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:layout_marginBottom="@dimen/spacing_xs"
             app:cardCornerRadius="@dimen/radius_card"
-            app:cardElevation="0dp"
+            app:cardElevation="@dimen/elevation_none"
             app:cardBackgroundColor="@color/scanBarBackground"
-            app:strokeWidth="0dp">
+            app:strokeWidth="@dimen/stroke_none">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingHorizontal="16dp"
-                android:paddingTop="10dp"
-                android:paddingBottom="6dp">
+                android:paddingHorizontal="@dimen/spacing_lg"
+                android:paddingTop="@dimen/spacing_md"
+                android:paddingBottom="@dimen/spacing_sm">
 
                 <!-- Top row: icon + status text + cancel button -->
                 <LinearLayout
@@ -89,8 +94,8 @@
                     android:gravity="center_vertical">
 
                     <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
+                        android:layout_width="@dimen/icon_inline"
+                        android:layout_height="@dimen/icon_inline"
                         android:src="@drawable/ic_scan"
                         android:importantForAccessibility="no"
                         app:tint="@color/colorPrimary" />
@@ -100,18 +105,21 @@
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginStart="@dimen/spacing_md"
                         android:text="@string/scan_prompt"
                         android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
                         android:textColor="@color/scanBarText"
-                        android:fontFamily="sans-serif-medium" />
+                        android:fontFamily="sans-serif-medium"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:accessibilityLiveRegion="polite" />
 
                     <!-- Percentage text shown during scanning -->
                     <TextView
                         android:id="@+id/tv_scan_percent"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="@dimen/spacing_sm"
                         android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
                         android:textColor="@color/colorPrimary"
                         android:fontFamily="sans-serif-medium"
@@ -119,9 +127,10 @@
 
                     <ImageButton
                         android:id="@+id/btn_cancel_scan"
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:layout_marginStart="8dp"
+                        android:layout_width="@dimen/icon_button"
+                        android:layout_height="@dimen/icon_button"
+                        android:layout_marginStart="@dimen/spacing_sm"
+                        android:padding="@dimen/spacing_md"
                         android:src="@android:drawable/ic_menu_close_clear_cancel"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:contentDescription="@string/scan_cancel"
@@ -134,12 +143,12 @@
                     android:id="@+id/scan_progress_indicator"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="@dimen/spacing_sm"
                     android:visibility="gone"
                     app:indicatorColor="@color/colorPrimary"
                     app:trackColor="@color/colorPrimaryContainer"
                     app:trackCornerRadius="2dp"
-                    app:trackThickness="4dp" />
+                    app:trackThickness="@dimen/spacing_xs" />
 
                 <!-- Phase step indicators: dot row showing scan stages -->
                 <LinearLayout
@@ -147,7 +156,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="@dimen/spacing_chip"
                     android:visibility="gone"
                     android:gravity="center_vertical">
 
@@ -180,42 +189,24 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/nav_graph" />
 
-    <!-- FAB scan button -->
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/fab_scan"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="80dp"
-        android:text="@string/scan_storage"
-        app:icon="@drawable/ic_scan"
-        android:backgroundTint="@color/colorPrimary"
-        android:textColor="@color/textOnPrimary"
-        app:iconTint="@color/textOnPrimary"
-        app:shapeAppearance="@style/ShapeMedium"
-        app:elevation="4dp" />
-
     <!-- Raccoon bubble: draggable floating toggle for tree view -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/raccoon_bubble_card"
-        android:layout_width="52dp"
-        android:layout_height="52dp"
+        android:layout_width="@dimen/icon_raccoon"
+        android:layout_height="@dimen/icon_raccoon"
         android:layout_gravity="bottom|start"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="80dp"
+        android:layout_marginStart="@dimen/spacing_lg"
+        android:layout_marginBottom="@dimen/spacing_above_nav"
         app:cardCornerRadius="26dp"
-        app:cardElevation="6dp"
+        app:cardElevation="@dimen/elevation_floating"
         app:cardBackgroundColor="@color/surfaceColor"
-        app:strokeWidth="2dp"
+        app:strokeWidth="@dimen/stroke_default"
         app:strokeColor="@color/colorPrimaryContainer">
 
         <ImageView
             android:id="@+id/raccoon_bubble"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="@dimen/icon_raccoon_bubble"
+            android:layout_height="@dimen/icon_raccoon_bubble"
             android:layout_gravity="center"
             android:src="@drawable/ic_raccoon_face"
             android:contentDescription="@string/open_arborescence"
@@ -233,6 +224,6 @@
         app:labelVisibilityMode="labeled"
         app:itemIconTint="@color/bottom_nav_color"
         app:itemTextColor="@color/bottom_nav_color"
-        app:elevation="8dp" />
+        app:elevation="@dimen/elevation_nav" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -54,10 +54,10 @@ object OnboardingDialog {
         container.addView(stepIndicator)
 
         val iconRes = when (step) {
-            0 -> R.drawable.ic_raccoon_logo
+            0 -> R.drawable.ic_raccoon_face
             1 -> R.drawable.ic_nav_browse
             2 -> R.drawable.ic_scan
-            else -> R.drawable.ic_raccoon_logo
+            else -> R.drawable.ic_raccoon_face
         }
         val iconView = android.widget.ImageView(context).apply {
             setImageResource(iconRes)

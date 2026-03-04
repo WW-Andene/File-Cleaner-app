@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SwitchMaterial track — lighter primary tint when checked, dim surface when unchecked -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/colorPrimaryContainer" android:state_checked="true" />
+    <item android:color="@color/surfaceDim" />
+</selector>

@@ -8,3 +8,13 @@ fun Snackbar.styleAsError(): Snackbar = apply {
     setBackgroundTint(ContextCompat.getColor(context, R.color.colorError))
     setTextColor(ContextCompat.getColor(context, R.color.textOnPrimary))
 }
+
+fun Snackbar.styleAsSuccess(): Snackbar = apply {
+    setBackgroundTint(ContextCompat.getColor(context, R.color.colorSuccess))
+    setTextColor(ContextCompat.getColor(context, R.color.textOnPrimary))
+}
+
+fun Snackbar.styleAsWarning(): Snackbar = apply {
+    setBackgroundTint(ContextCompat.getColor(context, R.color.colorWarning))
+    setTextColor(ContextCompat.getColor(context, R.color.textOnPrimary))
+}

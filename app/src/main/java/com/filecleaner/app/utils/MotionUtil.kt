@@ -160,6 +160,33 @@ object MotionUtil {
             }
     }
 
+    // ── Celebration / completion helpers ─────────────────────────────────
+
+    /**
+     * Success pulse animation — gentle scale overshoot for checkmarks
+     * and completion icons. Uses motion_emphasis duration.
+     */
+    fun successPulse(view: View): ViewPropertyAnimator? {
+        if (isReducedMotion(view.context)) {
+            view.scaleX = 1f
+            view.scaleY = 1f
+            view.alpha = 1f
+            view.visibility = View.VISIBLE
+            return null
+        }
+        val duration = emphasisMs(view.context)
+        view.scaleX = 0.3f
+        view.scaleY = 0.3f
+        view.alpha = 0f
+        view.visibility = View.VISIBLE
+        return view.animate()
+            .scaleX(1f)
+            .scaleY(1f)
+            .alpha(1f)
+            .setDuration(duration)
+            .setInterpolator(OvershootInterpolator(1.5f))
+    }
+
     // ── Navigation helpers ───────────────────────────────────────────────
 
     /**

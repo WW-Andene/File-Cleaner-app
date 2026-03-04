@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Card press feedback — subtle elevation reduction on press, lift on release -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Pressed: lower elevation for "pushed in" feel -->
+    <item android:state_pressed="true">
+        <set>
+            <objectAnimator
+                android:propertyName="translationZ"
+                android:duration="@integer/motion_micro"
+                android:valueTo="0dp"
+                android:valueType="floatType" />
+        </set>
+    </item>
+    <!-- Default: resting elevation -->
+    <item>
+        <set>
+            <objectAnimator
+                android:propertyName="translationZ"
+                android:duration="@integer/motion_micro"
+                android:valueTo="2dp"
+                android:valueType="floatType" />
+        </set>
+    </item>
+</selector>

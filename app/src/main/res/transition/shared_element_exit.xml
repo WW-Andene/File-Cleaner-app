@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shared element return transition — faster exit timing -->
+<transitionSet xmlns:android="http://schemas.android.com/apk/res/android"
+    android:transitionOrdering="together"
+    android:duration="@integer/motion_exit"
+    android:interpolator="@android:interpolator/fast_out_linear_in">
+
+    <changeBounds />
+
+    <changeTransform />
+
+    <changeClipBounds />
+
+    <changeImageTransform />
+</transitionSet>

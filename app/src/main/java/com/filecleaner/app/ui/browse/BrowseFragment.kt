@@ -85,6 +85,7 @@ class BrowseFragment : Fragment() {
             }
             state.getString(KEY_SEARCH_QUERY)?.let { searchQuery = it }
             state.getStringArrayList(KEY_EXTENSIONS)?.let { selectedExtensions.addAll(it) }
+            state.getStringArrayList(KEY_COLLAPSED_FOLDERS)?.let { restoredCollapsedFolders.addAll(it) }
         }
 
         // RecyclerView with BrowseAdapter (supports folder headers)
@@ -94,6 +95,15 @@ class BrowseFragment : Fragment() {
         adapter.onItemLongClick = { item, anchor ->
             FileContextMenu.show(requireContext(), anchor, item, contextMenuCallback,
                 hasClipboard = vm.clipboardEntry.value != null)
+        }
+        adapter.onHeaderClick = { folderPath ->
+            adapter.toggleFolder(folderPath)
+            updateExpandCollapseButton()
+        }
+        // Restore collapsed folders from config change
+        if (restoredCollapsedFolders.isNotEmpty()) {
+            adapter.collapsedFolders.addAll(restoredCollapsedFolders)
+            restoredCollapsedFolders.clear()
         }
         dividerDecoration = FileListDividerDecoration(requireContext()) { position ->
             adapter.isHeader(position)
@@ -109,9 +119,16 @@ class BrowseFragment : Fragment() {
         // Collapsible filter panel toggle
         binding.btnToggleFilters.setOnClickListener { toggleFilterPanel() }
 
+        // Expand All / Collapse All toggle button
+        binding.btnToggleExpandCollapse.setOnClickListener { toggleAllFolders() }
+        updateExpandCollapseButton()
+
         // View mode toggle
         binding.btnViewMode.setOnClickListener { cycleViewMode() }
         updateViewModeIcon()
+
+        // Grid columns chips
+        setupGridColumnChips()
 
         // Empty state "Scan Now" button
         binding.btnScanNow.setOnClickListener {
@@ -201,6 +218,30 @@ class BrowseFragment : Fragment() {
     }
 
     private var filtersExpanded = false
+    private val restoredCollapsedFolders = mutableSetOf<String>()
+
+    /** Toggle all folders between expanded and collapsed. */
+    private fun toggleAllFolders() {
+        if (adapter.hasExpandedFolders()) {
+            adapter.collapseAll()
+        } else {
+            adapter.expandAll()
+        }
+        updateExpandCollapseButton()
+    }
+
+    /** Updates the Expand All / Collapse All button text and icon to reflect current state. */
+    private fun updateExpandCollapseButton() {
+        val binding = _binding ?: return
+        val allExpanded = adapter.hasExpandedFolders()
+        if (allExpanded) {
+            binding.btnToggleExpandCollapse.text = getString(R.string.collapse_all)
+            binding.btnToggleExpandCollapse.setIconResource(R.drawable.ic_chevron_up)
+        } else {
+            binding.btnToggleExpandCollapse.text = getString(R.string.expand_all)
+            binding.btnToggleExpandCollapse.setIconResource(R.drawable.ic_arrow_down)
+        }
+    }
 
     private fun toggleFilterPanel() {
         filtersExpanded = !filtersExpanded
@@ -244,6 +285,56 @@ class BrowseFragment : Fragment() {
             ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE -> R.drawable.ic_view_grid
         }
         binding.btnViewMode.setImageResource(iconRes)
+        updateGridColumnsVisibility()
+    }
+
+    private var suppressGridChipListener = false
+
+    private fun setupGridColumnChips() {
+        val chipGroup = binding.chipGroupGridColumns
+        val gridModes = listOf(
+            "2" to ViewMode.GRID_LARGE,
+            "3" to ViewMode.GRID_MEDIUM,
+            "4" to ViewMode.GRID_SMALL
+        )
+        for ((label, mode) in gridModes) {
+            val chip = Chip(requireContext()).apply {
+                text = label
+                isCheckable = true
+                isChecked = currentViewMode == mode
+                tag = mode
+            }
+            chipGroup.addView(chip)
+        }
+        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
+            if (suppressGridChipListener) return@setOnCheckedStateChangeListener
+            if (checkedIds.isNotEmpty()) {
+                val selectedChip = group.findViewById<Chip>(checkedIds.first())
+                val mode = selectedChip?.tag as? ViewMode ?: return@setOnCheckedStateChangeListener
+                if (mode != currentViewMode) {
+                    currentViewMode = mode
+                    adapter.viewMode = currentViewMode
+                    applyLayoutManager()
+                    updateViewModeIcon()
+                }
+            }
+        }
+        updateGridColumnsVisibility()
+    }
+
+    private fun updateGridColumnsVisibility() {
+        val isGrid = currentViewMode.spanCount > 1
+        binding.gridColumnsRow.visibility = if (isGrid) View.VISIBLE else View.GONE
+        // Sync chip selection to current mode
+        if (isGrid) {
+            suppressGridChipListener = true
+            val chipGroup = binding.chipGroupGridColumns
+            for (i in 0 until chipGroup.childCount) {
+                val chip = chipGroup.getChildAt(i) as? Chip ?: continue
+                chip.isChecked = chip.tag == currentViewMode
+            }
+            suppressGridChipListener = false
+        }
     }
 
     private fun refresh() {
@@ -305,13 +396,14 @@ class BrowseFragment : Fragment() {
             binding.recyclerView.visibility = View.VISIBLE
         }
 
-        adapter.submitList(browseItems) {
+        adapter.submitFullList(browseItems) {
             if (shouldScrollToTop) {
                 _binding?.recyclerView?.scrollToPosition(0)
                 shouldScrollToTop = false
             }
         }
         binding.tvCount.text = resources.getQuantityString(R.plurals.n_files, fileCount, fileCount)
+        updateExpandCollapseButton()
     }
 
     /** Groups files by their parent folder and creates a list with folder headers. */
@@ -416,6 +508,9 @@ class BrowseFragment : Fragment() {
         outState.putInt(KEY_SORT_ORDER, _binding?.spinnerSort?.selectedItemPosition ?: 0)
         outState.putInt(KEY_CATEGORY_POS, _binding?.spinnerCategory?.selectedItemPosition ?: 0)
         outState.putStringArrayList(KEY_EXTENSIONS, ArrayList(selectedExtensions))
+        if (::adapter.isInitialized) {
+            outState.putStringArrayList(KEY_COLLAPSED_FOLDERS, ArrayList(adapter.collapsedFolders))
+        }
     }
 
     override fun onDestroyView() {
@@ -432,5 +527,6 @@ class BrowseFragment : Fragment() {
         private const val KEY_SORT_ORDER = "browse_sort_order"
         private const val KEY_CATEGORY_POS = "browse_category_pos"
         private const val KEY_EXTENSIONS = "browse_extensions"
+        private const val KEY_COLLAPSED_FOLDERS = "browse_collapsed_folders"
     }
 }

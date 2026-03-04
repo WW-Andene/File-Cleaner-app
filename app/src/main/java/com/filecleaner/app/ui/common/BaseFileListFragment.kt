@@ -29,6 +29,7 @@ import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.ui.common.FileListDividerDecoration
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.viewmodel.ScanState
+import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
 
 /**
@@ -177,6 +178,9 @@ abstract class BaseFileListFragment : Fragment() {
         // View mode toggle
         binding.btnViewMode.setOnClickListener { cycleViewMode() }
         updateViewModeIcon()
+
+        // Grid columns chips
+        setupGridColumnChips()
 
         // Empty state "Scan Now" button
         binding.btnScanNow.setOnClickListener {
@@ -332,6 +336,56 @@ abstract class BaseFileListFragment : Fragment() {
             ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE -> R.drawable.ic_view_grid
         }
         binding.btnViewMode.setImageResource(iconRes)
+        updateGridColumnsVisibility()
+    }
+
+    private var suppressGridChipListener = false
+
+    private fun setupGridColumnChips() {
+        val chipGroup = binding.chipGroupGridColumns
+        val gridModes = listOf(
+            "2" to ViewMode.GRID_LARGE,
+            "3" to ViewMode.GRID_MEDIUM,
+            "4" to ViewMode.GRID_SMALL
+        )
+        for ((label, mode) in gridModes) {
+            val chip = Chip(requireContext()).apply {
+                text = label
+                isCheckable = true
+                isChecked = currentViewMode == mode
+                tag = mode
+            }
+            chipGroup.addView(chip)
+        }
+        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
+            if (suppressGridChipListener) return@setOnCheckedStateChangeListener
+            if (checkedIds.isNotEmpty()) {
+                val selectedChip = group.findViewById<Chip>(checkedIds.first())
+                val mode = selectedChip?.tag as? ViewMode ?: return@setOnCheckedStateChangeListener
+                if (mode != currentViewMode) {
+                    currentViewMode = mode
+                    adapter.viewMode = currentViewMode
+                    applyLayoutManager()
+                    updateViewModeIcon()
+                }
+            }
+        }
+        updateGridColumnsVisibility()
+    }
+
+    private fun updateGridColumnsVisibility() {
+        val isGrid = currentViewMode.spanCount > 1
+        binding.gridColumnsRow.visibility = if (isGrid) View.VISIBLE else View.GONE
+        // Sync chip selection to current mode
+        if (isGrid) {
+            suppressGridChipListener = true
+            val chipGroup = binding.chipGroupGridColumns
+            for (i in 0 until chipGroup.childCount) {
+                val chip = chipGroup.getChildAt(i) as? Chip ?: continue
+                chip.isChecked = chip.tag == currentViewMode
+            }
+            suppressGridChipListener = false
+        }
     }
 
     // B5: Save all user-visible state for config change survival

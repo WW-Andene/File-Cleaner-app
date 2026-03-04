@@ -46,11 +46,86 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
 
     var onItemClick: ((FileItem) -> Unit)? = null
     var onItemLongClick: ((FileItem, View) -> Unit)? = null
+    var onHeaderClick: ((String) -> Unit)? = null
 
     // I3: Use shared color resolution from FileItemUtils
     private var colors: FileItemUtils.AdapterColors? = null
 
+    /** Set of folder paths that are currently collapsed. */
+    val collapsedFolders: MutableSet<String> = mutableSetOf()
+
+    /** The full unfiltered list of items, before collapse filtering. */
+    private var fullList: List<Item> = emptyList()
+
     fun getFileCount(): Int = currentList.count { it is Item.File }
+
+    /**
+     * Accepts the full list of items (headers + files) and submits only
+     * the visible items (hiding files under collapsed folders) to the
+     * RecyclerView differ.
+     */
+    fun submitFullList(items: List<Item>, commitCallback: Runnable? = null) {
+        fullList = items
+        val visible = computeVisibleList()
+        if (commitCallback != null) {
+            submitList(visible, commitCallback)
+        } else {
+            submitList(visible)
+        }
+    }
+
+    /** Toggle a folder between collapsed and expanded. */
+    fun toggleFolder(folderPath: String) {
+        if (folderPath in collapsedFolders) {
+            collapsedFolders.remove(folderPath)
+        } else {
+            collapsedFolders.add(folderPath)
+        }
+        submitList(computeVisibleList())
+    }
+
+    /** Expand all folders. */
+    fun expandAll() {
+        collapsedFolders.clear()
+        submitList(computeVisibleList())
+    }
+
+    /** Collapse all folders. */
+    fun collapseAll() {
+        collapsedFolders.clear()
+        for (item in fullList) {
+            if (item is Item.Header) {
+                collapsedFolders.add(item.folderPath)
+            }
+        }
+        submitList(computeVisibleList())
+    }
+
+    /** Returns true if any folder is currently expanded. */
+    fun hasExpandedFolders(): Boolean {
+        val allFolders = fullList.filterIsInstance<Item.Header>().map { it.folderPath }
+        return allFolders.any { it !in collapsedFolders }
+    }
+
+    /** Filters the full list, keeping headers but removing files under collapsed folders. */
+    private fun computeVisibleList(): List<Item> {
+        val result = mutableListOf<Item>()
+        var currentFolderCollapsed = false
+        for (item in fullList) {
+            when (item) {
+                is Item.Header -> {
+                    currentFolderCollapsed = item.folderPath in collapsedFolders
+                    result.add(item)
+                }
+                is Item.File -> {
+                    if (!currentFolderCollapsed) {
+                        result.add(item)
+                    }
+                }
+            }
+        }
+        return result
+    }
 
     override fun getItemViewType(position: Int): Int = when (getItem(position)) {
         is Item.Header -> TYPE_HEADER
@@ -89,6 +164,24 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         holder.folderName.text = header.displayName
         holder.folderSize.text = UndoHelper.formatBytes(header.totalSize)
         holder.folderCount.text = holder.itemView.context.resources.getQuantityString(R.plurals.n_files, header.fileCount, header.fileCount)
+
+        val isCollapsed = header.folderPath in collapsedFolders
+        holder.chevron.setImageResource(
+            if (isCollapsed) R.drawable.ic_chevron_up else R.drawable.ic_arrow_down
+        )
+        // Rotate chevron: 0 degrees when expanded (arrow pointing down), 180 when collapsed
+        holder.chevron.rotation = 0f
+
+        val ctx = holder.itemView.context
+        holder.itemView.contentDescription = if (isCollapsed) {
+            ctx.getString(R.string.a11y_expand_folder, header.displayName)
+        } else {
+            ctx.getString(R.string.a11y_collapse_folder, header.displayName)
+        }
+
+        holder.itemView.setOnClickListener {
+            onHeaderClick?.invoke(header.folderPath)
+        }
     }
 
     private fun bindFile(holder: FileViewHolder, item: FileItem) {
@@ -133,6 +226,7 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         val folderName: TextView = view.findViewById(R.id.tv_folder_name)
         val folderSize: TextView = view.findViewById(R.id.tv_folder_size)
         val folderCount: TextView = view.findViewById(R.id.tv_folder_count)
+        val chevron: ImageView = view.findViewById(R.id.iv_chevron)
     }
 
     class FileViewHolder(view: View) : RecyclerView.ViewHolder(view) {

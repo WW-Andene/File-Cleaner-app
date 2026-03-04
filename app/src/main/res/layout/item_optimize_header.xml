@@ -1,27 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:paddingHorizontal="@dimen/spacing_md"
+    android:orientation="vertical"
     android:paddingTop="@dimen/spacing_lg"
-    android:paddingBottom="@dimen/spacing_xs">
+    android:paddingBottom="@dimen/spacing_xs"
+    android:paddingHorizontal="@dimen/spacing_sm">
 
-    <TextView
-        android:id="@+id/tv_header_title"
-        android:layout_width="0dp"
+    <!-- Top row: Checkbox + Title + Expand/Collapse arrow -->
+    <LinearLayout
+        android:id="@+id/header_clickable"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textAppearance="@style/TextAppearance.FileCleaner.Subtitle"
-        android:textStyle="bold"
-        android:textColor="@color/textPrimary" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:paddingVertical="@dimen/spacing_xs">
 
-    <TextView
-        android:id="@+id/tv_header_count"
-        android:layout_width="wrap_content"
+        <CheckBox
+            android:id="@+id/cb_category_select"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tv_header_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/spacing_xs"
+            android:textAppearance="@style/TextAppearance.FileCleaner.Subtitle"
+            android:textStyle="bold"
+            android:textColor="@color/textPrimary"
+            tools:text="Photos" />
+
+        <ImageView
+            android:id="@+id/iv_expand_arrow"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_arrow_back"
+            android:rotation="-90"
+            android:contentDescription="@string/collapse_expand"
+            android:layout_marginStart="@dimen/spacing_sm" />
+    </LinearLayout>
+
+    <!-- Bottom row: Size info + Selection count badge -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
-        android:textColor="@color/textTertiary" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="40dp"
+        android:paddingEnd="@dimen/spacing_sm"
+        android:paddingTop="@dimen/spacing_xs">
+
+        <TextView
+            android:id="@+id/tv_header_size_info"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
+            android:textColor="@color/textTertiary"
+            tools:text="2.4 GB, 340 files" />
+
+        <TextView
+            android:id="@+id/tv_header_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_badge"
+            android:paddingHorizontal="@dimen/spacing_sm"
+            android:paddingVertical="2dp"
+            android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
+            android:textColor="@color/colorPrimary"
+            android:textStyle="bold"
+            tools:text="5/10 selected" />
+    </LinearLayout>
 
 </LinearLayout>

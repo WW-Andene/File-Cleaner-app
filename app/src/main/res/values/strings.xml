@@ -344,6 +344,7 @@
     <string name="filter_options">Filters</string>
     <string name="sort_by_label">Sort by</string>
     <string name="browse_category_label">Category</string>
+    <string name="grid_columns_label">Grid columns</string>
 
     <!-- Settings (P14) -->
     <string name="settings_scan_section">Scan Settings</string>
@@ -708,4 +709,12 @@
     <string name="threat_privacy_usage_tracking_desc">\"%1$s\" can monitor which apps you use, when, and for how long. This is a significant privacy concern.</string>
     <string name="threat_privacy_app_enumeration">App Enumeration</string>
     <string name="threat_privacy_app_enumeration_desc">\"%1$s\" can see all installed apps on your device. This data can be used for fingerprinting and targeted advertising.</string>
+
+    <!-- Browse folder collapse/expand -->
+    <string name="expand_all">Expand All</string>
+    <string name="collapse_all">Collapse All</string>
+    <string name="collapse_expand">Toggle expand or collapse</string>
+    <string name="a11y_expand_folder">Expand folder %s</string>
+    <string name="a11y_collapse_folder">Collapse folder %s</string>
+    <string name="a11y_toggle_all_folders">Toggle all folders expanded or collapsed</string>
 </resources>

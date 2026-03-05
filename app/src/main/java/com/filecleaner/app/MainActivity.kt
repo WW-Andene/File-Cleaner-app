@@ -250,7 +250,7 @@ class MainActivity : AppCompatActivity() {
                                 viewModel.largeFiles.value?.size ?: 0
                             ),
                             Snackbar.LENGTH_LONG
-                        ).show()
+                        ).setAnchorView(binding.bottomNav).show()
                         // Make scan status tappable to open dashboard
                         binding.tvScanStatus.setOnClickListener {
                             findNavController(R.id.nav_host_fragment).navigate(R.id.dashboardFragment, null, navAnimOptions)
@@ -268,7 +268,7 @@ class MainActivity : AppCompatActivity() {
                     binding.tvScanStatus.text = getString(R.string.error_scan_failed)
                     Snackbar.make(binding.root,
                         getString(R.string.error_prefix, state.message),
-                        Snackbar.LENGTH_LONG).styleAsError().show()
+                        Snackbar.LENGTH_LONG).setAnchorView(binding.bottomNav).styleAsError().show()
                 }
             }
         }
@@ -373,14 +373,14 @@ class MainActivity : AppCompatActivity() {
                             binding.root,
                             getString(R.string.cloud_oauth_success),
                             Snackbar.LENGTH_SHORT
-                        ).show()
+                        ).setAnchorView(binding.bottomNav).show()
                     }
                 } else {
                     Snackbar.make(
                         binding.root,
                         getString(R.string.cloud_oauth_failed, result.error),
                         Snackbar.LENGTH_LONG
-                    ).styleAsError().show()
+                    ).setAnchorView(binding.bottomNav).styleAsError().show()
                 }
             }
         }

@@ -108,7 +108,7 @@ class MainActivity : AppCompatActivity() {
             val currentDest = navController.currentDestination?.id
             // Guard: skip navigation if already on this destination (prevents back stack duplication on rapid taps)
             if (destId == currentDest) return@setOnItemSelectedListener true
-            // Pop non-tab fragments (arborescence, settings, dashboard) from back stack
+            // Pop non-tab fragments (arborescence, settings, analysis) from back stack
             if (currentDest != null && currentDest !in bottomNavIds) {
                 navController.popBackStack(currentDest, true)
             }
@@ -251,7 +251,7 @@ class MainActivity : AppCompatActivity() {
                             ),
                             Snackbar.LENGTH_LONG
                         ).show()
-                        // Make scan status tappable to open dashboard
+                        // Make scan status tappable to open analysis
                         binding.tvScanStatus.setOnClickListener {
                             findNavController(R.id.nav_host_fragment).navigate(R.id.analysisFragment, null, navAnimOptions)
                         }

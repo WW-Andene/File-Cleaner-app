@@ -77,14 +77,6 @@
         app:popExitAnim="@anim/nav_pop_exit" />
 
     <action
-        android:id="@+id/action_global_dashboardFragment"
-        app:destination="@id/dashboardFragment"
-        app:enterAnim="@anim/nav_enter"
-        app:exitAnim="@anim/nav_exit"
-        app:popEnterAnim="@anim/nav_pop_enter"
-        app:popExitAnim="@anim/nav_pop_exit" />
-
-    <action
         android:id="@+id/action_global_optimizeFragment"
         app:destination="@id/optimizeFragment"
         app:enterAnim="@anim/nav_enter"
@@ -163,11 +155,6 @@
         android:id="@+id/settingsFragment"
         android:name="com.filecleaner.app.ui.settings.SettingsFragment"
         android:label="@string/settings" />
-
-    <fragment
-        android:id="@+id/dashboardFragment"
-        android:name="com.filecleaner.app.ui.dashboard.StorageDashboardFragment"
-        android:label="@string/dashboard_title" />
 
     <fragment
         android:id="@+id/optimizeFragment"

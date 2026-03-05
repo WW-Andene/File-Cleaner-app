@@ -468,21 +468,6 @@
     <string name="onboarding_body_1">Ricky is your friendly storage sidekick! It sniffs out duplicates, hunts down large files, and sweeps away junk.\n\nEverything stays on your device \u2014 your data never leaves.</string>
     <string name="onboarding_title_2">Navigate with Tabs</string>
     <string name="onboarding_body_2">Use the bottom tabs to explore:\n\n\u2022 Browse \u2014 all your files by category\n\u2022 Duplicates \u2014 files with identical content\n\u2022 Manager \u2014 Ricky\'s control center\n\u2022 Large Files \u2014 the biggest space hogs\n\u2022 Junk Files \u2014 caches, temp files, old downloads</string>
-    <!-- Dashboard (P2) -->
-    <string name="dashboard_title">Storage Dashboard</string>
-    <string name="dashboard_storage_title">Device Storage</string>
-    <string name="dashboard_storage_used">%1$s of %2$s used (%3$d%%)</string>
-    <string name="dashboard_storage_free">%s free</string>
-    <string name="dashboard_scan_stats">Scan Summary</string>
-    <string name="dashboard_stats_detail">%1$d files scanned\nDuplicates: %2$s\nJunk: %3$s\nLarge files: %4$s</string>
-    <string name="dashboard_category_title">By Category</string>
-    <plurals name="n_files_with_size">
-        <item quantity="one">%1$d file (%2$s)</item>
-        <item quantity="other">%1$d files (%2$s)</item>
-    </plurals>
-    <string name="dashboard_no_scan">Ricky hasn\'t scanned yet \u2014 run a scan to see the breakdown!</string>
-    <string name="dashboard_scanning">Ricky is working on it\u2026 Results will appear when complete.</string>
-
     <string name="onboarding_title_3">Ricky Manager</string>
     <string name="onboarding_body_3">Tap the Manager tab for quick actions: Scan, Analysis, Quick Clean, Tree View, and Janitor.\n\nRicky\'s den \u2014 your one-stop control center for tidy storage.</string>
 
@@ -526,9 +511,6 @@
     <string name="clean_success">Ricky swept away %s \u2014 nice and tidy!</string>
     <string name="raccoon_greeting_pre_scan">Ricky is ready to tidy up! Tap Scan to get started.</string>
     <string name="raccoon_greeting_post_scan">Looking good! %s free \u2014 Ricky approves.</string>
-    <string name="dashboard_scan_stats_empty">Let Ricky scan your storage to see a summary here.</string>
-    <string name="dashboard_empty_title">No scan data yet</string>
-    <string name="dashboard_empty_subtitle">Run a scan from the Manager tab and Ricky will build your dashboard.</string>
 
     <!-- Context-aware empty states (Dual Pane) -->
     <string name="dual_pane_empty_title">No files here</string>
@@ -923,15 +905,6 @@
     <string name="size_lg">L</string>
     <string name="size_xl">XL</string>
 
-    <!-- Dashboard enhancements -->
-    <!-- dashboard_back removed: use back -->
-    <string name="dashboard_top_files">Top 10 Largest Files</string>
-    <string name="dashboard_quick_actions">Quick Actions</string>
-    <string name="dashboard_clean_junk">Clean Junk</string>
-    <string name="dashboard_view_duplicates">View Duplicates</string>
-    <string name="dashboard_view_large">View Large Files</string>
-    <string name="dashboard_potential_savings">Potential savings: %s</string>
-
     <!-- Optimize enhancements -->
     <string name="optimize_reanalyze">Re-analyze</string>
     <string name="optimize_analyzing">Ricky is analyzing your files\u2026</string>
@@ -1036,16 +1009,11 @@
     <string name="a11y_selection_changed">%1$d items selected</string>
     <string name="a11y_folder_header">%1$s folder, %2$d files, %3$s</string>
 
-    <!-- Dashboard & Analysis accessibility -->
+    <!-- Analysis accessibility -->
     <string name="a11y_storage_overview_card">Storage overview</string>
     <string name="a11y_storage_bar">Storage usage bar</string>
     <string name="a11y_segmented_bar">Category usage breakdown bar</string>
     <string name="a11y_potential_savings">Potential storage savings</string>
-    <string name="a11y_scan_stats_card">Scan statistics</string>
-    <string name="a11y_category_breakdown_card">File category breakdown</string>
-    <string name="a11y_top_files_card">Top largest files</string>
-    <string name="a11y_quick_actions_card">Quick actions</string>
-    <string name="a11y_dashboard_back">Go back</string>
     <string name="a11y_bottom_nav_divider">Navigation divider</string>
     <string name="a11y_scan_icon">Scan status icon</string>
 

@@ -36,25 +36,25 @@
     <string name="browse_scan_file_count">%d files</string>
 
     <!-- Actions -->
-    <string name="delete_selected">Delete selected</string>
+    <string name="delete_selected">Move selected to Trash</string>
     <string name="clean_selected">Clean selected</string>
     <string name="select_all">Select all</string>
     <string name="deselect_all">Deselect all</string>
     <string name="cancel">Cancel</string>
-    <string name="delete">Delete</string>
+    <string name="delete">Move to Trash</string>
     <string name="clean">Clean</string>
     <string name="undo">Undo</string>
 
     <!-- Confirm dialog -->
-    <string name="confirm_delete_title">Confirm Delete</string>
+    <string name="confirm_delete_title">Confirm Move to Trash</string>
     <string name="confirm_delete_message">Files will be moved to trash. You can undo within %1$d seconds.</string>
     <plurals name="confirm_delete_detail">
         <item quantity="one">%1$d file (%2$s) will be moved to trash.\nYou can undo within %3$d seconds.</item>
         <item quantity="other">%1$d files (%2$s) will be moved to trash.\nYou can undo within %3$d seconds.</item>
     </plurals>
     <plurals name="delete_n_files_title">
-        <item quantity="one">Delete %d file?</item>
-        <item quantity="other">Delete %d files?</item>
+        <item quantity="one">Move %d file to trash?</item>
+        <item quantity="other">Move %d files to trash?</item>
     </plurals>
     <plurals name="clean_n_files_title">
         <item quantity="one">Clean %d file?</item>
@@ -129,8 +129,8 @@
     <string name="no_large_found">No space hogs here \u2014 your storage is lean!</string>
     <string name="no_duplicates_found">Zero copycats found \u2014 every file is unique!</string>
     <plurals name="action_delete_n">
-        <item quantity="one">Delete %1$d selected (%2$s)</item>
-        <item quantity="other">Delete %1$d selected (%2$s)</item>
+        <item quantity="one">Move %1$d selected to trash (%2$s)</item>
+        <item quantity="other">Move %1$d selected to trash (%2$s)</item>
     </plurals>
     <plurals name="action_clean_n">
         <item quantity="one">Clean %1$d file (%2$s)</item>
@@ -217,7 +217,7 @@
 
     <!-- Context menu -->
     <string name="ctx_open">Open</string>
-    <string name="ctx_delete">Delete</string>
+    <string name="ctx_delete">Move to Trash</string>
     <string name="ctx_rename">Rename</string>
     <string name="ctx_share">Share</string>
     <string name="ctx_copy">Copy</string>
@@ -338,10 +338,10 @@
     <string name="error_no_files_to_compress">Ricky needs some files to pack \u2014 select a few first!</string>
     <string name="op_scan_failed">Ricky hit a snag while scanning. Give it another try!</string>
 
-    <!-- Undo / Delete feedback -->
-    <string name="undo_deleted_single">Deleted %1$s (%2$s). Undo?</string>
-    <string name="undo_deleted_multiple">Deleted %1$d files (%2$s). Undo?</string>
-    <string name="delete_partial_failure">Ricky deleted %1$d but %2$d wouldn\u0027t budge \u2014 they may be in use by another app.</string>
+    <!-- Undo / Trash feedback -->
+    <string name="undo_deleted_single">Moved %1$s to trash (%2$s). Undo?</string>
+    <string name="undo_deleted_multiple">Moved %1$d files to trash (%2$s). Undo?</string>
+    <string name="delete_partial_failure">Ricky trashed %1$d but %2$d wouldn\u0027t budge \u2014 they may be in use by another app.</string>
 
     <!-- Post-scan summary -->
     <string name="scan_duration_suffix"> in %1$.1fs</string>
@@ -445,7 +445,7 @@
     <string name="settings_large_file_value">%d MB</string>
     <string name="settings_stale_age_label">Flag downloads older than</string>
     <string name="settings_stale_age_value">%d days</string>
-    <string name="settings_undo_label">Undo window after delete</string>
+    <string name="settings_undo_label">Undo window after trash</string>
     <string name="settings_undo_value">%d sec</string>
     <string name="settings_hidden_files">Show hidden files</string>
     <string name="settings_rescan_note">Changes apply on next scan.</string>

@@ -191,6 +191,7 @@ class MainActivity : AppCompatActivity() {
                     hideScanProgress()
                     binding.tvScanStatus.text = getString(R.string.scan_prompt)
                     // F3: Make scan bar tappable to start scan
+                    binding.tvScanStatus.foreground = ContextCompat.getDrawable(this@MainActivity, R.drawable.ripple_list_item)
                     binding.tvScanStatus.setOnClickListener {
                         requestPermissionsAndScan()
                     }
@@ -225,6 +226,7 @@ class MainActivity : AppCompatActivity() {
                             Snackbar.LENGTH_LONG
                         ).show()
                         // Make scan status tappable to open dashboard
+                        binding.tvScanStatus.foreground = ContextCompat.getDrawable(this@MainActivity, R.drawable.ripple_list_item)
                         binding.tvScanStatus.setOnClickListener {
                             findNavController(R.id.nav_host_fragment).navigate(R.id.dashboardFragment, null, navAnimOptions)
                         }

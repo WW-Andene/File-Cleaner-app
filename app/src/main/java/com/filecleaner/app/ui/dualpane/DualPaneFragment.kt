@@ -240,7 +240,8 @@ class DualPaneFragment : Fragment() {
         val paneContainer = if (pane == Pane.LEFT) binding.paneLeft else binding.paneRight
         recycler.setOnDragListener(createPaneDragListener(pane, paneContainer))
 
-        // Tap pane container to set active
+        // Tap pane container to set active — add ripple feedback
+        paneContainer.foreground = ContextCompat.getDrawable(requireContext(), R.drawable.ripple_list_item)
         paneContainer.setOnClickListener {
             activePane = pane
             updatePaneHighlight()

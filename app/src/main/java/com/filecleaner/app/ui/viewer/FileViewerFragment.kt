@@ -295,7 +295,8 @@ class FileViewerFragment : Fragment() {
             true
         }
 
-        // Double-tap to reset
+        // Double-tap to reset — add ripple feedback
+        imageView.foreground = ContextCompat.getDrawable(requireContext(), R.drawable.ripple_list_item)
         imageView.setOnClickListener {
             if (scaleFactor != 1.0f) {
                 scaleFactor = 1.0f
@@ -576,7 +577,8 @@ class FileViewerFragment : Fragment() {
             updateVideoSeekBar()
         }
 
-        // Tap video to toggle controls visibility
+        // Tap video to toggle controls visibility — add ripple feedback
+        videoView.foreground = ContextCompat.getDrawable(requireContext(), R.drawable.ripple_list_item)
         videoView.setOnClickListener {
             if (isVideoInitialized) {
                 controls.visibility = if (controls.visibility == View.VISIBLE)

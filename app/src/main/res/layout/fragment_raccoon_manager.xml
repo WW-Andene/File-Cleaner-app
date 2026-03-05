@@ -133,7 +133,7 @@
                     android:src="@drawable/ic_chevron_right"
                     android:importantForAccessibility="no"
                     app:tint="@color/textOnPrimary"
-                    android:alpha="0.7" />
+                    android:alpha="0.87" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

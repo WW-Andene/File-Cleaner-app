@@ -64,7 +64,7 @@
                     android:id="@+id/tv_storage_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textAppearance="@style/TextAppearance.FileCleaner.Subtitle"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.Title"
                     android:textColor="@color/colorOnPrimaryContainer"
                     android:textAlignment="center" />
 

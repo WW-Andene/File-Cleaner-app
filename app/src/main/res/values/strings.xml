@@ -989,6 +989,7 @@
     <string name="a11y_scan_phase_progress">Scan phase progress</string>
     <string name="a11y_filter_threats">Filter scan results</string>
     <string name="a11y_fix_all_threats">Fix all detected threats</string>
+    <string name="a11y_fix_threat">Fix this threat</string>
     <string name="a11y_settings_section">Settings section</string>
     <string name="a11y_connection_bar">Cloud connection controls</string>
     <string name="a11y_cloud_path">Current cloud path</string>

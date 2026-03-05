@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.filecleaner.app.R
 import com.filecleaner.app.data.FileItem
-import android.util.TypedValue
 import com.filecleaner.app.utils.UndoHelper
 
 class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(DIFF) {
@@ -333,11 +332,11 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         // Reset icon size for recycled views; enlarge only for thumbnail mode
         val lp = holder.icon.layoutParams
         if (viewMode == ViewMode.LIST_WITH_THUMBNAILS) {
-            val px72 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 72f, holder.itemView.resources.displayMetrics).toInt()
+            val px72 = holder.itemView.resources.getDimensionPixelSize(R.dimen.icon_file_list_large)
             lp.width = px72
             lp.height = px72
         } else {
-            val px40 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40f, holder.itemView.resources.displayMetrics).toInt()
+            val px40 = holder.itemView.resources.getDimensionPixelSize(R.dimen.icon_file_list_default)
             lp.width = px40
             lp.height = px40
         }

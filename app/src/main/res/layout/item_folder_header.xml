@@ -14,13 +14,20 @@
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground">
 
-    <ImageView
-        android:layout_width="@dimen/icon_inline"
-        android:layout_height="@dimen/icon_inline"
-        android:src="@drawable/ic_folder"
-        android:importantForAccessibility="no"
-        android:contentDescription="@string/a11y_folder_icon"
-        app:tint="@color/colorPrimary" />
+    <FrameLayout
+        android:layout_width="@dimen/touch_target_min"
+        android:layout_height="@dimen/touch_target_min"
+        android:layout_gravity="center_vertical">
+
+        <ImageView
+            android:layout_width="@dimen/icon_inline"
+            android:layout_height="@dimen/icon_inline"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_folder"
+            android:importantForAccessibility="no"
+            android:contentDescription="@string/a11y_folder_icon"
+            app:tint="@color/colorPrimary" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/tv_folder_name"

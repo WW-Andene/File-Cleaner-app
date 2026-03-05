@@ -10,7 +10,7 @@
         android:orientation="vertical"
         android:paddingHorizontal="@dimen/spacing_xxl"
         android:paddingTop="@dimen/spacing_lg"
-        android:paddingBottom="@dimen/spacing_sm">
+        android:paddingBottom="@dimen/spacing_lg">
 
         <!-- Provider-specific help text (top of form) -->
         <TextView
@@ -98,11 +98,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/cloud_password_hint"
-            app:boxBackgroundMode="outline"
-            app:boxCornerRadiusTopStart="@dimen/radius_input"
-            app:boxCornerRadiusTopEnd="@dimen/radius_input"
-            app:boxCornerRadiusBottomStart="@dimen/radius_input"
-            app:boxCornerRadiusBottomEnd="@dimen/radius_input"
             app:endIconMode="password_toggle"
             style="@style/Widget.FileCleaner.TextInput">
 

@@ -51,6 +51,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextAppearance.FileCleaner.Label"
+                android:importantForAccessibility="yes"
                 android:layout_marginStart="@dimen/spacing_sm" />
         </LinearLayout>
 
@@ -84,6 +85,7 @@
             style="@style/Widget.FileCleaner.Button.Outlined"
             app:cornerRadius="@dimen/radius_pill"
             app:strokeColor="@color/colorError"
-            android:textColor="@color/colorError" />
+            android:textColor="@color/colorError"
+            android:contentDescription="@string/a11y_fix_threat" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

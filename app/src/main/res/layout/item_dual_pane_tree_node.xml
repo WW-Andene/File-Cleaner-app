@@ -12,26 +12,40 @@
     android:minHeight="@dimen/touch_target_min">
 
     <!-- Expand/collapse indicator -->
-    <ImageView
-        android:id="@+id/iv_expand"
-        android:layout_width="@dimen/icon_inline"
-        android:layout_height="@dimen/icon_inline"
-        android:src="@drawable/ic_chevron_right"
-        android:scaleType="centerInside"
-        android:importantForAccessibility="no"
-        android:contentDescription="@string/a11y_expand_collapse_node"
-        app:tint="@color/textTertiary" />
+    <FrameLayout
+        android:layout_width="@dimen/touch_target_min"
+        android:layout_height="@dimen/touch_target_min"
+        android:layout_gravity="center_vertical">
 
-    <ImageView
-        android:id="@+id/iv_folder_icon"
-        android:layout_width="@dimen/icon_tree_node"
-        android:layout_height="@dimen/icon_tree_node"
-        android:src="@drawable/ic_folder"
-        android:scaleType="centerInside"
-        android:layout_marginStart="@dimen/spacing_xs"
-        android:importantForAccessibility="no"
-        android:contentDescription="@string/a11y_folder_icon"
-        app:tint="@color/textSecondary" />
+        <ImageView
+            android:id="@+id/iv_expand"
+            android:layout_width="@dimen/icon_inline"
+            android:layout_height="@dimen/icon_inline"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_chevron_right"
+            android:scaleType="centerInside"
+            android:importantForAccessibility="no"
+            android:contentDescription="@string/a11y_expand_collapse_node"
+            app:tint="@color/textTertiary" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="@dimen/touch_target_min"
+        android:layout_height="@dimen/touch_target_min"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="@dimen/spacing_xs">
+
+        <ImageView
+            android:id="@+id/iv_folder_icon"
+            android:layout_width="@dimen/icon_tree_node"
+            android:layout_height="@dimen/icon_tree_node"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_folder"
+            android:scaleType="centerInside"
+            android:importantForAccessibility="no"
+            android:contentDescription="@string/a11y_folder_icon"
+            app:tint="@color/textSecondary" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/tv_node_name"

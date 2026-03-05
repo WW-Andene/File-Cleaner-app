@@ -128,7 +128,7 @@ object FileItemUtils {
     fun loadThumbnail(imageView: ImageView, item: FileItem, isGrid: Boolean) {
         val ctx = imageView.context
         val file = File(item.path)
-        val cornerRadius = (8 * ctx.resources.displayMetrics.density).toInt()
+        val cornerRadius = ctx.resources.getDimensionPixelSize(R.dimen.radius_thumbnail)
 
         // Load real thumbnails for images and videos
         if ((item.category == FileCategory.IMAGE || item.category == FileCategory.VIDEO) && file.exists()) {

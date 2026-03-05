@@ -176,7 +176,7 @@
             style="@style/Widget.FileCleaner.Button.Destructive"
             android:layout_marginStart="@dimen/spacing_sm"
             android:visibility="gone"
-            app:cornerRadius="@dimen/radius_pill"
+            app:cornerRadius="@dimen/radius_btn"
             app:backgroundTint="@color/colorError" />
     </LinearLayout>
 </LinearLayout>

@@ -23,6 +23,8 @@
     <!-- Bar / progress radii -->
     <dimen name="radius_bar">6dp</dimen>
     <dimen name="radius_bar_sm">4dp</dimen>
+    <!-- Thumbnail corner radius -->
+    <dimen name="radius_thumbnail">8dp</dimen>
     <!-- Legacy aliases -->
     <dimen name="radius_sm">10dp</dimen>
     <dimen name="radius_md">14dp</dimen>

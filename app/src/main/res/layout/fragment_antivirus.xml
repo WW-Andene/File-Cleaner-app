@@ -349,7 +349,7 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_fix_all"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/button_height_sm"
+                android:layout_height="@dimen/button_height"
                 android:layout_marginHorizontal="@dimen/spacing_lg"
                 android:layout_marginTop="@dimen/spacing_sm"
                 android:text="@string/av_fix_all"

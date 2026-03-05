@@ -227,32 +227,6 @@
                 app:chipSpacingHorizontal="@dimen/spacing_chip" />
         </HorizontalScrollView>
 
-        <!-- Grid columns selector (visible only in grid modes) -->
-        <LinearLayout
-            android:id="@+id/grid_columns_row"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/grid_columns_label"
-                android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
-                android:textColor="@color/textTertiary"
-                android:layout_marginTop="@dimen/spacing_sm"
-                android:layout_marginBottom="@dimen/spacing_xs"
-                android:accessibilityHeading="true" />
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chip_group_grid_columns"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:singleSelection="true"
-                app:selectionRequired="true"
-                app:chipSpacingHorizontal="@dimen/spacing_chip" />
-        </LinearLayout>
     </LinearLayout>
 
     <!-- Stats bar -->

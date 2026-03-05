@@ -218,10 +218,10 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
 
     override fun getItemViewType(position: Int): Int = when (getItem(position)) {
         is Item.Header -> TYPE_HEADER
-        is Item.File -> when (viewMode) {
-            ViewMode.LIST_COMPACT -> TYPE_FILE_COMPACT
-            ViewMode.LIST, ViewMode.LIST_WITH_THUMBNAILS -> TYPE_FILE
-            ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE, ViewMode.GRID_XLARGE -> TYPE_FILE_GRID
+        is Item.File -> when {
+            viewMode == ViewMode.LIST_COMPACT -> TYPE_FILE_COMPACT
+            viewMode in ViewMode.GRID_MODES -> TYPE_FILE_GRID
+            else -> TYPE_FILE
         }
     }
 
@@ -344,7 +344,7 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         holder.icon.layoutParams = lp
 
         // Load thumbnail or icon
-        val isGrid = viewMode in setOf(ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE, ViewMode.GRID_XLARGE)
+        val isGrid = viewMode in ViewMode.GRID_MODES
         FileItemUtils.loadThumbnail(holder.icon, item, isGrid)
 
         // Card colors: selection highlight or default

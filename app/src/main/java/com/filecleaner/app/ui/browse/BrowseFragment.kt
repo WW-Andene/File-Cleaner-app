@@ -184,9 +184,6 @@ class BrowseFragment : Fragment() {
         binding.btnToggleExpandCollapse.setOnClickListener { toggleAllFolders() }
         updateExpandCollapseButton()
 
-        // Grid columns chips (inside filter panel)
-        setupGridColumnChips()
-
         // Display options panel
         binding.btnToggleDisplay.setOnClickListener { toggleDisplayOptionsPanel() }
         setupDisplayModeChips()
@@ -326,11 +323,17 @@ class BrowseFragment : Fragment() {
         binding.btnToggleFilters.setIconResource(
             if (filtersExpanded) R.drawable.ic_chevron_up else R.drawable.ic_arrow_down
         )
+        // Close display panel when filter panel opens (avoid both taking screen space)
+        if (filtersExpanded && displayOptionsExpanded) {
+            displayOptionsExpanded = false
+            binding.displayOptionsPanel.visibility = View.GONE
+            binding.btnToggleDisplay.setIconResource(R.drawable.ic_arrow_down)
+        }
     }
 
     private fun applyLayoutManager() {
         dividerDecoration?.let { binding.recyclerView.removeItemDecoration(it) }
-        val isGridMode = currentViewMode in setOf(ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE, ViewMode.GRID_XLARGE)
+        val isGridMode = currentViewMode in ViewMode.GRID_MODES
         binding.recyclerView.layoutManager = if (isGridMode && currentViewMode.spanCount > 1) {
             val spanCount = currentViewMode.spanCount
             GridLayoutManager(requireContext(), spanCount).apply {
@@ -349,56 +352,6 @@ class BrowseFragment : Fragment() {
         }
     }
 
-    private var suppressGridChipListener = false
-
-    private fun setupGridColumnChips() {
-        val chipGroup = binding.chipGroupGridColumns
-        val gridModes = listOf(
-            "1" to ViewMode.GRID_XLARGE,
-            "2" to ViewMode.GRID_LARGE,
-            "3" to ViewMode.GRID_MEDIUM,
-            "4" to ViewMode.GRID_SMALL
-        )
-        for ((label, mode) in gridModes) {
-            val chip = Chip(requireContext()).apply {
-                text = label
-                isCheckable = true
-                isChecked = currentViewMode == mode
-                tag = mode
-            }
-            chipGroup.addView(chip)
-        }
-        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
-            if (suppressGridChipListener) return@setOnCheckedStateChangeListener
-            if (checkedIds.isNotEmpty()) {
-                val selectedChip = group.findViewById<Chip>(checkedIds.first())
-                val mode = selectedChip?.tag as? ViewMode ?: return@setOnCheckedStateChangeListener
-                if (mode != currentViewMode) {
-                    currentViewMode = mode
-                    adapter.viewMode = currentViewMode
-                    applyLayoutManager()
-                    updateGridColumnsVisibility()
-                }
-            }
-        }
-        updateGridColumnsVisibility()
-    }
-
-    private fun updateGridColumnsVisibility() {
-        val isGrid = currentViewMode in setOf(ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE, ViewMode.GRID_XLARGE)
-        binding.gridColumnsRow.visibility = if (isGrid) View.VISIBLE else View.GONE
-        // Sync chip selection to current mode
-        if (isGrid) {
-            suppressGridChipListener = true
-            val chipGroup = binding.chipGroupGridColumns
-            for (i in 0 until chipGroup.childCount) {
-                val chip = chipGroup.getChildAt(i) as? Chip ?: continue
-                chip.isChecked = chip.tag == currentViewMode
-            }
-            suppressGridChipListener = false
-        }
-    }
-
     // ── Display Options Panel ────────────────────────────────────────────
 
     private var displayOptionsExpanded = false
@@ -414,6 +367,12 @@ class BrowseFragment : Fragment() {
         if (displayOptionsExpanded) {
             updateDisplayGridColumnsVisibility()
             syncDisplayModeChips()
+            // Close filter panel when display panel opens
+            if (filtersExpanded) {
+                filtersExpanded = false
+                binding.filterPanel.visibility = View.GONE
+                binding.btnToggleFilters.setIconResource(R.drawable.ic_arrow_down)
+            }
         }
     }
 
@@ -430,7 +389,7 @@ class BrowseFragment : Fragment() {
                 text = label
                 isCheckable = true
                 isChecked = when (mode) {
-                    ViewMode.GRID_MEDIUM -> currentViewMode in setOf(ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE, ViewMode.GRID_XLARGE)
+                    ViewMode.GRID_MEDIUM -> currentViewMode in ViewMode.GRID_MODES
                     else -> currentViewMode == mode
                 }
                 tag = mode
@@ -446,7 +405,6 @@ class BrowseFragment : Fragment() {
                     currentViewMode = mode
                     adapter.viewMode = currentViewMode
                     applyLayoutManager()
-                    updateGridColumnsVisibility()
                     updateDisplayGridColumnsVisibility()
                 }
             }
@@ -456,7 +414,7 @@ class BrowseFragment : Fragment() {
     private fun syncDisplayModeChips() {
         suppressDisplayModeChipListener = true
         val chipGroup = binding.chipGroupDisplayMode
-        val isGridMode = currentViewMode in setOf(ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE, ViewMode.GRID_XLARGE)
+        val isGridMode = currentViewMode in ViewMode.GRID_MODES
         for (i in 0 until chipGroup.childCount) {
             val chip = chipGroup.getChildAt(i) as? Chip ?: continue
             val chipMode = chip.tag as? ViewMode ?: continue
@@ -471,10 +429,12 @@ class BrowseFragment : Fragment() {
     private fun setupDisplayGridColumnChips() {
         val chipGroup = binding.chipGroupDisplayGridColumns
         val gridModes = listOf(
-            "1" to ViewMode.GRID_XLARGE,
-            "2" to ViewMode.GRID_LARGE,
-            "3" to ViewMode.GRID_MEDIUM,
-            "4" to ViewMode.GRID_SMALL
+            "1" to ViewMode.GRID_FULL,
+            "2" to ViewMode.GRID_XLARGE,
+            "3" to ViewMode.GRID_LARGE,
+            "4" to ViewMode.GRID_MEDIUM,
+            "5" to ViewMode.GRID_SMALL,
+            "6" to ViewMode.GRID_TINY
         )
         for ((label, mode) in gridModes) {
             val chip = Chip(requireContext()).apply {
@@ -494,7 +454,6 @@ class BrowseFragment : Fragment() {
                     currentViewMode = mode
                     adapter.viewMode = currentViewMode
                     applyLayoutManager()
-                    updateGridColumnsVisibility()
                     syncDisplayModeChips()
                 }
             }
@@ -503,7 +462,7 @@ class BrowseFragment : Fragment() {
     }
 
     private fun updateDisplayGridColumnsVisibility() {
-        val isGrid = currentViewMode in setOf(ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE, ViewMode.GRID_XLARGE)
+        val isGrid = currentViewMode in ViewMode.GRID_MODES
         binding.displayGridColumnsRow.visibility = if (isGrid) View.VISIBLE else View.GONE
         if (isGrid) {
             suppressDisplayGridChipListener = true

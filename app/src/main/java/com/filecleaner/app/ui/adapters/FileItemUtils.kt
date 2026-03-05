@@ -129,10 +129,12 @@ object FileItemUtils {
         val ctx = imageView.context
         val file = File(item.path)
         val cornerRadius = ctx.resources.getDimensionPixelSize(R.dimen.radius_thumbnail)
+        val iconPadding = ctx.resources.getDimensionPixelSize(R.dimen.spacing_sm)
 
         // Load real thumbnails for images and videos
         if ((item.category == FileCategory.IMAGE || item.category == FileCategory.VIDEO) && file.exists()) {
             imageView.clearColorFilter()
+            imageView.setPadding(0, 0, 0, 0)
             imageView.scaleType = ImageView.ScaleType.CENTER_CROP
             // §G1: Describe the thumbnail for screen readers
             imageView.contentDescription = ctx.getString(R.string.a11y_file_icon,
@@ -149,6 +151,7 @@ object FileItemUtils {
         // Load audio album art (Glide can extract embedded cover art from audio files)
         if (item.category == FileCategory.AUDIO && file.exists() && isGrid) {
             imageView.clearColorFilter()
+            imageView.setPadding(0, 0, 0, 0)
             imageView.scaleType = ImageView.ScaleType.CENTER_CROP
             Glide.with(ctx)
                 .load(android.net.Uri.fromFile(file))
@@ -162,6 +165,7 @@ object FileItemUtils {
         // Load APK icon asynchronously via Glide (avoids blocking UI thread with getPackageArchiveInfo)
         if (item.category == FileCategory.APK && file.exists() && isGrid) {
             imageView.clearColorFilter()
+            imageView.setPadding(0, 0, 0, 0)
             imageView.scaleType = ImageView.ScaleType.CENTER_INSIDE
             Glide.with(ctx)
                 .load(android.net.Uri.fromFile(file))
@@ -173,6 +177,7 @@ object FileItemUtils {
 
         // Fallback: category icon for all other file types
         Glide.with(ctx).clear(imageView)
+        imageView.setPadding(iconPadding, iconPadding, iconPadding, iconPadding)
         imageView.scaleType = ImageView.ScaleType.CENTER_INSIDE
         val iconRes = when (item.category) {
             FileCategory.IMAGE    -> R.drawable.ic_image

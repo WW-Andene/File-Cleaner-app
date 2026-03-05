@@ -81,10 +81,10 @@ class FileAdapter(
         val accentStripe: View? = view.findViewById(R.id.view_accent_stripe)
     }
 
-    override fun getItemViewType(position: Int): Int = when (viewMode) {
-        ViewMode.LIST_COMPACT -> TYPE_COMPACT
-        ViewMode.LIST, ViewMode.LIST_WITH_THUMBNAILS -> TYPE_LIST
-        ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE, ViewMode.GRID_XLARGE -> TYPE_GRID
+    override fun getItemViewType(position: Int): Int = when {
+        viewMode == ViewMode.LIST_COMPACT -> TYPE_COMPACT
+        viewMode in ViewMode.GRID_MODES -> TYPE_GRID
+        else -> TYPE_LIST
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileViewHolder {
@@ -160,7 +160,7 @@ class FileAdapter(
         }
 
         // Load thumbnail for images/videos, category icon for everything else
-        val isGrid = viewMode in setOf(ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE, ViewMode.GRID_XLARGE)
+        val isGrid = viewMode in ViewMode.GRID_MODES
         FileItemUtils.loadThumbnail(holder.icon, item, isGrid)
 
         // Accent stripe (color-coded indicator)

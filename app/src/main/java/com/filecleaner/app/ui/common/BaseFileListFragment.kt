@@ -378,9 +378,12 @@ abstract class BaseFileListFragment : Fragment() {
             getString(R.string.sort_name_asc).let { "List" } to ViewMode.LIST,
             "Compact" to ViewMode.LIST_COMPACT,
             "Thumbnails" to ViewMode.LIST_WITH_THUMBNAILS,
-            "Grid 2" to ViewMode.GRID_LARGE,
-            "Grid 3" to ViewMode.GRID_MEDIUM,
-            "Grid 4" to ViewMode.GRID_SMALL
+            "Grid 1" to ViewMode.GRID_FULL,
+            "Grid 2" to ViewMode.GRID_XLARGE,
+            "Grid 3" to ViewMode.GRID_LARGE,
+            "Grid 4" to ViewMode.GRID_MEDIUM,
+            "Grid 5" to ViewMode.GRID_SMALL,
+            "Grid 6" to ViewMode.GRID_TINY
         )
         modes.forEachIndexed { index, (label, _) ->
             popup.menu.add(0, index, index, label)
@@ -398,7 +401,7 @@ abstract class BaseFileListFragment : Fragment() {
 
     private fun applyLayoutManager() {
         dividerDecoration?.let { binding.recyclerView.removeItemDecoration(it) }
-        val isGridMode = currentViewMode in setOf(ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE, ViewMode.GRID_XLARGE)
+        val isGridMode = currentViewMode in ViewMode.GRID_MODES
         binding.recyclerView.layoutManager = if (isGridMode && currentViewMode.spanCount > 1) {
             GridLayoutManager(requireContext(), currentViewMode.spanCount)
         } else {
@@ -415,10 +418,12 @@ abstract class BaseFileListFragment : Fragment() {
     private fun setupGridColumnChips() {
         val chipGroup = binding.chipGroupGridColumns
         val gridModes = listOf(
-            "1" to ViewMode.GRID_XLARGE,
-            "2" to ViewMode.GRID_LARGE,
-            "3" to ViewMode.GRID_MEDIUM,
-            "4" to ViewMode.GRID_SMALL
+            "1" to ViewMode.GRID_FULL,
+            "2" to ViewMode.GRID_XLARGE,
+            "3" to ViewMode.GRID_LARGE,
+            "4" to ViewMode.GRID_MEDIUM,
+            "5" to ViewMode.GRID_SMALL,
+            "6" to ViewMode.GRID_TINY
         )
         for ((label, mode) in gridModes) {
             val chip = Chip(requireContext()).apply {
@@ -446,7 +451,7 @@ abstract class BaseFileListFragment : Fragment() {
     }
 
     private fun updateGridColumnsVisibility() {
-        val isGrid = currentViewMode in setOf(ViewMode.GRID_SMALL, ViewMode.GRID_MEDIUM, ViewMode.GRID_LARGE, ViewMode.GRID_XLARGE)
+        val isGrid = currentViewMode in ViewMode.GRID_MODES
         binding.gridColumnsRow.visibility = if (isGrid) View.VISIBLE else View.GONE
         // Sync chip selection to current mode
         if (isGrid) {

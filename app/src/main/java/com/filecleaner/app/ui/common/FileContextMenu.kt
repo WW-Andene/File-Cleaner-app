@@ -242,6 +242,7 @@ object FileContextMenu {
                 }
                 .setNegativeButton(context.getString(R.string.cancel), null)
                 .show()
+                .also { it.window?.setWindowAnimations(R.style.DialogAnimation) }
         }
 
         addDivider()
@@ -344,6 +345,7 @@ object FileContextMenu {
                     }
                     .setNegativeButton(context.getString(R.string.cancel), null)
                     .show()
+                    .also { it.window?.setWindowAnimations(R.style.DialogAnimation) }
             }
         }
         val deleteIcon = ImageView(context).apply {
@@ -391,5 +393,6 @@ object FileContextMenu {
             .setMessage(info)
             .setPositiveButton(android.R.string.ok, null)
             .show()
+            .also { it.window?.setWindowAnimations(R.style.DialogAnimation) }
     }
 }

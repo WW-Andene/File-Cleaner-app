@@ -311,7 +311,7 @@
             android:textAppearance="@style/TextAppearance.FileCleaner.Title"
             android:textColor="@color/textPrimary"
             android:gravity="center"
-            android:maxWidth="280dp"
+            android:maxWidth="@dimen/empty_state_max_width"
             android:lineSpacingExtra="@dimen/spacing_xs" />
 
         <com.google.android.material.button.MaterialButton
@@ -355,6 +355,7 @@
         android:minWidth="@dimen/button_min_width"
         android:paddingHorizontal="@dimen/spacing_3xl"
         android:text="@string/delete_selected"
+        android:textAllCaps="false"
         android:enabled="false"
         android:focusable="true"
         android:textAppearance="@style/TextAppearance.FileCleaner.BodyMedium" />

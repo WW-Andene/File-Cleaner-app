@@ -34,7 +34,6 @@
             android:layout_gravity="center"
             android:scaleType="centerInside"
             android:importantForAccessibility="no"
-            android:contentDescription="@string/a11y_file_type_icon"
             app:tint="@color/textSecondary" />
     </FrameLayout>
 
@@ -79,7 +78,6 @@
             android:scaleType="centerInside"
             android:visibility="gone"
             android:importantForAccessibility="no"
-            android:contentDescription="@string/collapse_expand"
             app:tint="@color/textTertiary" />
     </FrameLayout>
 </LinearLayout>

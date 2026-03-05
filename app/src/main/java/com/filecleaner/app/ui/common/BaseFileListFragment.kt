@@ -340,12 +340,12 @@ abstract class BaseFileListFragment : Fragment() {
     private fun showViewModePopup() {
         val popup = PopupMenu(requireContext(), binding.btnViewMode)
         val modes = listOf(
-            getString(R.string.sort_name_asc).let { "List" } to ViewMode.LIST,
-            "Compact" to ViewMode.LIST_COMPACT,
-            "Thumbnails" to ViewMode.LIST_WITH_THUMBNAILS,
-            "Grid 2" to ViewMode.GRID_LARGE,
-            "Grid 3" to ViewMode.GRID_MEDIUM,
-            "Grid 4" to ViewMode.GRID_SMALL
+            getString(R.string.view_mode_list) to ViewMode.LIST,
+            getString(R.string.view_mode_compact) to ViewMode.LIST_COMPACT,
+            getString(R.string.view_mode_thumbnails) to ViewMode.LIST_WITH_THUMBNAILS,
+            getString(R.string.view_mode_grid_2) to ViewMode.GRID_LARGE,
+            getString(R.string.view_mode_grid_3) to ViewMode.GRID_MEDIUM,
+            getString(R.string.view_mode_grid_4) to ViewMode.GRID_SMALL
         )
         modes.forEachIndexed { index, (label, _) ->
             popup.menu.add(0, index, index, label)

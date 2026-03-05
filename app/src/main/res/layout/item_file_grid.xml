@@ -48,8 +48,7 @@
                     android:minHeight="@dimen/grid_thumbnail_min_height"
                     android:scaleType="centerCrop"
                     android:adjustViewBounds="true"
-                    android:importantForAccessibility="no"
-                    android:contentDescription="@string/a11y_file_type_icon" />
+                    android:importantForAccessibility="no" />
 
                 <CheckBox
                     android:id="@+id/cb_select"
@@ -88,7 +87,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
-                android:textColor="@color/textTertiary"
+                android:textColor="@color/textSecondary"
                 android:maxLines="1"
                 android:layout_marginTop="@dimen/spacing_xs" />
         </LinearLayout>

@@ -22,8 +22,7 @@
             android:layout_width="@dimen/icon_severity_dot"
             android:layout_height="@dimen/icon_severity_dot"
             android:background="@drawable/bg_icon_circle"
-            android:importantForAccessibility="no"
-            android:contentDescription="@string/a11y_severity_indicator" />
+            android:importantForAccessibility="no" />
 
         <TextView
             android:id="@+id/tv_severity"

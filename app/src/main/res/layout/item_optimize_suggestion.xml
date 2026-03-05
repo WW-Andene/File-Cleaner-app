@@ -10,7 +10,6 @@
     app:strokeWidth="@dimen/stroke_default"
     app:strokeColor="@color/borderSubtle"
     app:rippleColor="@color/colorPrimaryContainer"
-    android:foreground="@drawable/ripple_card"
     android:clickable="true"
     android:focusable="true"
     android:minHeight="@dimen/touch_target_min">

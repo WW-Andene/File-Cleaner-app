@@ -25,7 +25,6 @@
             android:src="@drawable/ic_chevron_right"
             android:scaleType="centerInside"
             android:importantForAccessibility="no"
-            android:contentDescription="@string/a11y_expand_collapse_node"
             app:tint="@color/textTertiary" />
     </FrameLayout>
 
@@ -43,7 +42,6 @@
             android:src="@drawable/ic_folder"
             android:scaleType="centerInside"
             android:importantForAccessibility="no"
-            android:contentDescription="@string/a11y_folder_icon"
             app:tint="@color/textSecondary" />
     </FrameLayout>
 

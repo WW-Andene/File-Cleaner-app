@@ -108,7 +108,7 @@ class TreeNodeAdapter : ListAdapter<TreeNodeAdapter.FlatNode, TreeNodeAdapter.Vi
         holder.name.text = node.name
 
         // Info: file count + size
-        val info = "${node.totalFileCount} files \u2022 ${UndoHelper.formatBytes(node.totalSize)}"
+        val info = holder.itemView.context.resources.getQuantityString(R.plurals.n_files_with_size, node.totalFileCount, node.totalFileCount, UndoHelper.formatBytes(node.totalSize))
         holder.info.text = info
 
         // Expand/collapse arrow

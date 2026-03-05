@@ -972,6 +972,7 @@
     <string name="a11y_select_checkbox">Select item</string>
     <string name="a11y_loading">Loading content</string>
     <string name="a11y_success">Operation completed successfully</string>
+    <string name="a11y_success_state">Success state</string>
     <string name="a11y_scan_threat_count">Threats found</string>
     <string name="a11y_file_type_icon">File type icon</string>
     <string name="a11y_expand_collapse_node">Expand or collapse folder</string>
@@ -1015,7 +1016,7 @@
     <string name="a11y_file_icon">%1$s file icon</string>
     <string name="a11y_folder_icon">Folder icon</string>
     <string name="a11y_onboarding_step">Onboarding step %1$d of %2$d</string>
-    <string name="a11y_onboarding_icon_welcome">Welcome raccoon logo</string>
+    <string name="a11y_onboarding_icon_welcome">Welcome Ricky logo</string>
     <string name="a11y_onboarding_icon_browse">Browse files illustration</string>
     <string name="a11y_onboarding_icon_scan">Scan storage illustration</string>
     <string name="a11y_legend_color">%1$s, color indicator</string>
@@ -1064,4 +1065,21 @@
     <string name="a11y_cloud_port_field">Connection port number</string>
     <string name="a11y_cloud_provider_selector">Cloud provider type selector</string>
     <string name="a11y_cloud_test_result">Connection test result</string>
+
+    <!-- View mode labels -->
+    <string name="view_mode_list">List</string>
+    <string name="view_mode_compact">Compact</string>
+    <string name="view_mode_thumbnails">Thumbnails</string>
+    <string name="view_mode_grid_2">Grid 2</string>
+    <string name="view_mode_grid_3">Grid 3</string>
+    <string name="view_mode_grid_4">Grid 4</string>
+
+    <!-- Dual-pane manager summary -->
+    <string name="dual_pane_manager_summary">Duplicates: %1$d \u2022 Large: %2$d \u2022 Junk: %3$d</string>
+
+    <!-- Tree node file count -->
+    <plurals name="n_files_with_size">
+        <item quantity="one">%1$d file \u2022 %2$s</item>
+        <item quantity="other">%1$d files \u2022 %2$s</item>
+    </plurals>
 </resources>

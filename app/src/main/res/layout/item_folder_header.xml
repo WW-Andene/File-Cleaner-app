@@ -25,7 +25,6 @@
             android:layout_gravity="center"
             android:src="@drawable/ic_folder"
             android:importantForAccessibility="no"
-            android:contentDescription="@string/a11y_folder_icon"
             app:tint="@color/colorPrimary" />
     </FrameLayout>
 
@@ -65,7 +64,6 @@
         android:layout_marginStart="@dimen/spacing_sm"
         android:src="@drawable/ic_arrow_down"
         android:importantForAccessibility="no"
-        android:contentDescription="@string/collapse_expand"
         app:tint="@color/textTertiary" />
 
 </LinearLayout>

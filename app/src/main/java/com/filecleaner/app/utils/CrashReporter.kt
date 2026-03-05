@@ -158,6 +158,7 @@ object CrashReporter {
     }
 
     private fun createGitHubIssue(token: String, repo: String, title: String, body: String): Boolean {
+        if (!repo.matches(Regex("^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$"))) return false
         val url = URL("https://api.github.com/repos/$repo/issues")
         val conn = url.openConnection() as HttpURLConnection
         try {

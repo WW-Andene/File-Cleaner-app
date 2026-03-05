@@ -122,7 +122,7 @@ class BrowseFragment : Fragment() {
                 val totalSize = UndoHelper.totalSize(items)
                 MaterialAlertDialogBuilder(requireContext())
                     .setTitle(resources.getQuantityString(R.plurals.delete_n_files_title, items.size, items.size))
-                    .setMessage(getString(R.string.confirm_delete_message, 8))
+                    .setMessage(getString(R.string.confirm_delete_message, try { UserPreferences.undoTimeoutMs / 1000 } catch (_: Exception) { 8 }))
                     .setPositiveButton(R.string.delete) { _, _ ->
                         vm.deleteFiles(items)
                         adapter.deselectAll()

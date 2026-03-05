@@ -31,7 +31,7 @@
         android:textAppearance="@style/TextAppearance.FileCleaner.Title"
         android:textColor="@color/textPrimary"
         android:gravity="center"
-        android:maxWidth="280dp"
+        android:maxWidth="@dimen/empty_state_max_width"
         android:lineSpacingExtra="@dimen/spacing_xs" />
 
     <TextView
@@ -42,6 +42,6 @@
         android:textAppearance="@style/TextAppearance.FileCleaner.Body"
         android:textColor="@color/textSecondary"
         android:gravity="center"
-        android:maxWidth="300dp"
+        android:maxWidth="@dimen/empty_subtitle_max_width"
         android:lineSpacingExtra="@dimen/spacing_xs" />
 </LinearLayout>

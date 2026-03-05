@@ -16,7 +16,7 @@
         android:paddingHorizontal="@dimen/spacing_lg"
         android:paddingVertical="@dimen/spacing_sm"
         android:background="@color/surfaceColor"
-        android:elevation="0dp"
+        android:elevation="@dimen/elevation_none"
         android:minHeight="?attr/actionBarSize">
 
         <ImageButton
@@ -184,7 +184,7 @@
             android:textAppearance="@style/TextAppearance.FileCleaner.Title"
             android:textColor="@color/textPrimary"
             android:gravity="center"
-            android:maxWidth="280dp"
+            android:maxWidth="@dimen/empty_state_max_width"
             android:lineSpacingExtra="@dimen/spacing_xs" />
 
         <com.google.android.material.button.MaterialButton

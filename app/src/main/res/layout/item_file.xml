@@ -53,8 +53,7 @@
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
                     android:padding="@dimen/spacing_sm"
-                    android:importantForAccessibility="no"
-                    android:contentDescription="@string/a11y_file_type_icon" />
+                    android:importantForAccessibility="no" />
             </com.google.android.material.card.MaterialCardView>
 
             <!-- Text block -->

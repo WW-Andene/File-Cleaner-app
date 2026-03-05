@@ -180,4 +180,9 @@
     <integer name="motion_page">280</integer>         <!-- page/fragment transition -->
     <integer name="motion_emphasis">400</integer>     <!-- delight: pulse, signature moments -->
     <integer name="motion_stagger_step">40</integer>  <!-- per-item stagger in lists (cap at 160ms total) -->
+
+    <!-- Empty state max widths -->
+    <dimen name="empty_state_max_width">280dp</dimen>
+    <dimen name="empty_subtitle_max_width">300dp</dimen>
+    <dimen name="empty_state_max_width_sm">200dp</dimen>
 </resources>

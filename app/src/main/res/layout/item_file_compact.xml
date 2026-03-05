@@ -30,8 +30,7 @@
             android:layout_width="@dimen/icon_compact"
             android:layout_height="@dimen/icon_compact"
             android:scaleType="centerCrop"
-            android:importantForAccessibility="no"
-            android:contentDescription="@string/a11y_file_type_icon" />
+            android:importantForAccessibility="no" />
 
         <!-- Text block -->
         <LinearLayout

@@ -77,9 +77,10 @@ class StorageDashboardFragment : Fragment() {
             UndoHelper.formatBytes(freeBytes))
         // Set storage bar fill width as percentage of parent
         binding.progressStorage.post {
-            val parent = binding.progressStorage.parent as? ViewGroup ?: return@post
+            val b = _binding ?: return@post
+            val parent = b.progressStorage.parent as? ViewGroup ?: return@post
             val targetWidth = (parent.width * usedPct / 100.0).toInt()
-            binding.progressStorage.layoutParams = binding.progressStorage.layoutParams.apply {
+            b.progressStorage.layoutParams = b.progressStorage.layoutParams.apply {
                 width = targetWidth
             }
         }

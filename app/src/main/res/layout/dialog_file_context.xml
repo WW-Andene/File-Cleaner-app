@@ -15,8 +15,7 @@
         android:layout_marginTop="@dimen/spacing_md"
         android:layout_marginBottom="@dimen/spacing_md"
         android:background="@drawable/bg_drag_handle"
-        android:importantForAccessibility="no"
-        android:contentDescription="@string/a11y_drag_handle" />
+        android:importantForAccessibility="no" />
 
     <!-- File header -->
     <LinearLayout

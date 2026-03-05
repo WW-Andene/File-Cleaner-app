@@ -215,30 +215,36 @@ Some fragments used `spacing_md` (12dp), others `spacing_lg` (16dp) for Recycler
 - All layouts use semantic color references
 - 2 contrast concerns need WCAG testing (see 3.3)
 
-### 5.5 Adapters & List Items: B+
+### 5.5 Adapters & List Items: A *(was B+)*
 - FileAdapter & BrowseAdapter: excellent payload-based selection rebind
 - Category color mapping: 100% aligned with design system
 - Touch feedback: comprehensive across all components
-- DiffUtil gaps in 3 adapters (see 3.7)
-- 3 hardcoded dimensions in Kotlin (see 1.3)
+- [FIXED] DiffUtil payload optimization added to CloudFileAdapter, PaneAdapter; TreeNodeAdapter migrated to ListAdapter
+- [FIXED] All hardcoded dimensions replaced with R.dimen references
 
-### 5.6 Fragment Layouts: B+
+### 5.6 Fragment Layouts: A *(was B+)*
 - Strong overall structure and visual hierarchy
-- 15+ MaterialCardView instances missing Widget style (see 2.1)
-- 12 touch target violations (see 1.1)
-- Spacing generally consistent with minor deviations
+- [FIXED] All 15+ MaterialCardView instances now use Widget.FileCleaner.Card style
+- [FIXED] All 12 touch target violations resolved
+- [FIXED] Spacing standardized; RecyclerView padding unified to spacing_lg
+- [FIXED] Empty states added to dashboard and dual pane fragments
 
-### 5.7 Dialog Layouts: B+
+### 5.7 Dialog Layouts: A *(was B+)*
 - Well-structured with proper modal patterns
 - Color palette 100% compliant
-- Padding inconsistencies between dialogs (see 3.2)
-- Typography hierarchy issue in cloud_setup
+- [FIXED] Padding inconsistencies resolved in dialog_cloud_connect.xml
+- [FIXED] Typography hierarchy fixed in dialog_cloud_setup.xml (Body → Label)
+- [FIXED] Corner radius inconsistency fixed in dialog_threat_detail.xml
+- [FIXED] Form validation added with errorEnabled and inline error clearing
 
-### 5.8 Accessibility: B
-- WCAG ~75% compliant
+### 5.8 Accessibility: A- *(was B)*
+- WCAG ~95% compliant *(was ~75%)*
 - Rich contentDescription coverage across most elements
-- Touch target violations are primary concern
-- Form validation completely missing
+- [FIXED] All touch target violations resolved (48dp minimum met)
+- [FIXED] Form validation added to CloudSetupDialog with inline errors
+- [FIXED] accessibilityHeading="true" added to section titles across all fragments
+- [FIXED] Keyboard shortcuts added (Ctrl+S, Ctrl+F)
+- [FIXED] Focus navigation order defined across cards
 - accessibilityLiveRegion properly used throughout
 
 ---
@@ -260,13 +266,13 @@ Some fragments used `spacing_md` (12dp), others `spacing_lg` (16dp) for Recycler
 
 ## Issue Count Summary
 
-| Severity | Count |
-|----------|-------|
-| Critical | 18 |
-| High | 8 |
-| Medium | 20 |
-| Low | 17 |
-| **Total** | **63** |
+| Severity | Original | Fixed | Remaining |
+|----------|----------|-------|-----------|
+| Critical | 18 | 18 | 0 |
+| High | 8 | 7 | 1 |
+| Medium | 20 | 16 | 4 |
+| Low | 17 | 11 | 6 |
+| **Total** | **63** | **52** | **11** |
 
 ---
 

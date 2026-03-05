@@ -614,3 +614,318 @@ Confidence: HIGH — Source: [CODE]
 **Next: Phase 2 — State Management & Data Integrity (Category B)**
 
 Awaiting confirmation to proceed with Phase 2, or to fix the HIGH/MEDIUM findings from Phase 1.
+
+---
+
+## PHASE 2 — STATE MANAGEMENT & DATA INTEGRITY (Category B)
+
+### Step 2.1 — §B1: State Architecture
+
+**Architecture overview:**
+- **Single shared ViewModel**: `MainViewModel` (activityViewModels()) is the single source of truth for all scan results, file lists, duplicates, junk, large files, storage stats, and directory tree.
+- **MutableLiveData → LiveData** pattern used consistently for all observable state (12 LiveData fields).
+- **SingleLiveEvent** used for one-shot events: `_deleteResult`, `_moveResult`, `_operationResult` — prevents stale event delivery on config change.
+- **Extracted managers**: `ClipboardManager` and `NavigationEvents` extracted from ViewModel with backward-compatible delegation properties.
+- **Fragment state**: Both `BrowseFragment` and `BaseFileListFragment` properly save/restore all UI state via `onSaveInstanceState` (view mode, sort order, search query, selections, category position, collapsed folders, extension filters).
+
+```
+[LOW] — F-019: ClipboardManager state is not persisted across process death
+Section: §B1 — State Architecture
+Finding: ClipboardManager.kt — The cut/copy clipboard is backed by a MutableLiveData
+  in memory only. If Android kills the process while the user has a file "cut", the
+  clipboard state is lost. There is no SavedStateHandle or SharedPreferences backup.
+  The MainViewModel does not use SavedStateHandle for any state.
+Why it matters: Minor — clipboard is ephemeral by nature in most file managers.
+  However, if the user "cuts" a file, switches to another app, and Android kills the
+  process, they'll return to find their cut operation silently lost. The source file
+  is still intact (cut only moves on paste), so no data loss occurs.
+Recommendation: Accept as-is. Clipboard is inherently ephemeral. If desired, a
+  SavedStateHandle could persist the clipboard path across process death.
+Effort: LOW
+Confidence: HIGH — Source: [CODE]
+```
+
+```
+[MEDIUM] — F-020: LiveData.postValue() coalescence may drop intermediate scan state transitions
+Section: §B1 — State Architecture
+Finding: MainViewModel.kt — Scan progress uses postValue() extensively (lines 297, 303,
+  309, 316, 343, 346). The Android documentation explicitly states that if postValue()
+  is called multiple times before the main thread processes the pending value, only the
+  last value is dispatched to observers.
+  During the DUPLICATES phase, progress updates fire per-file (line 307-309). If the main
+  thread is busy (e.g., RecyclerView layout), multiple progress percentage updates will be
+  coalesced — losing intermediate progress values. This is cosmetic for progress.
+  More concerning: if cancelScan() calls `_scanState.postValue(ScanState.Cancelled)` while
+  a concurrent postValue(ScanState.Done) is pending on the main thread, one of them will
+  be dropped. The ordering depends on which postValue() call wins the internal lock.
+Why it matters: Progress bar may jump or appear stuck during heavy I/O. In the worst case,
+  a scan cancellation could be silently overwritten by a Done state (or vice versa), leaving
+  the UI in an inconsistent state.
+Recommendation: For progress updates: accept coalescence (cosmetic). For state transitions
+  (Cancelled, Done, Error): use `withContext(Dispatchers.Main) { _scanState.value = ... }`
+  instead of postValue() to ensure deterministic ordering on the main thread. Alternatively,
+  use ensureActive() before the Done postValue (already done at line 342) and verify
+  cancellation state on the main thread.
+Effort: LOW
+Confidence: MEDIUM — Source: [CODE]
+```
+
+### Step 2.2 — §B2: Persistence & Storage
+
+```
+[LOW] — F-021: ScanHistoryManager stores file paths in plaintext SharedPreferences
+Section: §B2 — Persistence & Storage
+Finding: ScanHistoryManager.kt — Scan history records (including scanned file paths and
+  threat descriptions) are stored in regular SharedPreferences, not EncryptedSharedPreferences.
+  The app stores cloud credentials in EncryptedSharedPreferences (CloudConnectionStore.kt)
+  but does not extend encryption to scan history.
+Why it matters: Minor privacy concern — scan history reveals which files exist on the device
+  and which were flagged as threats. On a rooted device, another app could read this data.
+  The 30-day cache expiry in ScanCache provides some mitigation for scan data, but
+  ScanHistoryManager has its own separate 20-record limit without time-based expiry.
+Recommendation: Consider adding a time-based expiry to ScanHistoryManager (e.g., 30 days
+  matching ScanCache) to limit exposure window. Encryption is optional given the low
+  sensitivity of file paths.
+Effort: LOW
+Confidence: MEDIUM — Source: [CODE]
+```
+
+```
+[LOW] — F-022: UserPreferences uses try/catch fallbacks that silently mask initialization failures
+Section: §B2 — Persistence & Storage
+Finding: MainViewModel.kt — Multiple callsites wrap UserPreferences access in try/catch
+  with hardcoded defaults:
+  - Line 204: `try { UserPreferences.largeFileThresholdMb } catch (_: Exception) { 50 }`
+  - Line 205: `try { UserPreferences.maxLargeFiles } catch (_: Exception) { 200 }`
+  - Line 284: `try { UserPreferences.largeFileThresholdMb } catch (_: Exception) { 50 }`
+  - Line 300: `try { UserPreferences.protectedPaths } catch (_: Exception) { emptySet() }`
+  These try/catch blocks exist because UserPreferences.init(context) may not have been
+  called yet. FileCleanerApp.onCreate() calls init(), but if any code runs before
+  Application.onCreate() (e.g., ContentProvider), it would fail silently.
+Why it matters: The fallback pattern works but masks bugs — if init() is accidentally
+  removed or reordered, the app silently uses defaults instead of crashing early. Users
+  would see their custom thresholds ignored without any error indication.
+Recommendation: Consider making UserPreferences.init() throw a clear error if accessed
+  before initialization, rather than relying on callers to catch. Or use lazy initialization
+  that doesn't require an explicit init() call.
+Effort: LOW
+Confidence: HIGH — Source: [CODE]
+```
+
+### Step 2.3 — §B3: Input Validation & Sanitization
+
+```
+[LOW] — F-023: BatchRenameDialog regex pattern not validated for empty groups
+Section: §B3 — Input Validation & Sanitization
+Finding: BatchRenameDialog.kt — The "Find & Replace" mode accepts regex input from the
+  user with ReDoS timeout protection (FutureTask with 500ms timeout). This is good.
+  However, the "Pattern" mode (line 75-85) uses a template string with {n}, {name}, {ext}
+  placeholders but does not validate that the resulting filename is valid for the filesystem
+  (e.g., contains no '/', '\0', or reserved names like 'CON', 'NUL' on FAT32 volumes).
+  The underlying File.renameTo() will simply fail, but the user gets no pre-validation
+  feedback about which characters are invalid.
+Why it matters: Minor UX issue — users won't understand why a pattern-based rename failed
+  if the pattern produces invalid filenames. The app handles the failure gracefully (returns
+  false from renameTo), but the error message is generic.
+Recommendation: Add pre-validation in the dialog to check for invalid filesystem characters
+  before attempting the rename. Show inline feedback for invalid patterns.
+Effort: LOW
+Confidence: HIGH — Source: [CODE]
+```
+
+```
+[POSITIVE VERIFICATION] — BatchRenameDialog ReDoS protection
+The regex "Find & Replace" mode uses a FutureTask with 500ms timeout to prevent
+catastrophic backtracking. This is a robust defense against user-supplied regex patterns
+that could hang the app. Confirmed working at BatchRenameDialog.kt:110-125.
+```
+
+### Step 2.4 — §B4: Import & Export Integrity
+
+```
+[POSITIVE VERIFICATION] — ZIP extraction path traversal and bomb protection
+FileOperationService.kt:126-171 — extractArchive() validates that extracted entries
+resolve within the target directory via canonicalPath comparison. ZIP bomb protection
+limits total extracted bytes (MAX_EXTRACT_BYTES = 2GB) and entry count (MAX_EXTRACT_ENTRIES
+= 10,000). Both checks are correctly applied before writing any data.
+```
+
+```
+[POSITIVE VERIFICATION] — ScanCache version and bounds validation
+ScanCache.kt — load() validates CACHE_VERSION (rejects mismatched versions), enforces
+MAX_CACHED_FILES (50,000) and MAX_TREE_DEPTH (100) bounds, and applies 30-day expiry.
+save() uses atomic temp-file-then-rename pattern to prevent corruption from crashes
+during write. Streaming JSON reader prevents OOM on very large caches.
+```
+
+```
+[LOW] — F-024: ScanCache atomic write uses renameTo() which can fail on some Android filesystems
+Section: §B4 — Import & Export Integrity
+Finding: ScanCache.kt — The atomic save pattern writes to a temp file, then calls
+  `tempFile.renameTo(cacheFile)`. While renameTo() is atomic on ext4/f2fs (standard
+  Android filesystems), it returns false (instead of throwing) when it fails. The code
+  at save() does check the return value and falls back, but the fallback simply deletes
+  the temp file without retrying — meaning the cache update is silently lost.
+Why it matters: Minor — cache loss means the next cold start takes slightly longer
+  (triggers a fresh scan instead of loading cached results). No data loss.
+Recommendation: Accept as-is. The failure is rare on Android's standard filesystems
+  and the consequence (cache miss) is benign.
+Effort: N/A
+Confidence: MEDIUM — Source: [CODE]
+```
+
+### Step 2.5 — §B5: Data Flow Map
+
+**Data Flow Summary:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ MainViewModel (Single Source of Truth)                       │
+│                                                             │
+│ ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│ │ latestFiles  │  │ latestTree  │  │ pendingTrash (CHM)  │  │
+│ │ (in-memory)  │  │ (in-memory) │  │ (ConcurrentHashMap) │  │
+│ └──────┬───────┘  └──────┬──────┘  └──────────┬──────────┘  │
+│        │                 │                     │             │
+│   ┌────▼────┐  ┌────────▼────────┐  ┌─────────▼─────────┐  │
+│   │LiveData │  │ LiveData        │  │ trashMutex-guarded │  │
+│   │postValue│  │ postValue       │  │ operations         │  │
+│   └────┬────┘  └────────┬────────┘  └───────────────────┘  │
+│        │                │                                   │
+│   ┌────▼────────────────▼──────────────────────┐            │
+│   │ filesByCategory, duplicates, largeFiles,   │            │
+│   │ junkFiles, storageStats, directoryTree     │            │
+│   │ (LiveData → Fragments observe)             │            │
+│   └────────────────────┬───────────────────────┘            │
+│                        │                                    │
+│   ┌────────────────────▼───────────────────────┐            │
+│   │ SingleLiveEvent: deleteResult, moveResult, │            │
+│   │ operationResult (one-shot → Fragments)     │            │
+│   └────────────────────────────────────────────┘            │
+│                                                             │
+│ Guards: stateMutex (scan/cache state), trashMutex (trash),  │
+│         deleteMutex (double-tap), cacheLock (save debounce) │
+└─────────────────────────────────────────────────────────────┘
+         │                              ▲
+         ▼                              │
+┌─────────────────┐            ┌────────┴────────┐
+│ ScanCache (disk)│            │ UserPreferences  │
+│ JSON streaming  │            │ SharedPreferences│
+│ atomic write    │            │ (thresholds,     │
+│ 30-day expiry   │            │  protected paths)│
+└─────────────────┘            └─────────────────┘
+```
+
+**Key observations:**
+1. All file list mutations flow through `stateMutex.withLock {}` — ensuring consistent derived state.
+2. The `latestFiles` / `latestTree` in-memory copies exist because `postValue()` is async and LiveData `.value` may be stale when `saveCache()` reads it. This is a correct design decision, documented in the code comment at line 153-154.
+3. Delete operations correctly acquire `trashMutex` then `stateMutex` in that order. `deleteFiles()` (line 391 → 424), `undoDelete()` (line 455 → 473). This consistent ordering prevents deadlock.
+
+### Step 2.6 — §B6: Mutation & Reference Integrity
+
+```
+[MEDIUM] — F-025: undoDelete() re-runs full DuplicateFinder.findDuplicates() — O(n) hashing on undo
+Section: §B6 — Mutation & Reference Integrity
+Finding: MainViewModel.kt:480 — When the user undoes a delete, the ViewModel re-runs the
+  full duplicate detection pipeline on the entire file list (latestFiles + restored).
+  DuplicateFinder.findDuplicates() performs MD5 hashing of file contents — which is I/O
+  intensive. For a file list of 10,000+ files, this could take several seconds, during
+  which the UI shows stale duplicate data.
+  In contrast, deleteFiles() (line 431-441) only filters and prunes — no re-hashing.
+  This asymmetry means undo is significantly slower than delete.
+Why it matters: Undo should feel instant. After an undo, the user sees files restored
+  in the browse tab but must wait for duplicate/junk recalculation. If they navigate
+  to the duplicates tab during this window, they see stale data.
+Recommendation: On undo, restore the pre-delete duplicate group assignments instead of
+  re-hashing. Save a snapshot of the duplicate groups before delete, and restore it on
+  undo. This makes undo O(1) for duplicates instead of O(n).
+Effort: MEDIUM
+Confidence: HIGH — Source: [CODE]
+```
+
+```
+[LOW] — F-026: refreshAfterFileChange() reads files from disk that may have been concurrently modified
+Section: §B6 — Mutation & Reference Integrity
+Finding: MainViewModel.kt:590-620 (approximate) — After move/rename/copy operations,
+  refreshAfterFileChange() reads the new file from disk (File(path)) to create a fresh
+  FileItem. If another process or the user modified the file between the operation and
+  the refresh, the FileItem metadata (size, lastModified) could be stale on creation
+  but immediately stale after. This is inherent to any non-watching file manager.
+Why it matters: Minimal — this is standard file manager behavior. The user can re-scan
+  to get fresh metadata.
+Recommendation: None — acceptable behavior.
+Effort: N/A
+Confidence: HIGH — Source: [CODE]
+```
+
+```
+[POSITIVE VERIFICATION] — Mutex ordering is consistent, no deadlock risk
+Examined all mutex acquisition sites:
+- deleteFiles(): trashMutex (line 391) → stateMutex (line 424) — always this order
+- undoDelete(): trashMutex (line 455) → stateMutex (line 473-485) — same order
+- confirmDelete(): trashMutex only (line 499)
+- startScan(): stateMutex only (line 323)
+- cache load (init): stateMutex only (line 217)
+No code path acquires stateMutex then trashMutex, so deadlock is impossible.
+```
+
+```
+[POSITIVE VERIFICATION] — ConcurrentHashMap for pendingTrash
+MainViewModel.kt:151 — pendingTrash uses ConcurrentHashMap, enabling safe snapshot in
+onCleared() even when trashMutex cannot be acquired (line 263). The defensive
+`pendingTrash.toMap()` creates a safe copy regardless of concurrent modification.
+```
+
+```
+[POSITIVE VERIFICATION] — BrowseFragment complete state preservation
+BrowseFragment saves ALL UI state in onSaveInstanceState (line 726-736):
+- KEY_VIEW_MODE, KEY_SEARCH_QUERY, KEY_SORT_ORDER, KEY_CATEGORY_POS,
+  KEY_EXTENSIONS, KEY_COLLAPSED_FOLDERS
+All are correctly restored in onViewCreated (line 98-106, 261-262).
+BaseFileListFragment similarly saves: KEY_SELECTED_PATHS, KEY_VIEW_MODE,
+KEY_SORT_ORDER, KEY_SEARCH_QUERY (line 137-141, 253-263).
+```
+
+---
+
+### Phase 2 Summary
+
+| Step | Findings | CRIT | HIGH | MED | LOW |
+|------|----------|------|------|-----|-----|
+| §B1 — State Architecture | 2 | 0 | 0 | 1 | 1 |
+| §B2 — Persistence & Storage | 2 | 0 | 0 | 0 | 2 |
+| §B3 — Input Validation | 1 | 0 | 0 | 0 | 1 |
+| §B4 — Import/Export Integrity | 1 | 0 | 0 | 0 | 1 |
+| §B5 — Data Flow Map | 0 (map) | 0 | 0 | 0 | 0 |
+| §B6 — Mutation & Reference | 2 | 0 | 0 | 1 | 1 |
+| **TOTAL** | **8** | **0** | **0** | **2** | **6** |
+
+### Positive Verifications (Phase 2)
+
+1. **BatchRenameDialog ReDoS protection** — FutureTask 500ms timeout on user regex [CODE]
+2. **ZIP extraction path traversal + bomb protection** — canonical path validation, 2GB + 10K entry limits [CODE]
+3. **ScanCache atomic writes + version/bounds validation** — temp-file-then-rename, MAX_CACHED_FILES, 30-day expiry [CODE]
+4. **Mutex ordering consistent** — trashMutex → stateMutex always, no deadlock possible [CODE]
+5. **ConcurrentHashMap for pendingTrash** — safe snapshot in onCleared() [CODE]
+6. **BrowseFragment complete state preservation** — all 6 state keys saved/restored [CODE]
+7. **BaseFileListFragment state preservation** — selections, view mode, sort, search saved/restored [CODE]
+8. **latestFiles/latestTree in-memory copies** — correct workaround for postValue() async behavior [CODE]
+9. **SingleLiveEvent for one-shot events** — prevents stale event delivery on config change [CODE]
+
+---
+
+**Phase 2 is complete.**
+
+**Cumulative findings: Phase 1 + Phase 2**
+
+| Severity | Phase 1 | Phase 2 | Total |
+|----------|---------|---------|-------|
+| CRITICAL | 0 | 0 | 0 |
+| HIGH | 1 | 0 | 1 |
+| MEDIUM | 6 | 2 | 8 |
+| LOW | 11 | 6 | 17 |
+| **Total** | **18** | **8** | **26** |
+
+**Next: Phase 3 — Security, Privacy & Trust (Category C)**
+
+Awaiting confirmation to proceed with Phase 3, or to fix findings from Phase 1/2.

@@ -263,7 +263,7 @@
         android:layout_gravity="bottom"
         android:layout_marginHorizontal="@dimen/spacing_lg"
         android:layout_marginBottom="@dimen/spacing_bottom_inset"
-        app:cardElevation="@dimen/elevation_raised"
+        app:cardElevation="@dimen/elevation_floating"
         app:cardBackgroundColor="@color/colorPrimary"
         app:strokeWidth="@dimen/stroke_none"
         android:visibility="gone"

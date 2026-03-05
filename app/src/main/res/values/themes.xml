@@ -448,7 +448,7 @@
         <item name="cardCornerRadius">@dimen/radius_card</item>
         <item name="cardElevation">@dimen/elevation_none</item>
         <item name="strokeWidth">@dimen/stroke_default</item>
-        <item name="strokeColor">@color/borderDefault</item>
+        <item name="strokeColor">@color/card_outlined_stroke_color</item>
         <item name="cardBackgroundColor">@color/surfaceColor</item>
     </style>
 

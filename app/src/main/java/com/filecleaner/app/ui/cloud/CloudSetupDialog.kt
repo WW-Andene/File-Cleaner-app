@@ -23,12 +23,11 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import androidx.core.widget.doOnTextChanged
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * Step 2 of the cloud connection flow: provider-specific credential entry.
@@ -270,12 +269,17 @@ object CloudSetupDialog {
                         ivTestIcon.setImageResource(R.drawable.ic_status_disconnected)
                         tvTestResult.text = context.getString(
                             R.string.cloud_test_failed,
-                            context.getString(R.string.cloud_connection_failed, connection.displayName)
+                            connection.displayName
                         )
                         tvTestResult.setTextColor(
                             context.getColor(R.color.colorError)
                         )
                     }
+                } catch (e: CancellationException) {
+                    // Coroutine was cancelled (e.g., user started another test) — reset UI silently
+                    progressTest.visibility = View.GONE
+                    btnTest.isEnabled = true
+                    throw e
                 } catch (e: Exception) {
                     progressTest.visibility = View.GONE
                     testResultContainer.visibility = View.VISIBLE
@@ -417,6 +421,13 @@ object CloudSetupDialog {
                             context.getColor(R.color.colorError)
                         )
                     }
+                } catch (e: CancellationException) {
+                    // Coroutine was cancelled (e.g., dialog dismissed) — re-enable buttons silently
+                    progressTest.visibility = View.GONE
+                    positiveBtn.isEnabled = true
+                    negativeBtn.isEnabled = true
+                    btnTest.isEnabled = true
+                    throw e
                 } catch (e: Exception) {
                     progressTest.visibility = View.GONE
                     positiveBtn.isEnabled = true

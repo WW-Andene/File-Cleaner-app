@@ -124,7 +124,8 @@
             android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
             android:textColor="@color/textTertiary"
             android:layout_marginTop="@dimen/spacing_xs"
-            android:layout_marginBottom="@dimen/spacing_xs" />
+            android:layout_marginBottom="@dimen/spacing_xs"
+            android:accessibilityHeading="true" />
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chip_group_display_mode"
@@ -149,7 +150,8 @@
                 android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
                 android:textColor="@color/textTertiary"
                 android:layout_marginTop="@dimen/spacing_sm"
-                android:layout_marginBottom="@dimen/spacing_xs" />
+                android:layout_marginBottom="@dimen/spacing_xs"
+                android:accessibilityHeading="true" />
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/chip_group_display_grid_columns"
@@ -177,7 +179,8 @@
             android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
             android:textColor="@color/textTertiary"
             android:layout_marginTop="@dimen/spacing_xs"
-            android:layout_marginBottom="@dimen/spacing_xs" />
+            android:layout_marginBottom="@dimen/spacing_xs"
+            android:accessibilityHeading="true" />
 
         <Spinner
             android:id="@+id/spinner_category"
@@ -195,7 +198,8 @@
             android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
             android:textColor="@color/textTertiary"
             android:layout_marginTop="@dimen/spacing_sm"
-            android:layout_marginBottom="@dimen/spacing_xs" />
+            android:layout_marginBottom="@dimen/spacing_xs"
+            android:accessibilityHeading="true" />
 
         <Spinner
             android:id="@+id/spinner_sort"
@@ -238,7 +242,8 @@
                 android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
                 android:textColor="@color/textTertiary"
                 android:layout_marginTop="@dimen/spacing_sm"
-                android:layout_marginBottom="@dimen/spacing_xs" />
+                android:layout_marginBottom="@dimen/spacing_xs"
+                android:accessibilityHeading="true" />
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/chip_group_grid_columns"
@@ -260,7 +265,8 @@
         android:paddingHorizontal="@dimen/spacing_xl"
         android:paddingTop="@dimen/spacing_sm"
         android:paddingBottom="@dimen/spacing_xs"
-        android:accessibilityLiveRegion="polite" />
+        android:accessibilityLiveRegion="polite"
+        android:importantForAccessibility="yes" />
 
     <!-- Empty state -->
     <LinearLayout
@@ -349,6 +355,7 @@
                 android:paddingHorizontal="@dimen/spacing_xs"
                 android:paddingBottom="@dimen/spacing_sm"
                 android:accessibilityLiveRegion="polite"
+                android:importantForAccessibility="yes"
                 tools:text="3 selected" />
 
             <!-- Selection scope buttons -->

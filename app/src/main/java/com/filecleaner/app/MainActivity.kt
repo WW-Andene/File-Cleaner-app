@@ -253,7 +253,7 @@ class MainActivity : AppCompatActivity() {
                         ).show()
                         // Make scan status tappable to open dashboard
                         binding.tvScanStatus.setOnClickListener {
-                            findNavController(R.id.nav_host_fragment).navigate(R.id.dashboardFragment, null, navAnimOptions)
+                            findNavController(R.id.nav_host_fragment).navigate(R.id.analysisFragment, null, navAnimOptions)
                         }
                     } else {
                         binding.tvScanStatus.text = getString(R.string.scan_complete_simple)

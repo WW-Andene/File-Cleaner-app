@@ -52,7 +52,7 @@ class RaccoonManagerFragment : Fragment() {
         // Analysis — navigate to storage dashboard
         binding.cardAnalysis.setOnClickListener {
             if (hasScanData()) {
-                findNavController().navigate(R.id.dashboardFragment, null, navAnimOptions)
+                findNavController().navigate(R.id.analysisFragment, null, navAnimOptions)
             } else {
                 showScanNeeded()
             }

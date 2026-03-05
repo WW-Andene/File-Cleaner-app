@@ -144,6 +144,25 @@
     <string name="nav_large">Large Files</string>
     <string name="nav_junk">Junk Files</string>
 
+    <!-- Dashboard -->
+    <string name="dashboard_title">Storage Dashboard</string>
+    <string name="dashboard_storage_title">Device Storage</string>
+    <string name="dashboard_storage_used">%1$s of %2$s used (%3$d%%)</string>
+    <string name="dashboard_storage_free">%s free</string>
+    <string name="dashboard_scan_stats">Scan Summary</string>
+    <string name="dashboard_stats_detail">%1$d files scanned\nDuplicates: %2$s\nJunk: %3$s\nLarge files: %4$s</string>
+    <string name="dashboard_category_title">By Category</string>
+    <string name="dashboard_no_scan">Run a scan to see category breakdown.</string>
+    <string name="dashboard_scanning">Scanning\u2026 Results will appear when complete.</string>
+    <string name="dashboard_scan_stats_empty">Scan your storage to see a summary here.</string>
+    <string name="dashboard_back">Back</string>
+    <string name="dashboard_top_files">Top 10 Largest Files</string>
+    <string name="dashboard_quick_actions">Quick Actions</string>
+    <string name="dashboard_clean_junk">Clean Junk</string>
+    <string name="dashboard_view_duplicates">View Duplicates</string>
+    <string name="dashboard_view_large">View Large Files</string>
+    <string name="dashboard_potential_savings">Potential savings: %s</string>
+
     <!-- Analysis tab -->
     <string name="analysis_storage_overview">Storage Overview</string>
     <string name="analysis_storage_used">%1$s used of %2$s</string>

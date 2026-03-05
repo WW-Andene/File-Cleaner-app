@@ -49,10 +49,10 @@ class RaccoonManagerFragment : Fragment() {
             (activity as? MainActivity)?.requestPermissionsAndScan()
         }
 
-        // Analysis — navigate to analysis screen
+        // Analysis — navigate to storage dashboard
         binding.cardAnalysis.setOnClickListener {
             if (hasScanData()) {
-                findNavController().navigate(R.id.analysisFragment, null, navAnimOptions)
+                findNavController().navigate(R.id.dashboardFragment, null, navAnimOptions)
             } else {
                 showScanNeeded()
             }

@@ -15,6 +15,9 @@
         <item name="android:windowBackground">@color/surfaceBase</item>
         <item name="android:statusBarColor">@color/surfaceBase</item>
         <item name="android:navigationBarColor">@color/bottomNavBackground</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+        <item name="android:enforceStatusBarContrast">false</item>
 
         <!-- Light status bar icons on light theme -->
         <item name="android:windowLightStatusBar">true</item>

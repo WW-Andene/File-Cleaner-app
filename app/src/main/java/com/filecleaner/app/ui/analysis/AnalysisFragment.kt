@@ -117,6 +117,9 @@ class AnalysisFragment : Fragment() {
         val totalText = UndoHelper.formatBytes(totalDeviceBytes)
         binding.tvStorageUsed.text = getString(R.string.analysis_storage_used, usedText, totalText)
 
+        val freeText = UndoHelper.formatBytes(statFs.availableBytes)
+        binding.tvStorageFree.text = getString(R.string.analysis_storage_free, freeText)
+
         binding.tvTotalFiles.text = getString(R.string.analysis_total_files, stats.totalFiles)
 
         // Animate storage bar width

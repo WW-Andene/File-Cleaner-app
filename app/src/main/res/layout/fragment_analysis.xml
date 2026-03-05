@@ -62,6 +62,14 @@
                         android:textColor="@color/colorOnPrimaryContainer"
                         android:accessibilityLiveRegion="polite" />
 
+                    <TextView
+                        android:id="@+id/tv_storage_free"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:textAppearance="@style/TextAppearance.FileCleaner.Body"
+                        android:textColor="@color/textSecondary" />
+
                     <!-- Storage bar -->
                     <FrameLayout
                         android:layout_width="match_parent"

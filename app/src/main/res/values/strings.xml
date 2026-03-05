@@ -147,6 +147,7 @@
     <!-- Analysis tab -->
     <string name="analysis_storage_overview">Storage Overview</string>
     <string name="analysis_storage_used">%1$s used of %2$s</string>
+    <string name="analysis_storage_free">%s free</string>
     <string name="analysis_total_files">%d files scanned</string>
     <string name="analysis_category_breakdown">Category Breakdown</string>
     <string name="analysis_category_count">%1$d files \u2022 %2$s</string>

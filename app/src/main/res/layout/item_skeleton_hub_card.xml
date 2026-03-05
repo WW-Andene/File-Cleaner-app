@@ -27,8 +27,8 @@
 
         <!-- Title placeholder -->
         <View
-            android:layout_width="100dp"
-            android:layout_height="14dp"
+            android:layout_width="@dimen/skeleton_hub_title_width"
+            android:layout_height="@dimen/skeleton_title_height"
             android:layout_marginTop="@dimen/spacing_md"
             android:background="@drawable/bg_shimmer_placeholder"
             android:importantForAccessibility="no" />
@@ -36,7 +36,7 @@
         <!-- Description placeholder -->
         <View
             android:layout_width="match_parent"
-            android:layout_height="10dp"
+            android:layout_height="@dimen/skeleton_subtitle_height"
             android:layout_marginTop="@dimen/spacing_sm"
             android:background="@drawable/bg_shimmer_placeholder"
             android:importantForAccessibility="no" />

@@ -724,7 +724,7 @@
 | 339 | color/chip_*.xml | Chip state selectors | PASS — chip_bg_color, chip_text_color, chip_stroke_color all cover disabled/checked/focused/pressed/default states with compound state ordering | §E5 | — |
 | 340 | color/switch_*.xml | Switch/toggle states | PASS — switch_thumb_color and switch_track_color cover disabled+checked, disabled, checked, default states | §E5 | — |
 | 341 | item_skeleton_card.xml | Skeleton loading quality | PASS — Shimmer shapes match actual item_file layout structure (icon circle + title bar + subtitle bar + size field); uses @dimen/ tokens | §E5 | — |
-| 342 | item_skeleton_hub_card.xml:30-31,39 | Skeleton hub card hardcoded sizes | `layout_width="100dp"`, `layout_height="14dp"`, `layout_height="10dp"` hardcoded instead of using `@dimen/skeleton_title_width` (160dp), `@dimen/skeleton_title_height` (14dp), `@dimen/skeleton_subtitle_height` (10dp) — the height values match but width diverges intentionally (100dp vs 160dp for narrower card); however the heights should still use tokens | §E5 | LOW |
+| 342 | item_skeleton_hub_card.xml:30-31,39 | Skeleton hub card tokenized | FIXED — Added `skeleton_hub_title_width` (100dp) token; replaced `100dp` → `@dimen/skeleton_hub_title_width`, `14dp` → `@dimen/skeleton_title_height`, `10dp` → `@dimen/skeleton_subtitle_height` | §E5 | ~~LOW~~ PASS |
 | 343 | layouts (all) | Card design quality | PASS — All cards use MaterialCardView with consistent `@dimen/radius_card` (16dp), `@dimen/stroke_default` / `@color/borderSubtle`, proper style variants (Card/Card.Elevated/Card.Flat/Card.Outlined/Card.Selected) | §E5 | — |
 | 344 | layouts (all) | Toolbar elevation | PASS — All toolbars use `android:elevation="0dp"` for flat modern look — consistent across all 6 toolbar instances | §E5 | — |
 | 345 | include_empty_state.xml | Empty state design quality | PASS — Branded raccoon mascot icon, warm personality copy ("Raccoon is waiting to dig in!"), maxWidth-constrained text, proper spacing tokens | §E5 | — |
@@ -947,7 +947,7 @@
 | §E2 Spatial Composition | 9 | 2 | 0 | 0 | 11 |
 | §E3 Color Craft | 4 | 1 | 0 | 0 | 5 |
 | §E4 Typography | 3 | 0 | 0 | 0 | 3 |
-| §E5 Component Quality | 6 | 1 | 0 | 0 | 7 |
+| §E5 Component Quality | 7 | 0 | 0 | 0 | 7 |
 | §E6 Interaction Design | 5 | 0 | 0 | 0 | 5 |
 | §E7 Visual Professionalism | 3 | 0 | 0 | 0 | 3 |
 | §E8 Product Aesthetics | 2 | 0 | 0 | 0 | 2 |
@@ -970,9 +970,9 @@
 | §L4 Copy & Content Standard. | 2 | 0 | 0 | 0 | 2 |
 | §L5 Interaction & Experience Polish | 2 | 1 | 0 | 0 | 3 |
 | §D5 Mobile Performance | 7 | 2 | 0 | 0 | 9 |
-| **TOTALS** | **101** | **18** | **3** | **0** | **122** |
+| **TOTALS** | **102** | **17** | **3** | **0** | **122** |
 
-### All open issues (18 LOW + 3 MEDIUM)
+### All open issues (17 LOW + 3 MEDIUM)
 
 | # | Section | Severity | Details |
 |---|---|---|---|
@@ -986,7 +986,7 @@
 | 325 | §E2 | ~~LOW~~ **FIXED** | fragment_list_action.xml maxWidth tokenized |
 | 327 | §E2 | LOW | No landscape layouts |
 | 333 | §E3 | LOW | MaterialComponents (M2) not Material3 |
-| 342 | §E5 | LOW | item_skeleton_hub_card.xml hardcoded sizes |
+| 342 | §E5 | ~~LOW~~ **FIXED** | item_skeleton_hub_card.xml sizes tokenized |
 | 365 | §E11 | **MEDIUM** | No Splash Screen API |
 | 366 | §E11 | LOW | No Dynamic Color support |
 | 367 | §E11 | **MEDIUM** | No predictive back gesture support |
@@ -1015,4 +1015,4 @@
 
 ---
 
-**Phase 2 manifest complete. 122 findings: 101 PASS, 18 LOW, 3 MEDIUM, 0 REVIEW. Fixes in progress.**
+**Phase 2 manifest complete. 122 findings: 102 PASS, 17 LOW, 3 MEDIUM, 0 REVIEW. Fixes in progress.**

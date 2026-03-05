@@ -150,6 +150,7 @@
     <dimen name="skeleton_title_height">14dp</dimen>
     <dimen name="skeleton_subtitle_width">120dp</dimen>
     <dimen name="skeleton_subtitle_height">10dp</dimen>
+    <dimen name="skeleton_hub_title_width">100dp</dimen>
 
     <!-- Animation translation distances -->
     <dimen name="anim_slide_in_y">24dp</dimen>

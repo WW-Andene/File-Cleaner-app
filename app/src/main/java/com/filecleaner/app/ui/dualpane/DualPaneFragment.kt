@@ -26,6 +26,7 @@ import com.filecleaner.app.data.UserPreferences
 import com.filecleaner.app.databinding.FragmentDualPaneBinding
 import com.filecleaner.app.ui.common.DirectoryPickerDialog
 import com.filecleaner.app.ui.common.FileContextMenu
+import com.filecleaner.app.utils.applyBottomInset
 import com.filecleaner.app.utils.FileOpener
 import com.filecleaner.app.utils.FileScanner
 import com.filecleaner.app.utils.UndoHelper
@@ -93,6 +94,11 @@ class DualPaneFragment : Fragment() {
         if (!File(rightPath).isDirectory) rightPath = storagePath
 
         binding.btnBack.setOnClickListener { findNavController().popBackStack() }
+
+        // Apply bottom insets to both recyclers and selection bar
+        binding.recyclerLeft.applyBottomInset()
+        binding.recyclerRight.applyBottomInset()
+        binding.selectionActionBar.applyBottomInset()
 
         // -- Swap panes button --
         binding.btnSwapPanes.setOnClickListener { swapPanes() }

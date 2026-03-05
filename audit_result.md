@@ -1287,3 +1287,303 @@ Both providers minimize the window of raw credential exposure in memory.
 **Next: Phase 4 — Performance & Efficiency (Category D)**
 
 Awaiting confirmation to proceed with Phase 4, or to fix findings from Phase 1/2/3.
+
+---
+
+## PHASE 4 — PERFORMANCE & EFFICIENCY (Category D)
+
+> **Calibration reminder:** §D was amplified during Phase 0 (Productivity/Utility domain).
+> File managers are judged heavily on perceived speed — scan time, list scroll performance,
+> and file operation responsiveness are critical UX metrics.
+
+### Step 4.1 — §D1: Runtime Performance
+
+```
+[MEDIUM] — F-039: JunkFinder.findJunk() calls String.lowercase() per file and per keyword
+Section: §D1 — Runtime Performance
+Finding: JunkFinder.kt:43-50 — For every file in the scan results (potentially 50,000+),
+  the code calls `item.path.lowercase()` (line 43) and then checks against each
+  JUNK_DIR_KEYWORD with `path.contains("/$it/")` (line 50). This is O(n × k) where n is
+  file count and k is 7 keywords. The lowercase() call allocates a new String per file.
+  For 50,000 files, that's 50,000 String allocations just for the lowercase conversion,
+  plus 350,000 contains() checks.
+Why it matters: On a device with many files, findJunk() could take noticeable time. While
+  this runs on Dispatchers.IO, it still contributes to total scan duration.
+Recommendation: Pre-lowercase the JUNK_DIR_KEYWORDS at init time. Consider storing
+  lowercase paths in FileItem to avoid repeated conversion. Alternatively, use a single
+  regex compiled once: `Regex("/(?:cache|temp|tmp|thumbnail|\\.thumbnails|lost\\+found)/")`.
+Effort: LOW
+Confidence: MEDIUM — Source: [CODE]
+```
+
+```
+[LOW] — F-040: FileScanner BFS uses LIFO stack (ArrayDeque.pop) — produces DFS, not BFS
+Section: §D1 — Runtime Performance
+Finding: FileScanner.kt:47,54 — The code uses `ArrayDeque` as a stack via `push()` and
+  `pop()` (LIFO). This produces depth-first traversal, not breadth-first as the comment
+  on line 76 implies ("Build tree bottom-up"). DFS is actually fine here — the tree is
+  built correctly regardless of traversal order because the bottom-up pass uses depth
+  sorting (line 78). However, DFS with a stack has slightly worse cache locality than
+  BFS for very wide directory trees.
+Why it matters: Negligible performance impact — both DFS and BFS visit all nodes exactly
+  once. The naming is misleading but the algorithm is correct.
+Recommendation: None — the algorithm is correct. Consider renaming the variable from
+  "stack" to be consistent with DFS semantics, or switch to `addLast`/`removeFirst` for
+  true BFS if preferred.
+Effort: N/A
+Confidence: HIGH — Source: [CODE]
+```
+
+```
+[POSITIVE VERIFICATION] — DuplicateFinder 3-stage pipeline is well-optimized
+DuplicateFinder.kt — The 3-stage approach (size grouping → partial hash → full MD5) is
+an efficient duplicate detection strategy:
+- Stage 1 (size): O(n) with HashSet grouping, eliminates ~90% of files immediately
+- Stage 2 (partial hash): Only 8KB I/O per file (head + tail), eliminates most remaining
+- Stage 3 (full MD5): Only for true collisions after partial hash
+- Pre-allocated hex lookup table (line 22-31) avoids per-byte String.format
+- Coroutine cancellation checks every ~512KB during hashing (line 141-143)
+- MAX_FULL_HASH_SIZE skip for files >200MB (appropriate for mobile)
+```
+
+```
+[POSITIVE VERIFICATION] — ArborescenceView pre-allocated draw objects
+ArborescenceView.kt — All Paint objects, RectF objects, FontMetrics, and dimension
+values are pre-allocated/pre-computed at construction time (lines 67-221). No allocations
+occur in onDraw paths. Cached ellipsis widths, font metrics baselines, and dp-scaled
+constants avoid repeated measurement. This is essential for 60 FPS scroll/zoom performance
+on a custom Canvas view.
+```
+
+```
+[POSITIVE VERIFICATION] — refreshAfterFileChange() incremental updates
+MainViewModel.kt:661-703 — Single-file operations (rename, move, copy) use incremental
+list updates instead of re-running the full scan. Duplicate group assignments are preserved
+across renames (content unchanged). Only findLargeFiles and findJunk (both fast in-memory
+operations) are re-run. This is O(n) in file count instead of O(n × fileSize) for hashing.
+```
+
+### Step 4.2 — §D2: Web Vitals & Loading (→ Mobile Rendering)
+
+```
+[LOW] — F-041: BrowseAdapter.notifyDataSetChanged() on viewMode change
+Section: §D2 — Rendering Performance
+Finding: BrowseAdapter.kt:44-47 and FileAdapter.kt:57-60 — Both adapters call
+  `notifyDataSetChanged()` when viewMode changes. This triggers a full rebind of all
+  visible items and prevents DiffUtil from computing incremental updates. On a list
+  of 1000+ items, this causes a visible frame drop during the view mode switch.
+  ListAdapter's submitList with DiffUtil handles this efficiently for data changes,
+  but view type changes (list ↔ grid) genuinely require a full re-layout because
+  the ViewHolder types differ.
+Why it matters: Minor — viewMode changes are infrequent user actions (not scroll-path).
+  The frame drop is acceptable during an intentional mode switch.
+Recommendation: Accept as-is. notifyDataSetChanged() is the correct approach when view
+  types change. Consider using `setHasStableIds(true)` for smoother recycling if needed.
+Effort: N/A
+Confidence: HIGH — Source: [CODE]
+```
+
+```
+[POSITIVE VERIFICATION] — FileAdapter uses DiffUtil.ItemCallback
+FileAdapter.kt:25-28 — Uses ListAdapter with DiffUtil.ItemCallback for efficient
+incremental updates. areItemsTheSame compares by path (identity), areContentsTheSame
+compares by full equality. Selection updates use payloads (PAYLOAD_SELECTION) for
+partial rebind — only checkbox and background change, skipping icon/text/thumbnail.
+This is the correct RecyclerView performance pattern.
+```
+
+```
+[POSITIVE VERIFICATION] — RecyclerView setHasFixedSize(true)
+BaseFileListFragment.kt:169 and BrowseFragment.kt:184 — Both set setHasFixedSize(true),
+which avoids unnecessary measure/layout passes when the adapter content changes. This
+is correct because the RecyclerView size is not determined by its content.
+```
+
+### Step 4.3 — §D3: Resource Budget
+
+```
+[MEDIUM] — F-042: SignatureScanner reads entire script content into memory for regex scanning
+Section: §D3 — Resource Budget
+Finding: SignatureScanner.kt:297 — `val content = file.readText(Charsets.UTF_8)` reads
+  the entire script file (up to 1MB, per line 292 guard) into a single String. Then
+  10 regex patterns are run against this String (lines 299-313). Each regex creates
+  internal Matcher state, and the regexes themselves are compiled once (good).
+  However, if the file contains binary data that happens to have a script extension,
+  readText(UTF_8) may produce garbled output with many replacement characters,
+  allocating a potentially large String for no useful purpose.
+Why it matters: On a device with many script files (e.g., developer's device with
+  node_modules), this could consume significant heap during antivirus scan. The 1MB
+  limit provides adequate protection against catastrophic OOM, but the per-file
+  allocation pattern creates GC pressure.
+Recommendation: (a) Check if file is likely binary before reading (check for \0 bytes
+  in first 512 bytes). (b) Read line-by-line with early exit on first match instead of
+  loading entire file. This would reduce peak memory and GC pressure.
+Effort: LOW
+Confidence: MEDIUM — Source: [CODE]
+```
+
+```
+[LOW] — F-043: FileConverter.pdfToImages() uses 2x scale for all pages without size guard
+Section: §D3 — Resource Budget
+Finding: FileConverter.kt:232-234 — PDF page rendering uses a hardcoded 2x scale:
+  `Bitmap.createBitmap(page.width * scale, page.height * scale, Bitmap.Config.ARGB_8888)`.
+  A standard A4 PDF page at 72 DPI is 595×842 pixels. At 2x scale: 1190×1684 pixels ×
+  4 bytes/pixel = ~8MB per page bitmap. For a 50-page PDF, this is 50 sequential 8MB
+  allocations (though each is recycled after use).
+  If the PDF has unusual page sizes (e.g., 2000×3000 at 72 DPI), the 2x scaled bitmap
+  would be 4000×6000 = 96MB — potentially causing OOM on low-memory devices.
+Why it matters: OOM risk on low-memory devices with large-page PDFs.
+Recommendation: Add a max pixel dimension guard (e.g., 4096×4096) and reduce scale
+  factor for pages that would exceed it. The existing image conversion has similar
+  guards (FileConverter.kt:95 checks BMP file size), but pdfToImages does not.
+Effort: LOW
+Confidence: MEDIUM — Source: [CODE]
+```
+
+```
+[POSITIVE VERIFICATION] — ScanCache MAX_CACHED_FILES = 50,000
+ScanCache.kt:20 — Caps the cached file count to prevent multi-MB JSON files. This
+bounds both memory usage during serialization and disk usage. The streaming reader
+(android.util.JsonReader) on the read side avoids loading the entire JSON into memory.
+```
+
+### Step 4.4 — §D4: Memory Management
+
+```
+[MEDIUM] — F-044: MainViewModel holds entire file list in memory indefinitely
+Section: §D4 — Memory Management
+Finding: MainViewModel.kt:155-156 — `latestFiles: List<FileItem>` and `latestTree:
+  DirectoryNode?` hold the entire scan result in memory for the lifetime of the ViewModel
+  (which is Activity-scoped). For 50,000 files, each FileItem is ~200 bytes (path String
+  + name String + primitives), totaling ~10MB of heap. The DirectoryNode tree duplicates
+  some of this data (files lists within nodes).
+  Additionally, _filesByCategory (line 98) holds the same data grouped differently —
+  another reference set (though the FileItem objects are shared by reference).
+  The Scanning state updates on the main thread while this data is in memory, meaning
+  GC pauses during scan could cause frame drops.
+Why it matters: On low-memory devices (2GB RAM, common in emerging markets), a 10MB+
+  heap footprint for scan data could trigger low-memory kills of background processes
+  or cause GC pauses visible as jank.
+Recommendation: (a) Consider using WeakReference or clearing latestFiles after cache
+  save (can be reloaded from cache). (b) The DirectoryNode tree could use file counts
+  only instead of full file lists (enrichTreeWithFiles adds files that are already in
+  the flat list). (c) Monitor heap usage with Android Profiler to validate actual impact.
+Effort: MEDIUM
+Confidence: MEDIUM — Source: [CODE]
+```
+
+```
+[LOW] — F-045: FileConverter.imagesToPdf() PdfDocument holds all pages in memory
+Section: §D4 — Memory Management
+Finding: FileConverter.kt:192-201 — In imagesToPdf(), each bitmap is decoded, drawn to
+  the PDF page, and recycled in a try/finally block. This is correct — bitmaps are
+  released promptly. However, PdfDocument holds all completed pages in memory until
+  doc.writeTo() is called (line 204). Large PDFs with many high-resolution images
+  could exhaust memory.
+Why it matters: Minor — the user would need to select many large images for conversion.
+  The pattern is correct (decode → draw → recycle per page), and PdfDocument internal
+  page buffering is a framework limitation.
+Recommendation: Consider warning the user when converting more than ~20 images to PDF.
+Effort: LOW
+Confidence: LOW — Source: [CODE]
+```
+
+```
+[POSITIVE VERIFICATION] — Bitmap.recycle() called in all conversion code paths
+FileConverter.kt — All bitmap conversion methods (convertImage, resizeImage, imagesToPdf,
+pdfToImages) properly recycle bitmaps in finally blocks, preventing native memory leaks.
+The BMP writer (writeBmp) operates on the source bitmap without creating additional copies.
+```
+
+### Step 4.5 — §D5: Mobile-Specific Performance
+
+```
+[LOW] — F-046: Search debounce creates a new coroutine on every keystroke
+Section: §D5 — Mobile-Specific Performance
+Finding: BaseFileListFragment.kt:241-248 and BrowseFragment.kt:216-224 — Each keystroke
+  in the search field cancels the previous debounce Job and launches a new coroutine.
+  For a 10-character search query typed quickly, this creates and cancels 9 coroutines.
+  While individual coroutines are lightweight (~2KB), the pattern creates unnecessary
+  garbage collection pressure.
+Why it matters: Minimal — coroutines are designed for exactly this pattern. The 300ms
+  debounce (SEARCH_DEBOUNCE_MS) is appropriate for the use case.
+Recommendation: None — this is the idiomatic Kotlin coroutine debounce pattern. Consider
+  using `flow { ... }.debounce(300)` with `collectLatest` for a cleaner implementation,
+  but the current approach is functionally equivalent.
+Effort: N/A
+Confidence: HIGH — Source: [CODE]
+```
+
+```
+[POSITIVE VERIFICATION] — Cache write debounce (3000ms)
+MainViewModel.kt:57-58, 710-727 — Cache writes are debounced to at most once per 3 seconds
+via saveCacheJob cancellation pattern. Rapid file operations (e.g., batch rename of 50
+files) coalesce into a single cache write. Non-cancellable write ensures completion.
+```
+
+```
+[POSITIVE VERIFICATION] — ArborescenceView tree identity tracking
+ArborescenceView.kt:244-249 — Uses `computeTreeIdentity()` to skip redundant layout
+recalculations when the same tree data is set. This prevents expensive layout passes
+during LiveData re-delivery on configuration changes.
+```
+
+```
+[POSITIVE VERIFICATION] — UserPreferences read-once at scan start
+FileScanner.kt:50 — `val showHidden = try { UserPreferences.showHiddenFiles } ...`
+reads the preference once before the scan loop, rather than per-directory. This avoids
+SharedPreferences I/O inside the hot loop.
+```
+
+```
+[POSITIVE VERIFICATION] — Reduced motion support
+BaseFileListFragment.kt:180-182 and BrowseFragment.kt:187-189 — Both fragments check
+`MotionUtil.isReducedMotion()` and disable RecyclerView layout animations when the user
+has enabled reduced motion in system settings. This improves performance for users who
+disable animations and respects accessibility preferences.
+```
+
+---
+
+### Phase 4 Summary
+
+| Step | Findings | CRIT | HIGH | MED | LOW |
+|------|----------|------|------|-----|-----|
+| §D1 — Runtime Performance | 2 | 0 | 0 | 1 | 1 |
+| §D2 — Rendering Performance | 1 | 0 | 0 | 0 | 1 |
+| §D3 — Resource Budget | 2 | 0 | 0 | 1 | 1 |
+| §D4 — Memory Management | 2 | 0 | 0 | 1 | 1 |
+| §D5 — Mobile-Specific Performance | 1 | 0 | 0 | 0 | 1 |
+| **TOTAL** | **8** | **0** | **0** | **3** | **5** |
+
+### Positive Verifications (Phase 4)
+
+1. **DuplicateFinder 3-stage pipeline** — efficient size → partial hash → full MD5, pre-allocated hex table [CODE]
+2. **ArborescenceView zero-allocation onDraw** — all paints, RectFs, FontMetrics pre-allocated [CODE]
+3. **refreshAfterFileChange() incremental updates** — avoids re-hashing on single-file operations [CODE]
+4. **FileAdapter DiffUtil with payload rebind** — selection changes use PAYLOAD_SELECTION for partial rebind [CODE]
+5. **RecyclerView setHasFixedSize(true)** — avoids unnecessary measure/layout passes [CODE]
+6. **ScanCache MAX_CACHED_FILES** — bounds serialization memory and disk usage [CODE]
+7. **Bitmap.recycle() in all conversion paths** — prevents native memory leaks [CODE]
+8. **Cache write debounce (3000ms)** — coalesces rapid file operations into single write [CODE]
+9. **ArborescenceView tree identity tracking** — skips redundant layout recalculations [CODE]
+10. **UserPreferences read-once at scan start** — avoids SharedPreferences I/O in hot loop [CODE]
+11. **Reduced motion support** — disables animations when system accessibility setting enabled [CODE]
+
+---
+
+**Phase 4 is complete.**
+
+**Cumulative findings: Phase 1 + Phase 2 + Phase 3 + Phase 4**
+
+| Severity | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Total |
+|----------|---------|---------|---------|---------|-------|
+| CRITICAL | 0 | 0 | 0 | 0 | 0 |
+| HIGH | 1 | 0 | 2 | 0 | 3 |
+| MEDIUM | 6 | 2 | 5 | 3 | 16 |
+| LOW | 11 | 6 | 5 | 5 | 27 |
+| **Total** | **18** | **8** | **12** | **8** | **46** |
+
+**Next: Phase 5 — Visual Design & Aesthetics (Category E)**
+
+Awaiting confirmation to proceed with Phase 5, or to fix findings from Phase 1/2/3/4.

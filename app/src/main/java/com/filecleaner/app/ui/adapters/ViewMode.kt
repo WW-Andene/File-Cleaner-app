@@ -35,7 +35,8 @@ enum class ViewMode(val spanCount: Int) {
     val usesGridLayout: Boolean get() = style == Style.GRID
 
     /** True for modes that load rich thumbnails (real images, album art, APK icons). */
-    val showsRichThumbnails: Boolean get() = style == Style.GRID
+    val showsRichThumbnails: Boolean get() = style == Style.GRID ||
+        (style == Style.LIST && size >= Size.MD)
 
     /** Icon/container size in dp for list-based modes. */
     val iconSizeDp: Int get() = when (style) {

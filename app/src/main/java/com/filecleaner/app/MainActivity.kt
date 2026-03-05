@@ -32,6 +32,7 @@ import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.viewmodel.ScanPhase
 import com.filecleaner.app.viewmodel.ScanState
 import com.google.android.material.snackbar.Snackbar
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
@@ -58,6 +59,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         // UserPreferences and CloudConnectionStore are initialized in FileCleanerApp
 

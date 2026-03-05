@@ -777,7 +777,7 @@
 
 | # | FILE/COMPONENT | UI ELEMENT | ISSUE | SECTION | SEVERITY |
 |---|---|---|---|---|---|
-| 365 | build.gradle | No Splash Screen API | App targets SDK 35 but does not use `core-splashscreen` library — Android 12+ splash screen is system default (white flash or theme windowBackground). Missing branded splash screen is a first-impression craft gap | §E11 | MEDIUM |
+| 365 | build.gradle, splashscreen.xml, AndroidManifest.xml, MainActivity.kt | Splash Screen API | FIXED — Added `core-splashscreen:1.0.1` dependency, `Theme.FileCleaner.Splash` with colorPrimary `#247A58` background and `ic_raccoon_logo` icon, applied to MainActivity in manifest, `installSplashScreen()` called before `super.onCreate()` | §E11 | ~~MEDIUM~~ PASS |
 | 366 | build.gradle / Kotlin code | No Dynamic Color support | App targets SDK 35 (Android 12+ available) but does not use `DynamicColors.applyIfAvailable()` — Material You dynamic color not leveraged. Static palette is high quality but dynamic color is a free polish upgrade on Android 12+ | §E11 | LOW |
 | 367 | AndroidManifest.xml | No predictive back gesture support | `android:enableOnBackInvokedCallback` not declared in manifest; no `OnBackPressedCallback` usage found in code. Predictive back gesture (API 33+) not supported — required for Android 14+ targeting | §E11 | MEDIUM |
 
@@ -953,7 +953,7 @@
 | §E8 Product Aesthetics | 2 | 0 | 0 | 0 | 2 |
 | §E9 Visual Identity | 3 | 0 | 0 | 0 | 3 |
 | §E10 Data Storytelling | 3 | 0 | 0 | 0 | 3 |
-| §E11 Mobile Visual | 0 | 1 | 2 | 0 | 3 |
+| §E11 Mobile Visual | 1 | 1 | 1 | 0 | 3 |
 | §F1 Information Architecture | 3 | 0 | 0 | 0 | 3 |
 | §F2 User Flow Quality | 3 | 0 | 0 | 0 | 3 |
 | §F3 Onboarding | 2 | 0 | 0 | 0 | 2 |
@@ -970,9 +970,9 @@
 | §L4 Copy & Content Standard. | 2 | 0 | 0 | 0 | 2 |
 | §L5 Interaction & Experience Polish | 2 | 1 | 0 | 0 | 3 |
 | §D5 Mobile Performance | 8 | 1 | 0 | 0 | 9 |
-| **TOTALS** | **104** | **16** | **2** | **0** | **122** |
+| **TOTALS** | **105** | **16** | **1** | **0** | **122** |
 
-### All open issues (16 LOW + 2 MEDIUM)
+### All open issues (16 LOW + 1 MEDIUM)
 
 | # | Section | Severity | Details |
 |---|---|---|---|
@@ -987,7 +987,7 @@
 | 327 | §E2 | LOW | No landscape layouts |
 | 333 | §E3 | LOW | MaterialComponents (M2) not Material3 |
 | 342 | §E5 | ~~LOW~~ **FIXED** | item_skeleton_hub_card.xml sizes tokenized |
-| 365 | §E11 | **MEDIUM** | No Splash Screen API |
+| 365 | §E11 | ~~MEDIUM~~ **FIXED** | Splash Screen API implemented |
 | 366 | §E11 | LOW | No Dynamic Color support |
 | 367 | §E11 | **MEDIUM** | No predictive back gesture support |
 | 379 | §F5 | LOW | Limited haptic feedback coverage (2 of 5-8 recommended moments) |
@@ -1015,4 +1015,4 @@
 
 ---
 
-**Phase 2 manifest complete. 122 findings: 104 PASS, 16 LOW, 2 MEDIUM, 0 REVIEW. Fixes in progress.**
+**Phase 2 manifest complete. 122 findings: 105 PASS, 16 LOW, 1 MEDIUM, 0 REVIEW. Fixes in progress.**

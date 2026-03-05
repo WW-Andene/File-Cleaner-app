@@ -181,6 +181,7 @@
             android:orientation="vertical"
             android:gravity="center"
             android:accessibilityLiveRegion="polite"
+            android:contentDescription="@string/a11y_empty_state"
             android:visibility="gone">
 
             <ImageView
@@ -194,10 +195,10 @@
                 android:id="@+id/tv_empty_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_lg"
+                android:layout_marginTop="@dimen/spacing_xxl"
                 android:text="@string/scan_to_see_results"
-                android:textAppearance="@style/TextAppearance.FileCleaner.Body"
-                android:textColor="@color/textSecondary"
+                android:textAppearance="@style/TextAppearance.FileCleaner.Title"
+                android:textColor="@color/textPrimary"
                 android:gravity="center"
                 android:lineSpacingExtra="@dimen/spacing_xs" />
 

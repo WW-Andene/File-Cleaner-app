@@ -26,6 +26,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:focusable="true"
             android:contentDescription="@string/back"
+            android:scaleType="centerInside"
             app:tint="@color/textPrimary" />
 
         <TextView

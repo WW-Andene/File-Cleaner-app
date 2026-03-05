@@ -449,7 +449,7 @@
                     android:textAllCaps="false"
                     app:icon="@drawable/ic_delete"
                     app:iconGravity="textStart"
-                    app:cornerRadius="@dimen/radius_btn" />
+                    app:cornerRadius="@dimen/radius_pill" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

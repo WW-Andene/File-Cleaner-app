@@ -365,6 +365,7 @@
             <!-- Fix All button (shown when actionable threats exist) -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_fix_all"
+                style="@style/Widget.FileCleaner.Button.Destructive"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/button_height"
                 android:layout_marginHorizontal="@dimen/spacing_lg"
@@ -375,10 +376,7 @@
                 android:insetBottom="0dp"
                 android:visibility="gone"
                 android:contentDescription="@string/a11y_fix_all_threats"
-                style="@style/Widget.FileCleaner.Button.Outlined"
-                app:cornerRadius="@dimen/radius_pill"
-                app:strokeColor="@color/colorError"
-                android:textColor="@color/colorError" />
+                app:cornerRadius="@dimen/radius_pill" />
 
             <!-- Filter chips -->
             <HorizontalScrollView

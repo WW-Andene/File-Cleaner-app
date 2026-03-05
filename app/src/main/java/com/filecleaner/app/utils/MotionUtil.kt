@@ -75,7 +75,7 @@ object MotionUtil {
         }
         val duration = enterMs(view.context)
         view.alpha = 0f
-        view.translationY = view.resources.displayMetrics.density * 24f
+        view.translationY = view.resources.getDimension(R.dimen.anim_slide_in_y)
         view.visibility = View.VISIBLE
         return view.animate()
             .alpha(1f)
@@ -98,7 +98,7 @@ object MotionUtil {
         val duration = exitMs(view.context)
         return view.animate()
             .alpha(0f)
-            .translationY(view.resources.displayMetrics.density * 16f)
+            .translationY(view.resources.getDimension(R.dimen.anim_slide_out_y))
             .setDuration(duration)
             .setInterpolator(AccelerateInterpolator())
             .withEndAction {

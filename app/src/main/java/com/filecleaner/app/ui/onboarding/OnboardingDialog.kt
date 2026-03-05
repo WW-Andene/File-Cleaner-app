@@ -73,7 +73,7 @@ object OnboardingDialog {
         val iconView = android.widget.ImageView(context).apply {
             setImageResource(iconRes)
             contentDescription = iconDesc
-            val size = (64 * context.resources.displayMetrics.density).toInt()
+            val size = context.resources.getDimensionPixelSize(R.dimen.onboarding_icon_size)
             layoutParams = LinearLayout.LayoutParams(size, size).apply {
                 gravity = android.view.Gravity.CENTER_HORIZONTAL
                 topMargin = halfPadding

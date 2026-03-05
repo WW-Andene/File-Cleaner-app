@@ -30,7 +30,6 @@ object DirectoryPickerDialog {
         onSelected: (String) -> Unit
     ) {
         var currentNode = rootNode
-        val dp = context.resources.displayMetrics.density
 
         var currentDialog: AlertDialog? = null
 
@@ -60,7 +59,7 @@ object DirectoryPickerDialog {
             val scrollView = ScrollView(context).apply {
                 layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    (300 * dp).toInt()
+                    context.resources.getDimensionPixelSize(R.dimen.dir_picker_list_height)
                 )
             }
 

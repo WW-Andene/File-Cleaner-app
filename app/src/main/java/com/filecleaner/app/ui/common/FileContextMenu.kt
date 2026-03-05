@@ -112,7 +112,7 @@ object FileContextMenu {
         val res = context.resources
         val buttonHeight = res.getDimensionPixelSize(R.dimen.button_height)
         // §H3: Ensure minimum 48dp touch target for menu items
-        val minTouchTarget = (48 * res.displayMetrics.density).toInt()
+        val minTouchTarget = res.getDimensionPixelSize(R.dimen.touch_target_min)
         val effectiveHeight = maxOf(buttonHeight, minTouchTarget)
         val spacingXl = res.getDimensionPixelSize(R.dimen.spacing_xl)
         val spacingLg = res.getDimensionPixelSize(R.dimen.spacing_lg)

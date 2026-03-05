@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="@dimen/spacing_lg"
-        android:paddingBottom="@dimen/spacing_bottom_inset">
+        android:paddingBottom="@dimen/spacing_above_nav">
 
         <!-- Settings title -->
         <TextView

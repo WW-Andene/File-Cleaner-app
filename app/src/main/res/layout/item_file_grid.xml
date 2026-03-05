@@ -12,6 +12,7 @@
     app:strokeWidth="@dimen/stroke_default"
     app:strokeColor="@color/borderSubtle"
     app:rippleColor="@color/colorPrimaryContainer"
+    android:minHeight="@dimen/touch_target_min"
     android:clickable="true"
     android:focusable="true">
 

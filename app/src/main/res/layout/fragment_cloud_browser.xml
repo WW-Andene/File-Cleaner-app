@@ -163,7 +163,7 @@
         android:gravity="center"
         android:paddingHorizontal="@dimen/spacing_3xl"
         android:paddingTop="@dimen/spacing_5xl"
-        android:paddingBottom="@dimen/spacing_4xl"
+        android:paddingBottom="@dimen/spacing_above_nav"
         android:accessibilityLiveRegion="polite"
         android:contentDescription="@string/a11y_empty_state"
         android:focusable="true">
@@ -209,6 +209,7 @@
         android:clipToPadding="false"
         android:layoutAnimation="@anim/layout_item_stagger"
         android:paddingHorizontal="@dimen/spacing_lg"
+        android:paddingTop="@dimen/spacing_sm"
         android:paddingBottom="@dimen/spacing_fab_clearance"
         android:visibility="gone" />
 

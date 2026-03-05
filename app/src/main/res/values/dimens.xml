@@ -36,7 +36,7 @@
     <dimen name="spacing_5xl">64dp</dimen>
     <dimen name="divider_width">1dp</dimen>
     <dimen name="divider_thick">4dp</dimen>
-    <dimen name="spacing_bottom_inset">72dp</dimen>
+    <dimen name="spacing_bottom_inset">80dp</dimen>
     <dimen name="spacing_above_nav">80dp</dimen>
     <dimen name="spacing_fab_clearance">80dp</dimen>
 

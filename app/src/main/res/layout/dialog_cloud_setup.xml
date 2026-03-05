@@ -131,11 +131,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/cloud_password_hint"
-            app:boxBackgroundMode="outline"
-            app:boxCornerRadiusTopStart="@dimen/radius_input"
-            app:boxCornerRadiusTopEnd="@dimen/radius_input"
-            app:boxCornerRadiusBottomStart="@dimen/radius_input"
-            app:boxCornerRadiusBottomEnd="@dimen/radius_input"
             app:errorEnabled="true"
             app:endIconMode="password_toggle"
             style="@style/Widget.FileCleaner.TextInput">

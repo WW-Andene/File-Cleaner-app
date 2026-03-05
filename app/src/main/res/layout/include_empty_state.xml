@@ -8,7 +8,7 @@
     android:gravity="center"
     android:paddingHorizontal="@dimen/spacing_3xl"
     android:paddingTop="@dimen/spacing_5xl"
-    android:paddingBottom="@dimen/spacing_4xl"
+    android:paddingBottom="@dimen/spacing_above_nav"
     android:accessibilityLiveRegion="polite"
     android:contentDescription="@string/a11y_empty_state">
 
@@ -30,7 +30,7 @@
         android:gravity="center"
         android:maxWidth="280dp"
         android:lineSpacingExtra="@dimen/spacing_xs"
-        tools:text="Raccoon is waiting to dig in!" />
+        tools:text="Ricky is waiting to dig in!" />
 
     <TextView
         android:id="@+id/tv_empty_subtitle"
@@ -42,6 +42,6 @@
         android:gravity="center"
         android:maxWidth="300dp"
         android:lineSpacingExtra="@dimen/spacing_xs"
-        tools:text="Scan your storage and Raccoon will crunch the numbers for you." />
+        tools:text="Scan your storage and Ricky will crunch the numbers for you." />
 
 </LinearLayout>

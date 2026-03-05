@@ -150,6 +150,7 @@
                 android:layout_weight="1"
                 android:clipToPadding="false"
                 android:layoutAnimation="@anim/layout_item_stagger"
+                android:paddingTop="@dimen/spacing_sm"
                 android:paddingBottom="@dimen/spacing_sm" />
 
             <!-- Left pane empty state -->
@@ -325,6 +326,7 @@
                 android:layout_weight="1"
                 android:clipToPadding="false"
                 android:layoutAnimation="@anim/layout_item_stagger"
+                android:paddingTop="@dimen/spacing_sm"
                 android:paddingBottom="@dimen/spacing_sm" />
 
             <!-- Right pane empty state -->

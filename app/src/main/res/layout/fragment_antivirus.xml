@@ -61,7 +61,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingBottom="@dimen/spacing_bottom_inset">
+            android:paddingBottom="@dimen/spacing_above_nav">
 
             <!-- Shield icon + status area -->
             <LinearLayout

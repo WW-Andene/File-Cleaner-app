@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/spacing_lg"
-        android:layout_marginTop="@dimen/spacing_sm"
+        android:layout_marginTop="@dimen/spacing_md"
         android:contentDescription="@string/a11y_search_files"
         app:startIconDrawable="@drawable/ic_search"
         app:endIconMode="clear_text"
@@ -45,8 +45,8 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingHorizontal="@dimen/spacing_lg"
-        android:paddingTop="@dimen/spacing_sm">
+        android:layout_marginHorizontal="@dimen/spacing_lg"
+        android:layout_marginTop="@dimen/spacing_sm">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_toggle_filters"
@@ -169,7 +169,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingHorizontal="@dimen/spacing_lg"
+        android:layout_marginHorizontal="@dimen/spacing_lg"
         android:visibility="gone">
 
         <TextView
@@ -325,6 +325,7 @@
         android:focusableInTouchMode="false"
         android:clipToPadding="false"
         android:paddingHorizontal="@dimen/spacing_lg"
+        android:paddingTop="@dimen/spacing_sm"
         android:paddingBottom="@dimen/spacing_fab_clearance"
         android:layoutAnimation="@anim/layout_item_stagger" />
 
@@ -334,7 +335,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/spacing_md"
-        android:layout_marginBottom="@dimen/spacing_md"
+        android:layout_marginBottom="@dimen/spacing_above_nav"
         android:accessibilityLiveRegion="polite"
         android:contentDescription="@string/a11y_selection_actions"
         app:cardCornerRadius="@dimen/radius_card"

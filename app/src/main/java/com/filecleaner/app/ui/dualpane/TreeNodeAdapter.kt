@@ -115,6 +115,11 @@ class TreeNodeAdapter : ListAdapter<TreeNodeAdapter.FlatNode, TreeNodeAdapter.Vi
         if (node.children.isNotEmpty()) {
             holder.expandIcon.visibility = View.VISIBLE
             holder.expandIcon.rotation = if (item.expanded) 90f else 0f
+            // Add ripple feedback for the expand icon's own click target
+            val attrs = intArrayOf(android.R.attr.selectableItemBackgroundBorderless)
+            val ta = ctx.obtainStyledAttributes(attrs)
+            holder.expandIcon.background = ta.getDrawable(0)
+            ta.recycle()
             holder.expandIcon.setOnClickListener {
                 toggleExpand(holder.bindingAdapterPosition)
             }

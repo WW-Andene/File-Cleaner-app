@@ -211,7 +211,9 @@ class RaccoonManagerFragment : Fragment() {
     private fun hasScanData(): Boolean = vm.scanState.value is ScanState.Done
 
     private fun showScanNeeded() {
-        Snackbar.make(binding.root, getString(R.string.raccoon_scan_needed), Snackbar.LENGTH_SHORT).show()
+        Snackbar.make(binding.root, getString(R.string.raccoon_scan_needed), Snackbar.LENGTH_SHORT)
+            .apply { view.rootView.findViewById<View?>(R.id.bottom_nav)?.let { anchorView = it } }
+            .show()
     }
 
     private fun showJanitorDialog() {

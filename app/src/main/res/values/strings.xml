@@ -1078,7 +1078,7 @@
     <string name="dual_pane_manager_summary">Duplicates: %1$d \u2022 Large: %2$d \u2022 Junk: %3$d</string>
 
     <!-- Tree node file count -->
-    <plurals name="n_files_with_size">
+    <plurals name="n_files_with_size_bullet">
         <item quantity="one">%1$d file \u2022 %2$s</item>
         <item quantity="other">%1$d files \u2022 %2$s</item>
     </plurals>

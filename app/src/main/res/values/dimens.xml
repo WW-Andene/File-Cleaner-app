@@ -25,7 +25,7 @@
     <dimen name="radius_bar_sm">4dp</dimen>
     <!-- Thumbnail corner radius -->
     <dimen name="radius_thumbnail">8dp</dimen>
-    <!-- Legacy aliases -->
+    <!-- Shape system aliases (match ShapeSmall/Medium/Large — kept for legacy XML references) -->
     <dimen name="radius_sm">10dp</dimen>
     <dimen name="radius_md">14dp</dimen>
     <dimen name="radius_lg">18dp</dimen>

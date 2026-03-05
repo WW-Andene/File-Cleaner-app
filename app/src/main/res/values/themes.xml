@@ -419,7 +419,7 @@
         <item name="trackThickness">@dimen/spacing_xs</item>
     </style>
 
-    <!-- ═══ §DT2 Overline: section labels — 10sp, all-caps, wide tracking ═══ -->
+    <!-- ═══ §DT2 Overline: section labels — 11sp, all-caps, wide tracking ═══ -->
     <style name="TextAppearance.FileCleaner.Overline" parent="TextAppearance.MaterialComponents.Overline">
         <item name="android:textSize">@dimen/text_overline</item>
         <item name="android:fontFamily">sans-serif-medium</item>

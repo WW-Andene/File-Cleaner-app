@@ -174,7 +174,7 @@
     <!-- ═══ Typographic Scale (§DT2) ═══ -->
     <!-- Lower range: compressed for legibility at small mobile sizes -->
     <!-- Upper range: ~Major Third (1.25×): 14 → 16 → 20 → 26 → 32 -->
-    <dimen name="text_overline">10sp</dimen>
+    <dimen name="text_overline">11sp</dimen>
     <dimen name="text_caption">10sp</dimen>
     <dimen name="text_label">11sp</dimen>
     <dimen name="text_body_small">12sp</dimen>

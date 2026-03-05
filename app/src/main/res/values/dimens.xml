@@ -141,6 +141,12 @@
     <dimen name="empty_state_subtitle_max_width">300dp</dimen>
     <dimen name="progress_indicator_size">56dp</dimen>
 
+    <!-- Skeleton shimmer placeholder sizes -->
+    <dimen name="skeleton_title_width">160dp</dimen>
+    <dimen name="skeleton_title_height">14dp</dimen>
+    <dimen name="skeleton_subtitle_width">120dp</dimen>
+    <dimen name="skeleton_subtitle_height">10dp</dimen>
+
     <!-- Animation translation distances -->
     <dimen name="anim_slide_in_y">24dp</dimen>
     <dimen name="anim_slide_out_y">16dp</dimen>

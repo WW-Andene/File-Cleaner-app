@@ -238,12 +238,11 @@
     <LinearLayout
         android:id="@+id/tv_empty"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:orientation="vertical"
         android:gravity="center"
         android:paddingHorizontal="@dimen/spacing_3xl"
-        android:paddingTop="@dimen/spacing_5xl"
-        android:paddingBottom="@dimen/spacing_4xl"
         android:accessibilityLiveRegion="polite"
         android:contentDescription="@string/a11y_empty_state"
         android:visibility="gone">

@@ -141,9 +141,10 @@ class FileAdapter(
 
         holder.name.text = item.name
 
-        // Resize icon/container based on mode + size
+        // Resize icon/container and card padding based on mode + size
         if (!viewMode.usesGridLayout) {
-            val sizePx = (viewMode.iconSizeDp * ctx.resources.displayMetrics.density).toInt()
+            val density = ctx.resources.displayMetrics.density
+            val sizePx = (viewMode.iconSizeDp * density).toInt()
             val container = holder.icon.parent as? View
             if (container != null) {
                 val clp = container.layoutParams
@@ -151,6 +152,16 @@ class FileAdapter(
                 clp.height = sizePx
                 container.layoutParams = clp
             }
+            // Scale card inner padding for compact sizes
+            val padPx = (viewMode.listCardPaddingDp * density).toInt()
+            val innerLayout = (holder.itemView as? ViewGroup)?.getChildAt(0) as? ViewGroup
+            val contentRow = innerLayout?.let {
+                // Skip accent stripe (index 0) -> content row is index 1
+                if (it.childCount > 1) it.getChildAt(1) as? ViewGroup else it.getChildAt(0) as? ViewGroup
+            }
+            contentRow?.setPadding(padPx, padPx, padPx, padPx)
+            // Hide meta line for the most compact size
+            holder.meta?.visibility = if (viewMode.listMetaVisible) View.VISIBLE else View.GONE
         }
 
         // Load thumbnail or category icon

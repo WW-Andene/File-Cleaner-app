@@ -45,6 +45,14 @@ enum class ViewMode(val spanCount: Int) {
         else -> 0  // grid doesn't use icon sizing
     }
 
+    /** Inner padding in dp for list cards; compact sizes get tighter padding. */
+    val listCardPaddingDp: Int get() = when (size) {
+        Size.XXS -> 4; Size.XS -> 8; else -> 12
+    }
+
+    /** Whether to show the meta (subtitle) line in list cards. */
+    val listMetaVisible: Boolean get() = size != Size.XXS
+
     companion object {
         /** All modes that use the grid card layout (for getItemViewType). */
         val GRID_LAYOUT_MODES: Set<ViewMode> = entries.filter { it.usesGridLayout }.toSet()

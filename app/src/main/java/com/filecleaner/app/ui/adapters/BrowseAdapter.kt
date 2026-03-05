@@ -327,9 +327,10 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         val c = colors ?: FileItemUtils.resolveColorsWithSelection(ctx).also { colors = it }
         val isSelected = item.path in selectedPaths
 
-        // Resize icon/container based on mode + size
+        // Resize icon/container and card padding based on mode + size
         if (!viewMode.usesGridLayout) {
-            val sizePx = (viewMode.iconSizeDp * ctx.resources.displayMetrics.density).toInt()
+            val density = ctx.resources.displayMetrics.density
+            val sizePx = (viewMode.iconSizeDp * density).toInt()
             val container = holder.icon.parent as? android.view.View
             if (container != null) {
                 val clp = container.layoutParams
@@ -337,6 +338,15 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
                 clp.height = sizePx
                 container.layoutParams = clp
             }
+            // Scale card inner padding for compact sizes
+            val padPx = (viewMode.listCardPaddingDp * density).toInt()
+            val innerLayout = (holder.itemView as? android.view.ViewGroup)?.getChildAt(0) as? android.view.ViewGroup
+            val contentRow = innerLayout?.let {
+                if (it.childCount > 1) it.getChildAt(1) as? android.view.ViewGroup else it.getChildAt(0) as? android.view.ViewGroup
+            }
+            contentRow?.setPadding(padPx, padPx, padPx, padPx)
+            // Hide meta line for the most compact size
+            holder.meta?.visibility = if (viewMode.listMetaVisible) View.VISIBLE else View.GONE
         }
 
         // Load thumbnail or icon

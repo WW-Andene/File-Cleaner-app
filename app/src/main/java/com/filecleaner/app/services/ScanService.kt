@@ -241,7 +241,7 @@ class ScanService : Service() {
                 getString(R.string.av_title),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Antivirus scan progress"
+                description = "Security Scanner progress"
                 setShowBadge(false)
             }
             val nm = getSystemService(NotificationManager::class.java)

@@ -103,5 +103,6 @@ object CloudProviderPickerDialog {
         btnWebDavConnect.setOnClickListener { launchWebDav() }
 
         dialog.show()
+        dialog.window?.setWindowAnimations(R.style.DialogAnimation)
     }
 }

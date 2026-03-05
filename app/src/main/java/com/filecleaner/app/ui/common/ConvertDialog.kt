@@ -79,6 +79,7 @@ object ConvertDialog {
                 .setMessage(context.getString(R.string.convert_unsupported))
                 .setPositiveButton(android.R.string.ok, null)
                 .show()
+                .also { it.window?.setWindowAnimations(R.style.DialogAnimation) }
             return
         }
 
@@ -165,6 +166,7 @@ object ConvertDialog {
         }
 
         dialog.show()
+        dialog.window?.setWindowAnimations(R.style.DialogAnimation)
     }
 
     private fun showResizeDialog(context: Context, item: FileItem, onResult: (FileConverter.ConvertResult) -> Unit) {
@@ -258,6 +260,7 @@ object ConvertDialog {
             }
             .setNegativeButton(context.getString(R.string.cancel), null)
             .show()
+            .also { it.window?.setWindowAnimations(R.style.DialogAnimation) }
     }
 
     // =========================================================================
@@ -493,6 +496,7 @@ object ConvertDialog {
         }
 
         dialog.show()
+        dialog.window?.setWindowAnimations(R.style.DialogAnimation)
     }
 
     // =========================================================================
@@ -627,6 +631,7 @@ object ConvertDialog {
         }
 
         dialog.show()
+        dialog.window?.setWindowAnimations(R.style.DialogAnimation)
     }
 
     /**
@@ -723,6 +728,7 @@ object ConvertDialog {
             .setView(progressContainer)
             .setCancelable(false)
             .show()
+            .also { it.window?.setWindowAnimations(R.style.DialogAnimation) }
 
         // Use SupervisorJob so the coroutine is scoped to the dialog lifecycle
         val job = kotlinx.coroutines.SupervisorJob()

@@ -5,6 +5,7 @@ import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
@@ -412,12 +413,19 @@ class OptimizeFragment : Fragment() {
                 header.totalCount
             )
 
-            // Selection badge: "5/10 selected"
-            h.count.text = ctx.getString(
+            // Selection badge: "5/10 selected" with scale-in entrance animation
+            val badgeText = ctx.getString(
                 R.string.optimize_category_selection,
                 header.selectedCount,
                 header.totalCount
             )
+            val badgeChanged = h.count.text.toString() != badgeText
+            h.count.text = badgeText
+            if (badgeChanged && header.selectedCount > 0) {
+                h.count.startAnimation(
+                    AnimationUtils.loadAnimation(ctx, R.anim.badge_scale_in)
+                )
+            }
 
             // Checkbox state: checked if all selected, unchecked if none, indeterminate-like
             // behaviour via direct check state

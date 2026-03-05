@@ -10,6 +10,7 @@
     app:strokeWidth="@dimen/stroke_default"
     app:strokeColor="@color/borderSubtle"
     app:rippleColor="@color/colorPrimaryContainer"
+    android:foreground="@drawable/ripple_card"
     android:clickable="true"
     android:focusable="true"
     android:minHeight="@dimen/touch_target_min">
@@ -41,7 +42,7 @@
                 android:id="@+id/tv_filename"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.FileCleaner.BodyMedium"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
                 android:textColor="@color/textPrimary"
                 android:maxLines="1"
                 android:ellipsize="middle" />

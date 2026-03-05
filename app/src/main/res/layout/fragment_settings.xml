@@ -443,6 +443,8 @@
                     style="@style/Widget.FileCleaner.Button.Destructive"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/button_height"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
                     android:text="@string/settings_clear_data"
                     android:textAllCaps="false"
                     app:icon="@drawable/ic_delete"

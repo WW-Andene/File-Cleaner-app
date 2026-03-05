@@ -119,6 +119,7 @@ object FilePreviewDialog {
                 FileOpener.open(context, item.file)
             }
             .show()
+            .also { it.window?.setWindowAnimations(R.style.DialogAnimation) }
     }
 
     private fun showTextPreview(context: Context, item: FileItem) {
@@ -164,5 +165,6 @@ object FilePreviewDialog {
                 FileOpener.open(context, item.file)
             }
             .show()
+            .also { it.window?.setWindowAnimations(R.style.DialogAnimation) }
     }
 }

@@ -378,6 +378,7 @@ object CloudSetupDialog {
             .setNegativeButton(context.getString(R.string.cancel), null)
             .setOnDismissListener { dialogScope.cancel() }
             .show()
+            .also { it.window?.setWindowAnimations(R.style.DialogAnimation) }
 
         // Override positive button to prevent dismiss on validation/connection failure
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {

@@ -115,5 +115,6 @@ object OnboardingDialog {
         }
 
         builder.show()
+            .also { it.window?.setWindowAnimations(R.style.DialogAnimation) }
     }
 }

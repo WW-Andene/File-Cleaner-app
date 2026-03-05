@@ -64,6 +64,12 @@
         <item name="android:windowExitAnimation">@anim/dialog_exit</item>
     </style>
 
+    <!-- Explicit dialog window animation style for programmatic use -->
+    <style name="DialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/dialog_enter</item>
+        <item name="android:windowExitAnimation">@anim/dialog_exit</item>
+    </style>
+
     <!-- SeekBar — themed to match primary color -->
     <style name="Widget.FileCleaner.SeekBar" parent="Widget.AppCompat.SeekBar">
         <item name="android:progressTint">@color/colorPrimary</item>
@@ -99,6 +105,8 @@
         <item name="android:textAllCaps">false</item>
         <item name="android:letterSpacing">0.01</item>
         <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
     </style>
 
     <!-- Outlined Button -->
@@ -107,6 +115,8 @@
         <item name="android:textAllCaps">false</item>
         <item name="android:letterSpacing">0.01</item>
         <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
         <item name="strokeColor">@color/borderDefault</item>
         <item name="strokeWidth">@dimen/stroke_default</item>
     </style>
@@ -274,6 +284,8 @@
         <item name="android:textAllCaps">false</item>
         <item name="android:letterSpacing">0.01</item>
         <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
         <item name="android:textColor">@color/colorPrimary</item>
     </style>
 
@@ -447,6 +459,8 @@
         <item name="android:textAllCaps">false</item>
         <item name="android:letterSpacing">0.01</item>
         <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
         <item name="android:textColor">@color/textSecondary</item>
         <item name="rippleColor">@color/borderDefault</item>
     </style>

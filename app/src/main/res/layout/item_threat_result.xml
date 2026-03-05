@@ -42,7 +42,7 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.FileCleaner.Subtitle"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
                 android:textColor="@color/textPrimary"
                 android:layout_marginStart="@dimen/spacing_md" />
 

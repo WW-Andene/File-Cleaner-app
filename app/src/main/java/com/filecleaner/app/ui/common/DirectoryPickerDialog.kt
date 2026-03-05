@@ -117,6 +117,7 @@ object DirectoryPickerDialog {
                 }
                 .setNegativeButton(context.getString(R.string.cancel), null)
                 .show()
+            currentDialog?.window?.setWindowAnimations(R.style.DialogAnimation)
         }
 
         buildDialog()

@@ -251,6 +251,7 @@ object BatchRenameDialog {
             }
             .setNegativeButton(context.getString(R.string.cancel), null)
             .show()
+            .also { it.window?.setWindowAnimations(R.style.DialogAnimation) }
     }
 
     /** Apply regex with a timeout to prevent ReDoS from catastrophic backtracking */

@@ -84,5 +84,6 @@ object CompressDialog {
             }
             .setNegativeButton(context.getString(R.string.cancel), null)
             .show()
+            .also { it.window?.setWindowAnimations(R.style.DialogAnimation) }
     }
 }

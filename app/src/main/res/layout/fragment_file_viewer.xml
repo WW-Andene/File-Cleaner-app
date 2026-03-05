@@ -367,6 +367,8 @@
                 style="@style/Widget.FileCleaner.Button"
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/button_height"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
                 android:layout_marginTop="@dimen/spacing_lg"
                 android:text="@string/ctx_open"
                 android:textAllCaps="false"

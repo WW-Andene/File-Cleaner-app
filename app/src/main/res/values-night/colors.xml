@@ -97,7 +97,7 @@
 
     <!-- ── Accent on tint text (lifted for dark tint backgrounds) ── -->
     <color name="accentOnTintAnalysis">#F0B060</color>  <!-- accent lifted to L75 for tintAnalysis dark bg (#3D2E1A) — 5.2:1 -->
-    <color name="catImageOnTintCloud">#C4A0FF</color>   <!-- catImage lifted to L72 for tintCloud dark bg (#251A3D) — 5.0:1 -->
+    <color name="catImageOnTintCloud">#D0B0FF</color>   <!-- catImage lifted to L78 for tintCloud dark bg (#251A3D) — 7.82:1 (AAA) -->
 
     <!-- ── Card icon tint backgrounds (unique per feature, §DC2) ──
          Each has a distinct hue at consistent dark-mode lightness -->

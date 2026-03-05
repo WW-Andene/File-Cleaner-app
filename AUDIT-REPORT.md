@@ -132,29 +132,29 @@ Some fragments used `spacing_md` (12dp), others `spacing_lg` (16dp) for Recycler
 - fragment_raccoon_manager.xml:604 — Remaining (catImage on tintCloud needs WCAG verification)
 - item_file_compact.xml:63 — [FIXED] Changed `textTertiary` to `textSecondary` for better contrast
 
-### 3.4 Missing Empty States
+### 3.4 Missing Empty States — [FIXED]
 
-- fragment_dashboard.xml — No empty state placeholder when no scan data
-- fragment_dual_pane.xml — No empty state when panes have no files
+- fragment_dashboard.xml — [FIXED] Added full empty state layout with raccoon logo, title, and subtitle
+- fragment_dual_pane.xml — [FIXED] Added empty states for both left and right panes
 
-### 3.5 Visual Hierarchy Issues
+### 3.5 Visual Hierarchy Issues — [FIXED]
 
-- fragment_dashboard.xml:64-69 — Storage title uses Subtitle instead of Headline (inconsistent with raccoon_manager)
-- fragment_antivirus.xml:194-230 — All threat cards identical styling despite different risk levels
-- dialog_cloud_setup.xml:19-22 — Section header uses Body instead of Label/SectionHeader
-- fragment_raccoon_manager.xml:130 — Chevron alpha=0.7 making it unclear
+- fragment_dashboard.xml:64-69 — [FIXED] Storage title changed from Subtitle to Title textAppearance
+- fragment_antivirus.xml:194-230 — [FIXED] Each threat card now has distinct severity colors (severityCritical/High/Medium/Low) with matching tint backgrounds
+- dialog_cloud_setup.xml:19-22 — [FIXED] Section header changed from Body to Label textAppearance
+- fragment_raccoon_manager.xml:130 — [FIXED] Chevron alpha changed from 0.7 to 0.87 for clarity
 
-### 3.6 Skeleton/Shimmer Mismatches
+### 3.6 Skeleton/Shimmer Mismatches — [FIXED]
 
-- item_skeleton_card.xml:11 — elevation_none (0dp) vs real card elevation_subtle (2dp)
-- item_skeleton_card.xml:41-43 — Fixed 180dp title width, should use layout_weight
-- item_skeleton_card.xml:22-23 — Vertical padding 16dp vs real item 10dp
+- item_skeleton_card.xml:11 — [FIXED] Changed elevation_none to elevation_subtle (2dp) to match real cards
+- item_skeleton_card.xml:41-43 — [FIXED] Replaced fixed 180dp width with layout_weight="0.6" for responsive sizing
+- item_skeleton_card.xml:22-23 — [FIXED] Changed vertical padding from spacing_lg (16dp) to spacing_10 (10dp) to match real items
 
-### 3.7 DiffUtil Optimization Missing
+### 3.7 DiffUtil Optimization Missing — [FIXED]
 
-- CloudFileAdapter.kt — No payload optimization, full rebind on selection
-- PaneAdapter.kt — No payload optimization, full rebind on selection
-- TreeNodeAdapter.kt — Uses manual notifyDataSetChanged()
+- CloudFileAdapter.kt — [FIXED] Added PAYLOAD_SELECTION with getChangePayload() and partial rebind onBindViewHolder
+- PaneAdapter.kt — [FIXED] Added PAYLOAD_SELECTION with getChangePayload() and partial rebind onBindViewHolder
+- TreeNodeAdapter.kt — [FIXED] Migrated from RecyclerView.Adapter to ListAdapter with DiffUtil, PAYLOAD_EXPAND, and submitList()
 
 ### 3.8 Missing Touch Feedback
 

@@ -604,6 +604,7 @@
     <string name="dual_pane_tab_large">Large</string>
     <string name="dual_pane_tab_junk">Junk</string>
     <string name="dual_pane_tab_manager">Manager</string>
+    <string name="dual_pane_choose_mode">Choose mode</string>
 
     <!-- Dual Pane Drag & Drop -->
     <string name="dual_pane_drag_copy_or_move">Copy or Move?</string>

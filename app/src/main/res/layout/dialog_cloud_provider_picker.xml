@@ -111,7 +111,7 @@
                     android:textColor="@color/textTertiary"
                     android:textStyle="italic" />
 
-                <!-- Google Sign-In style button -->
+                <!-- Google Sign-In button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_google_sign_in"
                     android:layout_width="match_parent"
@@ -119,7 +119,7 @@
                     android:layout_marginTop="@dimen/spacing_sm"
                     android:text="@string/cloud_gdrive_sign_in"
                     android:textAllCaps="false"
-                    android:textColor="@color/googleButtonText"
+                    android:textColor="@color/colorPrimary"
                     android:textAppearance="@style/TextAppearance.FileCleaner.BodyMedium"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
@@ -128,11 +128,7 @@
                     app:iconGravity="textStart"
                     app:iconSize="@dimen/icon_inline"
                     app:iconPadding="@dimen/spacing_md"
-                    app:cornerRadius="@dimen/radius_btn"
-                    app:strokeColor="@color/googleButtonBorder"
-                    app:strokeWidth="@dimen/stroke_default"
-                    app:backgroundTint="@color/googleButtonBg"
-                    app:rippleColor="@color/rippleGoogle" />
+                    app:cornerRadius="@dimen/radius_btn" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -225,19 +221,17 @@
                     android:layout_marginTop="@dimen/spacing_sm"
                     android:text="@string/cloud_connect_github"
                     android:textAllCaps="false"
-                    android:textColor="@color/textOnPrimary"
+                    android:textColor="@color/colorPrimary"
                     android:textAppearance="@style/TextAppearance.FileCleaner.BodyMedium"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-                    style="@style/Widget.FileCleaner.Button"
+                    style="@style/Widget.FileCleaner.Button.Outlined"
                     app:icon="@drawable/ic_github"
                     app:iconGravity="textStart"
                     app:iconSize="@dimen/icon_inline"
                     app:iconPadding="@dimen/spacing_md"
                     app:cornerRadius="@dimen/radius_btn"
-                    app:backgroundTint="@color/githubAccent"
-                    app:iconTint="@color/textOnPrimary"
-                    app:rippleColor="@color/rippleGithub" />
+                    app:iconTint="@color/textSecondary" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -320,6 +314,7 @@
                     android:layout_marginTop="@dimen/spacing_md"
                     android:text="@string/cloud_sftp_connect_btn"
                     android:textAllCaps="false"
+                    android:textColor="@color/colorPrimary"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     style="@style/Widget.FileCleaner.Button.Outlined"
@@ -328,11 +323,7 @@
                     app:iconSize="@dimen/icon_inline"
                     app:iconPadding="@dimen/spacing_md"
                     app:cornerRadius="@dimen/radius_btn"
-                    app:strokeColor="@color/sftpAccent"
-                    app:strokeWidth="@dimen/stroke_default"
-                    app:iconTint="@color/sftpAccent"
-                    android:textColor="@color/sftpAccent"
-                    app:rippleColor="@color/rippleSftp" />
+                    app:iconTint="@color/colorPrimary" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -414,6 +405,7 @@
                     android:layout_marginTop="@dimen/spacing_md"
                     android:text="@string/cloud_webdav_connect_btn"
                     android:textAllCaps="false"
+                    android:textColor="@color/colorPrimary"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     style="@style/Widget.FileCleaner.Button.Outlined"
@@ -422,11 +414,7 @@
                     app:iconSize="@dimen/icon_inline"
                     app:iconPadding="@dimen/spacing_md"
                     app:cornerRadius="@dimen/radius_btn"
-                    app:strokeColor="@color/webdavAccent"
-                    app:strokeWidth="@dimen/stroke_default"
-                    app:iconTint="@color/webdavAccent"
-                    android:textColor="@color/webdavAccent"
-                    app:rippleColor="@color/rippleWebdav" />
+                    app:iconTint="@color/colorPrimary" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

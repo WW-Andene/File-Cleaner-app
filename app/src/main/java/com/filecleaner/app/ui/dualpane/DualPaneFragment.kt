@@ -10,8 +10,11 @@ import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.util.TypedValue
+import android.view.Gravity
 import android.widget.ImageButton
-import android.widget.PopupMenu
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -34,6 +37,7 @@ import com.filecleaner.app.utils.FileOpener
 import com.filecleaner.app.utils.FileScanner
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.MainViewModel
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.filecleaner.app.utils.styleAsError
 import com.google.android.material.snackbar.Snackbar
@@ -361,19 +365,82 @@ class DualPaneFragment : Fragment() {
     }
 
     private fun showModePopup(anchor: View, pane: Pane) {
-        val popup = PopupMenu(requireContext(), anchor)
-        PaneContentMode.entries.forEachIndexed { index, mode ->
-            popup.menu.add(0, index, index, getString(mode.labelRes))
+        val ctx = requireContext()
+        val currentMode = if (pane == Pane.LEFT) leftMode else rightMode
+        val dialog = BottomSheetDialog(ctx, R.style.Theme_FileCleaner_BottomSheet)
+        val contentView = View.inflate(ctx, R.layout.dialog_file_context, null)
+
+        // Repurpose the file header as a title; hide the icon and info line
+        contentView.findViewById<View>(R.id.iv_file_icon).visibility = View.GONE
+        contentView.findViewById<TextView>(R.id.tv_file_name).apply {
+            text = getString(R.string.dual_pane_choose_mode)
         }
-        popup.setOnMenuItemClickListener { item ->
-            val selectedMode = PaneContentMode.entries[item.itemId]
-            if (pane == Pane.LEFT) leftMode = selectedMode else rightMode = selectedMode
-            activePane = pane
-            updateModeButtonText(pane)
-            applyContentMode(pane)
-            true
+        contentView.findViewById<View>(R.id.tv_file_info).visibility = View.GONE
+
+        val container = contentView.findViewById<LinearLayout>(R.id.menu_container)
+        val res = ctx.resources
+        val minTouchTarget = res.getDimensionPixelSize(R.dimen.touch_target_min)
+        val buttonHeight = res.getDimensionPixelSize(R.dimen.button_height)
+        val effectiveHeight = maxOf(buttonHeight, minTouchTarget)
+        val spacingXl = res.getDimensionPixelSize(R.dimen.spacing_xl)
+        val spacingLg = res.getDimensionPixelSize(R.dimen.spacing_lg)
+        val iconNav = res.getDimensionPixelSize(R.dimen.icon_nav)
+        val bodySize = res.getDimension(R.dimen.text_body)
+
+        PaneContentMode.entries.forEach { mode ->
+            val isActive = mode == currentMode
+            val row = LinearLayout(ctx).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, effectiveHeight
+                )
+                setPadding(spacingXl, 0, spacingXl, 0)
+                if (isActive) {
+                    setBackgroundColor(ContextCompat.getColor(ctx, R.color.selectedBackground))
+                } else {
+                    val outValue = TypedValue()
+                    ctx.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
+                    setBackgroundResource(outValue.resourceId)
+                }
+                isClickable = true
+                isFocusable = true
+                contentDescription = getString(mode.labelRes)
+                setOnClickListener {
+                    dialog.dismiss()
+                    if (pane == Pane.LEFT) leftMode = mode else rightMode = mode
+                    activePane = pane
+                    updateModeButtonText(pane)
+                    applyContentMode(pane)
+                }
+            }
+
+            val icon = ImageView(ctx).apply {
+                layoutParams = LinearLayout.LayoutParams(iconNav, iconNav)
+                setImageResource(mode.iconRes)
+                setColorFilter(ContextCompat.getColor(ctx,
+                    if (isActive) R.color.colorPrimary else R.color.textSecondary))
+                scaleType = ImageView.ScaleType.CENTER_INSIDE
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            }
+            row.addView(icon)
+
+            val text = TextView(ctx).apply {
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                    marginStart = spacingLg
+                }
+                this.text = getString(mode.labelRes)
+                setTextColor(ContextCompat.getColor(ctx,
+                    if (isActive) R.color.colorPrimary else R.color.textPrimary))
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, bodySize)
+            }
+            row.addView(text)
+
+            container.addView(row)
         }
-        popup.show()
+
+        dialog.setContentView(contentView)
+        dialog.show()
     }
 
     /** Update the mode button text to reflect the current mode. */

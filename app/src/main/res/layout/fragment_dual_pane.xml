@@ -213,24 +213,13 @@
                 android:contentDescription="@string/a11y_file_count" />
         </LinearLayout>
 
-        <!-- Divider handle -->
-        <FrameLayout
+        <!-- Divider -->
+        <View
             android:id="@+id/divider_handle"
-            android:layout_width="@dimen/spacing_md"
+            android:layout_width="@dimen/divider_width"
             android:layout_height="match_parent"
             android:background="@color/surfaceDim"
-            android:contentDescription="@string/a11y_divider_resize"
-            android:focusable="true"
-            android:importantForAccessibility="yes">
-
-            <!-- Visual grip dots -->
-            <View
-                android:layout_width="@dimen/divider_thick"
-                android:layout_height="@dimen/icon_file_list_default"
-                android:layout_gravity="center"
-                android:background="@color/borderDefault"
-                android:importantForAccessibility="no" />
-        </FrameLayout>
+            android:importantForAccessibility="no" />
 
         <!-- Right pane -->
         <LinearLayout

@@ -84,7 +84,7 @@
     <dimen name="icon_audio_play">56dp</dimen>
     <dimen name="grid_thumbnail_min_height">120dp</dimen>
     <dimen name="port_field_width">120dp</dimen>
-    <dimen name="dual_pane_tab_height">32dp</dimen>
+    <dimen name="dual_pane_tab_height">48dp</dimen>
     <dimen name="icon_btn_size_sm">14dp</dimen>
     <dimen name="dialog_max_height">400dp</dimen>
     <dimen name="track_corner_radius">2dp</dimen>

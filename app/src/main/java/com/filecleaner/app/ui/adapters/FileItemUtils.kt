@@ -125,7 +125,7 @@ object FileItemUtils {
      * For images and videos: loads actual file thumbnail via Glide.
      * For other types: sets a tinted vector icon.
      */
-    fun loadThumbnail(imageView: ImageView, item: FileItem, isGrid: Boolean) {
+    fun loadThumbnail(imageView: ImageView, item: FileItem, showRichThumbnails: Boolean) {
         val ctx = imageView.context
         val file = File(item.path)
         val cornerRadius = ctx.resources.getDimensionPixelSize(R.dimen.radius_thumbnail)
@@ -149,7 +149,7 @@ object FileItemUtils {
         }
 
         // Load audio album art (Glide can extract embedded cover art from audio files)
-        if (item.category == FileCategory.AUDIO && file.exists() && isGrid) {
+        if (item.category == FileCategory.AUDIO && file.exists() && showRichThumbnails) {
             imageView.clearColorFilter()
             imageView.setPadding(0, 0, 0, 0)
             imageView.scaleType = ImageView.ScaleType.CENTER_CROP
@@ -163,7 +163,7 @@ object FileItemUtils {
         }
 
         // Load APK icon asynchronously via Glide (avoids blocking UI thread with getPackageArchiveInfo)
-        if (item.category == FileCategory.APK && file.exists() && isGrid) {
+        if (item.category == FileCategory.APK && file.exists() && showRichThumbnails) {
             imageView.clearColorFilter()
             imageView.setPadding(0, 0, 0, 0)
             imageView.scaleType = ImageView.ScaleType.CENTER_INSIDE

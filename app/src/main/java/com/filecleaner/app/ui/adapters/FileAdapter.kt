@@ -53,7 +53,7 @@ class FileAdapter(
         }
     }
 
-    var viewMode: ViewMode = ViewMode.LIST
+    var viewMode: ViewMode = ViewMode.LIST_MD
         set(value) {
             if (field != value) {
                 field = value
@@ -82,8 +82,8 @@ class FileAdapter(
     }
 
     override fun getItemViewType(position: Int): Int = when {
-        viewMode == ViewMode.LIST_COMPACT -> TYPE_COMPACT
-        viewMode in ViewMode.GRID_MODES -> TYPE_GRID
+        viewMode.style == ViewMode.Style.COMPACT -> TYPE_COMPACT
+        viewMode.usesGridLayout -> TYPE_GRID
         else -> TYPE_LIST
     }
 
@@ -144,24 +144,33 @@ class FileAdapter(
 
         holder.name.text = item.name
 
-        // Reset icon size for recycled views; enlarge only for thumbnail mode
-        if (viewMode == ViewMode.LIST_WITH_THUMBNAILS) {
-            val thumbSize = ctx.resources.getDimensionPixelSize(R.dimen.icon_file_list_large)
-            val lp = holder.icon.layoutParams
-            lp.width = thumbSize
-            lp.height = thumbSize
-            holder.icon.layoutParams = lp
-        } else {
-            val defaultSize = ctx.resources.getDimensionPixelSize(R.dimen.icon_file_list_default)
-            val lp = holder.icon.layoutParams
-            lp.width = defaultSize
-            lp.height = defaultSize
-            holder.icon.layoutParams = lp
+        // Resize icon/container based on mode + size
+        if (!viewMode.usesGridLayout) {
+            val sizePx = (viewMode.iconSizeDp * ctx.resources.displayMetrics.density).toInt()
+            if (viewMode.style == ViewMode.Style.COMPACT) {
+                // Compact: resize the ImageView directly (no container card)
+                val lp = holder.icon.layoutParams
+                lp.width = sizePx
+                lp.height = sizePx
+                holder.icon.layoutParams = lp
+            } else {
+                // List / Thumbnail: resize the container MaterialCardView
+                val container = holder.icon.parent as? View
+                if (container != null) {
+                    val clp = container.layoutParams
+                    clp.width = sizePx
+                    clp.height = sizePx
+                    container.layoutParams = clp
+                }
+            }
+        } else if (viewMode.style == ViewMode.Style.GALLERY) {
+            // Gallery: set thumbnail min height based on size
+            val minH = (viewMode.galleryMinHeightDp * ctx.resources.displayMetrics.density).toInt()
+            holder.icon.minimumHeight = minH
         }
 
-        // Load thumbnail for images/videos, category icon for everything else
-        val isGrid = viewMode in ViewMode.GRID_MODES
-        FileItemUtils.loadThumbnail(holder.icon, item, isGrid)
+        // Load thumbnail or category icon
+        FileItemUtils.loadThumbnail(holder.icon, item, viewMode.showsRichThumbnails)
 
         // Accent stripe (color-coded indicator)
         bindAccentStripe(holder, item)

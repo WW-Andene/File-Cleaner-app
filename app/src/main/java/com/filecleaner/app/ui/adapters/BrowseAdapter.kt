@@ -39,7 +39,7 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         }
     }
 
-    var viewMode: ViewMode = ViewMode.LIST
+    var viewMode: ViewMode = ViewMode.LIST_MD
         set(value) {
             if (field != value) {
                 field = value
@@ -219,8 +219,8 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
     override fun getItemViewType(position: Int): Int = when (getItem(position)) {
         is Item.Header -> TYPE_HEADER
         is Item.File -> when {
-            viewMode == ViewMode.LIST_COMPACT -> TYPE_FILE_COMPACT
-            viewMode in ViewMode.GRID_MODES -> TYPE_FILE_GRID
+            viewMode.style == ViewMode.Style.COMPACT -> TYPE_FILE_COMPACT
+            viewMode.usesGridLayout -> TYPE_FILE_GRID
             else -> TYPE_FILE
         }
     }
@@ -330,22 +330,30 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         val c = colors ?: FileItemUtils.resolveColorsWithSelection(ctx).also { colors = it }
         val isSelected = item.path in selectedPaths
 
-        // Reset icon size for recycled views; enlarge only for thumbnail mode
-        val lp = holder.icon.layoutParams
-        if (viewMode == ViewMode.LIST_WITH_THUMBNAILS) {
-            val px72 = holder.itemView.resources.getDimensionPixelSize(R.dimen.icon_file_list_large)
-            lp.width = px72
-            lp.height = px72
-        } else {
-            val px40 = holder.itemView.resources.getDimensionPixelSize(R.dimen.icon_file_list_default)
-            lp.width = px40
-            lp.height = px40
+        // Resize icon/container based on mode + size
+        if (!viewMode.usesGridLayout) {
+            val sizePx = (viewMode.iconSizeDp * ctx.resources.displayMetrics.density).toInt()
+            if (viewMode.style == ViewMode.Style.COMPACT) {
+                val lp = holder.icon.layoutParams
+                lp.width = sizePx
+                lp.height = sizePx
+                holder.icon.layoutParams = lp
+            } else {
+                val container = holder.icon.parent as? android.view.View
+                if (container != null) {
+                    val clp = container.layoutParams
+                    clp.width = sizePx
+                    clp.height = sizePx
+                    container.layoutParams = clp
+                }
+            }
+        } else if (viewMode.style == ViewMode.Style.GALLERY) {
+            val minH = (viewMode.galleryMinHeightDp * ctx.resources.displayMetrics.density).toInt()
+            holder.icon.minimumHeight = minH
         }
-        holder.icon.layoutParams = lp
 
         // Load thumbnail or icon
-        val isGrid = viewMode in ViewMode.GRID_MODES
-        FileItemUtils.loadThumbnail(holder.icon, item, isGrid)
+        FileItemUtils.loadThumbnail(holder.icon, item, viewMode.showsRichThumbnails)
 
         // Card colors: selection highlight or default
         val card = holder.itemView as? com.google.android.material.card.MaterialCardView

@@ -682,7 +682,7 @@ class ArborescenceView @JvmOverloads constructor(
         val layout = layouts[path] ?: return
         val cw = width.toFloat()
         val ch = height.toFloat()
-        val targetScale = min(cw / (layout.w + 40f), ch / (layout.h + 40f)).coerceIn(MIN_SCALE, MAX_SCALE)
+        val targetScale = min(cw / (layout.w + treeZoomPadding), ch / (layout.h + treeZoomPadding)).coerceIn(MIN_SCALE, MAX_SCALE)
         scaleFactor = targetScale
         viewMatrix.reset()
         viewMatrix.postScale(scaleFactor, scaleFactor)
@@ -871,18 +871,18 @@ class ArborescenceView @JvmOverloads constructor(
                 val fileRowTop = layout.y + headerHeight + i * fileLineHeight
                 highlightFileRowTop = fileRowTop
                 highlightRect.set(
-                    layout.x + 2f, fileRowTop,
-                    layout.x + layout.w - 2f, fileRowTop + fileLineHeight
+                    layout.x + treeHighlightInset, fileRowTop,
+                    layout.x + layout.w - treeHighlightInset, fileRowTop + fileLineHeight
                 )
 
                 // Strong fill + border on the file row
                 highlightFillPaint.color = colorAccent
                 highlightFillPaint.setAlpha((180 * highlightAlpha).toInt())
                 val savedStrokeWidth = highlightPaint.strokeWidth
-                highlightPaint.strokeWidth = 3f
+                highlightPaint.strokeWidth = treeHighlightStroke
                 highlightPaint.setAlpha((255 * highlightAlpha).toInt())
-                canvas.drawRoundRect(highlightRect, 6f, 6f, highlightFillPaint)
-                canvas.drawRoundRect(highlightRect, 6f, 6f, highlightPaint)
+                canvas.drawRoundRect(highlightRect, treeHighlightCorner, treeHighlightCorner, highlightFillPaint)
+                canvas.drawRoundRect(highlightRect, treeHighlightCorner, treeHighlightCorner, highlightPaint)
                 highlightPaint.strokeWidth = savedStrokeWidth
             }
         }
@@ -929,9 +929,9 @@ class ArborescenceView @JvmOverloads constructor(
             highlightArrowPaint.alpha = (255 * highlightAlpha).toInt()
             tempPath.rewind()
             val cy = highlightFileRowTop + fileLineHeight / 2f
-            tempPath.moveTo(layout.x - 20f, cy - 12f)
-            tempPath.lineTo(layout.x - 4f, cy)
-            tempPath.lineTo(layout.x - 20f, cy + 12f)
+            tempPath.moveTo(layout.x - treeArrowLength, cy - treeArrowHalfHeight)
+            tempPath.lineTo(layout.x - treeArrowTipInset, cy)
+            tempPath.lineTo(layout.x - treeArrowLength, cy + treeArrowHalfHeight)
             tempPath.close()
             canvas.drawPath(tempPath, highlightArrowPaint)
         }
@@ -1083,7 +1083,7 @@ class ArborescenceView @JvmOverloads constructor(
         }
 
         // Use a scale that shows the block comfortably — zoomed out enough to see context
-        val targetScale = min(cw / (layout.w + 200f), ch / (layout.h + 200f))
+        val targetScale = min(cw / (layout.w + treeZoomFilePadding), ch / (layout.h + treeZoomFilePadding))
             .coerceIn(0.5f, 1.2f)
         scaleFactor = targetScale
         viewMatrix.reset()

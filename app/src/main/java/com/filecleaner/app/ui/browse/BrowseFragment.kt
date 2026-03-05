@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.filecleaner.app.MainActivity
@@ -56,6 +57,7 @@ class BrowseFragment : Fragment() {
     private var searchDebounceJob: Job? = null
     private var shouldScrollToTop = false
     private var dividerDecoration: FileListDividerDecoration? = null
+    private lateinit var selectionBackCallback: OnBackPressedCallback
 
     // File manager needs broad storage access; MANAGE_EXTERNAL_STORAGE grants it
     @Suppress("DEPRECATION")
@@ -106,8 +108,17 @@ class BrowseFragment : Fragment() {
             adapter.toggleFolder(folderPath)
             updateExpandCollapseButton()
         }
+        // Back press exits selection mode before navigating back
+        selectionBackCallback = object : OnBackPressedCallback(false) {
+            override fun handleOnBackPressed() {
+                adapter.deselectAll()
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, selectionBackCallback)
+
         // Selection mode callbacks
         adapter.onSelectionChanged = { selected ->
+            selectionBackCallback.isEnabled = selected.isNotEmpty()
             updateSelectionBar(selected)
         }
 

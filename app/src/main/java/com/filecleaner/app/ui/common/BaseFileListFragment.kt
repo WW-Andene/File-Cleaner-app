@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
@@ -67,6 +68,7 @@ abstract class BaseFileListFragment : Fragment() {
     private var rawItems = listOf<FileItem>()
     private var searchDebounceJob: Job? = null
     private var dividerDecoration: FileListDividerDecoration? = null
+    private lateinit var selectionBackCallback: OnBackPressedCallback
 
     /** Screen title shown in the header. */
     abstract val screenTitle: String
@@ -129,8 +131,17 @@ abstract class BaseFileListFragment : Fragment() {
             }
         }
 
+        // Back press exits selection mode before navigating back
+        selectionBackCallback = object : OnBackPressedCallback(false) {
+            override fun handleOnBackPressed() {
+                adapter.deselectAll()
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, selectionBackCallback)
+
         adapter = FileAdapter(selectable = true) { sel ->
             selected = sel
+            selectionBackCallback.isEnabled = sel.isNotEmpty()
             binding.btnAction.isEnabled = sel.isNotEmpty()
             binding.btnAction.text = actionLabel(sel.size, UndoHelper.totalSize(sel))
             binding.btnBatchRename.visibility = if (sel.size >= 2) View.VISIBLE else View.GONE

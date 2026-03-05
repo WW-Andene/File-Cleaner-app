@@ -389,6 +389,8 @@
         <item name="android:colorBackground">@color/surfaceElevated</item>
         <!-- Disable Material elevation overlay to prevent neutral grey wash in dark mode -->
         <item name="elevationOverlayEnabled">false</item>
+        <!-- Branded background with border stroke matching app card design -->
+        <item name="android:windowBackground">@drawable/bg_dialog</item>
         <!-- Enter/exit animations using the app's motion vocabulary -->
         <item name="android:windowAnimationStyle">@style/Animation.FileCleaner.Dialog</item>
     </style>

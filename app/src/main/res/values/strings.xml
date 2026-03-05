@@ -300,12 +300,12 @@
     <string name="viewer_video_error">Ricky can\u0027t play this video \u2014 it may be corrupted or in an unsupported format.</string>
     <string name="viewer_archive_error">Ricky can\u0027t read this archive: %s</string>
 
-    <string name="ctx_star">Star</string>
-    <string name="ctx_unstar">Unstar</string>
+    <string name="ctx_star">Add to Favorites</string>
+    <string name="ctx_unstar">Remove from Favorites</string>
     <string name="ctx_protect">Exclude from cleanup</string>
     <string name="ctx_unprotect">Allow cleanup</string>
-    <string name="favorite_added">%s starred</string>
-    <string name="favorite_removed">%s unstarred</string>
+    <string name="favorite_added">%s added to Favorites</string>
+    <string name="favorite_removed">%s removed from Favorites</string>
     <string name="protected_added">%s protected from cleanup</string>
     <string name="protected_removed">%s cleanup protection removed</string>
     <!-- File operation feedback (used by ViewModel → Snackbar) -->

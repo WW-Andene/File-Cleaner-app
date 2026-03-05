@@ -882,8 +882,8 @@
 |---|---|---|---|---|---|
 | 402 | dimens.xml | touch_target_min (48dp) | PASS — Named `touch_target_min` token at 48dp; used across layouts for interactive elements | §H3 | — |
 | 403 | dimens.xml | button_height_sm (36dp) | Known §DCO1 #97 — 36dp below 48dp minimum; used in 12 interactive contexts (chips, small buttons, dual-pane action buttons). Research completed; awaiting user decision on fix approach | §H3 | MEDIUM |
-| 404 | dimens.xml | icon_button_size_sm (36dp) | Same 36dp below 48dp minimum; used for small icon buttons. Related to #97 | §H3 | MEDIUM |
-| 405 | dimens.xml | dual_pane_tab_height (32dp) | 32dp — below 48dp touch minimum; used for dual-pane tab selection buttons | §H3 | MEDIUM |
+| 404 | themes.xml:470-474 | icon_button_size_sm (36dp) | Style `Widget.FileCleaner.Button.Icon.Small` defines minWidth/minHeight at 36dp — below 48dp. **However, this style is defined but currently unused in any layout file.** No layout references `icon_button_size_sm` directly or applies `Button.Icon.Small`. Dormant token debt, not an active touch target violation | §H3 | LOW |
+| 405 | fragment_dual_pane.xml:78,253 | dual_pane_tab_height (32dp) | Two `MaterialButton` pane mode selectors (`btn_mode_left`, `btn_mode_right`) at 32dp — 16dp below 48dp minimum. Both are interactive tappable tab buttons with `Button.Text` style | §H3 | MEDIUM |
 | 406 | layouts (all) | Touch feedback (ripple) | PASS — 38 ripple background instances across 14 files; all tappable elements provide visual touch feedback | §H3 | — |
 | 407 | AndroidManifest.xml | windowSoftInputMode | PASS — `adjustResize` set on MainActivity — content resizes when keyboard appears; inputs stay visible | §H3 | — |
 | 408 | AndroidManifest.xml | No screenOrientation lock | No `android:screenOrientation` declared — app supports rotation. However, no landscape layouts exist (§E2 #327), so landscape mode may produce stretched single-column layout | §H3 | LOW |
@@ -965,14 +965,14 @@
 | §G3 Keyboard & Switch Access | 1 | 1 | 0 | 0 | 2 |
 | §G4 Reduced Motion | 2 | 0 | 0 | 0 | 2 |
 | §G5 Android A11y | 4 | 0 | 0 | 0 | 4 |
-| §H3 Mobile & Touch | 3 | 1 | 3 | 0 | 7 |
+| §H3 Mobile & Touch | 3 | 2 | 2 | 0 | 7 |
 | §L3 Design System Standard. | 2 | 4 | 0 | 0 | 6 |
 | §L4 Copy & Content Standard. | 2 | 0 | 0 | 0 | 2 |
 | §L5 Interaction & Experience Polish | 2 | 1 | 0 | 0 | 3 |
 | §D5 Mobile Performance | 7 | 2 | 0 | 0 | 9 |
-| **TOTALS** | **93** | **24** | **5** | **0** | **122** |
+| **TOTALS** | **93** | **25** | **4** | **0** | **122** |
 
-### All open issues (24 LOW + 5 MEDIUM)
+### All open issues (25 LOW + 4 MEDIUM)
 
 | # | Section | Severity | Details |
 |---|---|---|---|
@@ -994,8 +994,8 @@
 | 392 | §G2 | LOW | No screenReaderFocusable usage |
 | 394 | §G3 | LOW | No OnBackPressedCallback for custom back handling |
 | 403 | §H3 | **MEDIUM** | button_height_sm 36dp below 48dp (known #97) |
-| 404 | §H3 | **MEDIUM** | icon_button_size_sm 36dp below 48dp |
-| 405 | §H3 | **MEDIUM** | dual_pane_tab_height 32dp below 48dp |
+| 404 | §H3 | ~~MEDIUM~~ → **LOW** | icon_button_size_sm 36dp — style defined but unused in any layout (dormant) |
+| 405 | §H3 | **MEDIUM** | dual_pane_tab_height 32dp — 2 interactive MaterialButtons in fragment_dual_pane.xml |
 | 408 | §H3 | LOW | No landscape layouts but rotation supported |
 | 410 | §L3 | LOW | 11 hardcoded maxWidth values across 6 files |
 | 411 | §L3 | LOW | 2 off-scale spacing tokens |
@@ -1015,4 +1015,4 @@
 
 ---
 
-**Phase 2 manifest complete. 122 findings: 93 PASS, 24 LOW, 5 MEDIUM, 0 REVIEW. No code changes made. Awaiting approval before any fixes.**
+**Phase 2 manifest complete. 122 findings: 93 PASS, 25 LOW, 4 MEDIUM, 0 REVIEW. No code changes made. Awaiting approval before any fixes.**

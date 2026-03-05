@@ -232,6 +232,7 @@
     <string name="no_subdirectories">No sub-folders</string>
     <string name="ctx_compress">Compress</string>
     <string name="ctx_extract">Extract</string>
+    <string name="ctx_select">Select</string>
     <string name="ctx_open_in_tree">Show in Tree</string>
     <string name="ctx_browse_folder">Browse folder</string>
     <string name="ctx_convert">Convert to\u2026</string>

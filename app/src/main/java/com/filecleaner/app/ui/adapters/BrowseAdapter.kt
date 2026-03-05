@@ -397,11 +397,7 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
                 val current = getItem(pos)
                 if (current is Item.File) {
                     v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-                    if (!selectionMode) {
-                        enterSelectionMode(current.fileItem.path)
-                    } else {
-                        onItemLongClick?.invoke(current.fileItem, v)
-                    }
+                    onItemLongClick?.invoke(current.fileItem, v)
                 }
             }
             true

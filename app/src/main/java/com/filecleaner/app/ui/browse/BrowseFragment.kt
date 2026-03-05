@@ -709,6 +709,7 @@ class BrowseFragment : Fragment() {
     private val contextMenuCallback by lazy {
         FileContextMenu.defaultCallback(vm,
             onMoveTo = { item -> showDirectoryPicker(item) },
+            onSelect = { item -> adapter.enterSelectionMode(item.path) },
             onRefresh = ::refresh)
     }
 

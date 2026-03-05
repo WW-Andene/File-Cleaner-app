@@ -43,6 +43,7 @@ object FileContextMenu {
         fun onCopy(item: FileItem) {}
         fun onPaste(targetDirPath: String) {}
         fun onMoveTo(item: FileItem) {}
+        fun onSelect(item: FileItem) {}
         fun onRefresh()
     }
 
@@ -54,6 +55,7 @@ object FileContextMenu {
         vm: MainViewModel,
         onOpenInTree: (FileItem) -> Unit = { vm.requestTreeHighlight(it.path) },
         onMoveTo: (FileItem) -> Unit = {},
+        onSelect: (FileItem) -> Unit = {},
         onRefresh: () -> Unit = {}
     ): Callback = object : Callback {
         override fun onDelete(item: FileItem) { vm.deleteFiles(listOf(item)) }
@@ -77,6 +79,7 @@ object FileContextMenu {
             }
         }
         override fun onMoveTo(item: FileItem) { onMoveTo(item) }
+        override fun onSelect(item: FileItem) { onSelect(item) }
         override fun onRefresh() { onRefresh() }
     }
 
@@ -309,6 +312,9 @@ object FileContextMenu {
 
         addDivider()
 
+        addItem(context.getString(R.string.ctx_select), R.drawable.ic_select_all) {
+            callback.onSelect(item)
+        }
         addItem(context.getString(R.string.ctx_open_in_tree), R.drawable.ic_folder) {
             callback.onOpenInTree(item)
         }

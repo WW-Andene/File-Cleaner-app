@@ -3019,6 +3019,247 @@ These are nice-to-haves, not requirements for a utility app.
 | LOW | 11 | 6 | 5 | 5 | 6 | 3 | 3 | 39 |
 | **Total** | **18** | **8** | **12** | **8** | **6** | **4** | **5** | **61** |
 
-**Next: Phase 8 — Accessibility (Category G + §L7)**
+---
 
-Awaiting confirmation to proceed with Phase 8, or to fix findings from Phase 1-7.
+## PHASE 8 — ACCESSIBILITY (Category G + §L7)
+
+### Step 8.1 — §G1: WCAG 2.1 AA Compliance
+
+#### Contrast Ratios
+
+Computed WCAG 2.1 contrast ratios for all primary text-on-background pairs:
+
+**Light Mode:**
+
+| Pair | Ratio | AA Normal | AA Large |
+|------|------:|:---------:|:--------:|
+| textPrimary (#161816) on surfaceColor (#FAF8F4) | 16.83 | PASS | PASS |
+| textSecondary (#4B524E) on surfaceColor (#FAF8F4) | 7.57 | PASS | PASS |
+| textTertiary (#616966) on surfaceColor (#FAF8F4) | 5.32 | PASS | PASS |
+| textTertiary (#616966) on surfaceDim (#E6E2DA) | 4.37 | **FAIL** | PASS |
+| colorPrimary (#247A58) on surfaceColor (#FAF8F4) | 4.95 | PASS | PASS |
+| colorAccent (#E8861F) on surfaceColor (#FAF8F4) | 2.52 | **FAIL** | **FAIL** |
+| colorWarning (#996D12) on surfaceColor (#FAF8F4) | 4.35 | **FAIL** | PASS |
+| textOnPrimary (#FFFFFF) on colorPrimary (#247A58) | 5.25 | PASS | PASS |
+| scanBarText (#165740) on scanBarBg (#E2F2E9) | 7.33 | PASS | PASS |
+| accentOnTintAnalysis (#A25D15) on tintAnalysis (#FFF0DA) | 4.55 | PASS | PASS |
+
+**Dark Mode:**
+
+| Pair | Ratio | AA Normal | AA Large |
+|------|------:|:---------:|:--------:|
+| textPrimary (#ECE9E4) on surfaceColor (#141A17) | 14.58 | PASS | PASS |
+| textSecondary (#A2A8A5) on surfaceColor (#141A17) | 7.30 | PASS | PASS |
+| textTertiary (#7E8682) on surfaceColor (#141A17) | 4.72 | PASS | PASS |
+| textTertiary (#7E8682) on surfaceElevated (#1C2420) | 4.25 | **FAIL** | PASS |
+| textTertiary (#7E8682) on surfaceContainerHigh (#1E2522) | 4.18 | **FAIL** | PASS |
+| colorPrimary (#5ECE9E) on surfaceColor (#141A17) | 9.08 | PASS | PASS |
+| colorAccent (#FFB06A) on surfaceColor (#141A17) | 9.81 | PASS | PASS |
+
+**Positive:** The app pre-computes WCAG-safe icon tints for colored backgrounds (e.g., `accentOnTintAnalysis` at 4.55:1 — see `colors.xml:98-100`). Core text hierarchy passes AA on default surfaces in both modes. `textDisabled` (1.96:1) is exempt per WCAG 1.4.3 as disabled state.
+
+> **F-062** | Severity: **MEDIUM** | Confidence: **HIGH**
+> **Title:** textTertiary fails WCAG AA normal text on elevated surfaces
+> **Location:** `res/values/colors.xml:66`, `res/values-night/colors.xml:66`
+> **Details:** `textTertiary` on `surfaceDim` (light: 4.37:1) and on `surfaceElevated`/`surfaceContainerHigh` (dark: 4.25/4.18:1) falls below the 4.5:1 AA threshold for normal-size text. Passes large text (3:1). Any tertiary body text rendered on these backgrounds fails compliance.
+> **Suggestion:** Darken light-mode textTertiary by ~5% (e.g., #566059) or lighten dark-mode variant (e.g., #8A928E) to reach 4.5:1 on all surface levels.
+
+> **F-063** | Severity: **LOW** | Confidence: **HIGH**
+> **Title:** colorAccent used as standalone text color lacks AA contrast
+> **Location:** `res/values/colors.xml:19` (#E8861F)
+> **Details:** Raw `colorAccent` (#E8861F) on `surfaceColor` yields only 2.52:1 — far below AA. The app mitigates this with WCAG-safe variants for specific contexts (`accentOnTintAnalysis` at 4.55:1), but any direct use of `colorAccent` as text on light surfaces fails. In dark mode, `colorAccent` (#FFB06A) passes at 9.81:1.
+> **Suggestion:** Audit all uses of `colorAccent` as text color in light mode. Replace with a WCAG-safe darkened variant or ensure only large/bold text uses the raw accent.
+
+> **F-064** | Severity: **LOW** | Confidence: **HIGH**
+> **Title:** colorWarning as text on light surfaces narrowly fails AA
+> **Location:** `res/values/colors.xml:32` (#996D12)
+> **Details:** `colorWarning` on `surfaceColor` yields 4.35:1 — just below the 4.5:1 threshold. Used in warning labels/text. Passes AA large text (3:1).
+> **Suggestion:** Darken to approximately #8D6410 to reach 4.5:1.
+
+#### Touch Targets
+
+All interactive elements audited for 48dp minimum:
+
+- **Buttons:** All use `@dimen/button_height` (48dp) — `themes.xml` Widget.FileCleaner.Button style enforces `minHeight="@dimen/button_height"` ✅
+- **RadioButtons/Switches:** Settings uses explicit 48dp minHeight (`fragment_settings.xml:66-96`) ✅
+- **Bottom nav items:** Material BottomNavigationView enforces 48dp minimum internally ✅
+- **Checkboxes in file items:** `item_file.xml` uses `@dimen/icon_touch` (48dp) for checkbox width/height ✅
+- **Filter chips:** Material Chip component enforces 48dp height internally ✅
+- **Search EditText:** `fragment_browse.xml:63` uses `@dimen/button_height` (48dp) ✅
+- **Spinner dropdown items:** `item_spinner_dropdown.xml:6` uses `minHeight="@dimen/button_height"` (48dp) ✅
+- **Context menu items:** `dialog_file_context.xml:57-71` uses `@dimen/button_height` ✅
+
+**Positive:** Universal 48dp touch target compliance across all interactive elements.
+
+#### Semantic Structure
+
+- **accessibilityHeading:** 38+ instances across all major layouts — section headers, card titles, dialog titles all properly marked ✅
+- **labelFor:** 6 instances in `fragment_settings.xml` — all SeekBar and Switch inputs properly labeled by their header TextViews ✅
+- **importantForAccessibility:** 90+ instances — decorative icons consistently marked `"no"`, informational views marked `"yes"` ✅
+- **accessibilityLiveRegion:** 70+ instances — dynamic counters, progress text, status updates all use `"polite"` (non-critical) or `"assertive"` (loading/scan states) ✅
+
+### Step 8.2 — §G2: Screen Reader Trace
+
+Simulated TalkBack walkthrough of primary flow: Launch → Hub → Browse → Select → Delete.
+
+#### Reading Order Verification
+
+1. **activity_main.xml:** Raccoon logo (`importantForAccessibility="no"`) → scan status bar (live region, announces progress) → NavHostFragment → bottom nav ✅
+2. **fragment_raccoon_manager.xml:** Raccoon avatar (decorative, `importantForAccessibility="no"`) → title (heading) → subtitle → hero card → feature cards (each with heading + description + live region for count) ✅
+3. **fragment_browse.xml:** Search field → filter toggle → sort order → view mode → stats bar (live region) → file list → selection action bar (live region) ✅
+4. **item_file.xml:** Accent stripe (decorative, `importantForAccessibility="no"`) → thumbnail (decorative) → file name + size text → checkbox (`a11y_select_file` description) ✅
+
+#### Programmatic Announcements
+
+- **Tab changes:** `MainActivity.kt:160` — `announceForAccessibility(tabLabel)` on bottom nav item selection ✅
+- **Scan status updates:** `MainActivity.kt:231` — `sendAccessibilityEvent(TYPE_ANNOUNCEMENT)` on scan phase change ✅
+- **Tree node expand/collapse:** `ArborescenceView.kt:607-613` — `announceForAccessibility()` with child count on expand, name on collapse ✅
+- **Snackbar announcements:** `SnackbarUtils.kt:25` — `sendAccessibilityEvent(TYPE_ANNOUNCEMENT)` on all snackbars ✅
+
+#### Dedicated A11Y Strings
+
+90+ dedicated `a11y_*` string resources covering file selection, sort order, tree view, media controls, scan progress, cloud connections, settings toggles, and more (`strings.xml:191-1070`).
+
+**Positive:** Comprehensive screen reader support with dedicated announcement strings, proper reading order, and decorative element exclusion.
+
+> **F-065** | Severity: **HIGH** | Confidence: **HIGH**
+> **Title:** ArborescenceView (custom Canvas view) lacks ExploreByTouchHelper for individual node access
+> **Location:** `ArborescenceView.kt:25-27`
+> **Details:** ArborescenceView is a custom `View` that draws its entire tree visualization on Canvas. It provides a top-level `contentDescription` summary and `announceForAccessibility` for expand/collapse events, but does not implement `ExploreByTouchHelper` or `AccessibilityNodeProvider`. TalkBack users cannot explore individual folder nodes, file names, or interactive regions within the tree — they only hear the aggregate summary. This makes the tree visualization effectively inaccessible for screen reader users.
+> **Suggestion:** Implement `ExploreByTouchHelper` to expose each `NodeLayout` as a virtual accessibility node with: node name, file count, expand/collapse action, and focusable bounds. This is the standard pattern for custom Canvas-drawn interactive views.
+
+### Step 8.3 — §G3: Keyboard Navigation
+
+#### Focus Order
+
+- **fragment_browse.xml:** Explicit `nextFocusDown`, `nextFocusRight`, `nextFocusLeft` attributes on search field, filter toggle, sort spinner, view mode button (lines 63-86) — ensures logical D-pad/Tab navigation ✅
+- **fragment_settings.xml:** Linear layout with proper `labelFor` associations — natural focus order follows visual order ✅
+
+#### Keyboard Shortcuts
+
+`MainActivity.kt:314-342`:
+- **Ctrl+S** → Navigate to Settings
+- **Ctrl+F** → Navigate to Browse tab and focus search field
+
+These are the only two shortcuts. No keyboard shortcut documentation or discoverability mechanism exists in the UI.
+
+#### Dialog Focus Management
+
+Material AlertDialog (used throughout via `MaterialAlertDialogBuilder`) provides built-in focus trapping. Custom dialogs (`OnboardingDialog.kt`) are `setCancelable(false)` which prevents background focus escape.
+
+**Positive:** Focus order is explicitly managed in the most complex layout (Browse). Keyboard shortcuts exist for power users.
+
+> **F-066** | Severity: **LOW** | Confidence: **HIGH**
+> **Title:** Keyboard shortcuts undiscoverable — no UI documentation
+> **Location:** `MainActivity.kt:314-342`
+> **Details:** Ctrl+S (Settings) and Ctrl+F (Search) keyboard shortcuts exist but are not documented anywhere in the app UI, settings screen, or help text. No `a11y_*` strings reference keyboard shortcuts. Users with physical keyboards (tablets, ChromeOS, Bluetooth keyboards) have no way to discover these shortcuts.
+> **Suggestion:** Add a "Keyboard shortcuts" item in Settings, or display a shortcut overlay on long-press of Ctrl key. Consider adding more shortcuts (Ctrl+D for Duplicates, Ctrl+L for Large Files, etc.).
+
+### Step 8.4 — §G4: Reduced Motion
+
+#### MotionUtil Implementation — `utils/MotionUtil.kt`
+
+**Exemplary reduced motion architecture:**
+
+1. **`isReducedMotion(context)`** (line 40-47): Reads `Settings.Global.ANIMATOR_DURATION_SCALE`, returns `true` when scale < 1.0 (catches both 0x and 0.5x settings)
+2. **Every animation method** checks `isReducedMotion()` as first operation and immediately snaps to end state:
+   - `fadeSlideIn` → sets alpha=1, translationY=0, visibility=VISIBLE (line 82-87)
+   - `fadeSlideOut` → sets visibility=GONE, invokes onEnd callback (line 105-108)
+   - `scaleIn` → sets scale=1, alpha=1, visibility=VISIBLE (line 129-134)
+   - `scaleOut` → sets visibility=GONE (line 154-157)
+   - `successPulse` → sets scale=1, alpha=1, visibility=VISIBLE (line 182-188)
+   - `crossfade` → snaps visibility immediately (line 209-214)
+   - `staggerDelay` → returns 0L (line 243)
+   - `microFade` → sets target alpha immediately (line 275-277)
+3. **`effectiveDuration(context, baseMs)`** (line 257-265): Scales any ObjectAnimator duration by system scale; returns 0 for reduced motion. Used by `RaccoonBubble.kt:109,121` for custom ObjectAnimators.
+
+#### Direct `.animate()` Calls Outside MotionUtil
+
+| Location | Respects Reduced Motion? |
+|----------|:------------------------:|
+| `RaccoonManagerFragment.kt:139` (raccoon bounce) | ✅ — explicitly checks `MotionUtil.isReducedMotion()` |
+| `MainActivity.kt:169-180` (bottom nav slide) | ❌ — hardcoded 150ms, no reduced motion check |
+
+> **F-067** | Severity: **MEDIUM** | Confidence: **HIGH**
+> **Title:** Bottom nav show/hide animation bypasses reduced motion check
+> **Location:** `MainActivity.kt:164-182`
+> **Details:** The bottom navigation slide-in/slide-out animation uses direct `.animate().translationY().setDuration(150)` without checking `MotionUtil.isReducedMotion()`. When a user has animations disabled, this 150ms slide still plays. All other animations in the app properly respect the reduced motion setting via MotionUtil.
+> **Suggestion:** Wrap with `if (MotionUtil.isReducedMotion(this)) { /* snap visibility */ } else { /* animate */ }` pattern, consistent with the rest of the app.
+
+#### XML Animations (res/anim/, res/animator/)
+
+Fragment navigation animations (`nav_enter.xml`, `nav_exit.xml`, etc.) are loaded by AndroidX Navigation, which automatically respects `ANIMATOR_DURATION_SCALE` at the framework level. State list animators (`card_state_list_anim.xml`) are also framework-managed. No manual XML animation bypasses detected.
+
+**Positive:** MotionUtil is a best-in-class reduced motion implementation — centralized, consistent, and thorough. Every programmatic animation except one properly falls back to instant state transitions.
+
+### Step 8.5 — §L7: Accessibility Polish (Beyond Compliance)
+
+#### Larger-Than-Minimum Touch Targets
+
+The app consistently uses 48dp as the minimum (matching WCAG), with many interactive elements naturally larger:
+- Feature cards on hub: `minHeight="@dimen/card_min_height"` (significantly larger than 48dp) ✅
+- Buttons: 48dp height is the floor, width naturally exceeds ✅
+- No elements found below 48dp ✅
+
+#### High-Contrast Mode Support
+
+No explicit `values-high-contrast/` or `@android:style/Theme.HighContrast` detection found. The app relies on the system-level high contrast text feature rather than providing a custom high-contrast theme. This is standard for most Android apps — system high contrast text overrides are well-supported on Android 14+.
+
+#### Screen Reader Announcements for Dynamic Content
+
+- **70+ live regions** across all layouts — among the most thorough implementations audited
+- **Semantic live region selection:** `assertive` for loading states, scan progress; `polite` for count updates, status text
+- **Programmatic announcements** for tab changes, scan phases, tree interactions, snackbar messages
+- **Dedicated `a11y_*` strings** for every interactive element type
+
+#### Keyboard Shortcut Documentation
+
+No documentation exists (see F-066). No help screen, tooltip, or overlay for shortcuts.
+
+#### Content Description Coverage
+
+157 `contentDescription` attributes across 31 layout files — comprehensive coverage. Decorative elements properly excluded with `importantForAccessibility="no"`.
+
+> **F-068** | Severity: **LOW** | Confidence: **MEDIUM**
+> **Title:** No high-contrast theme variant for users with low vision
+> **Location:** App-wide (no `values-high-contrast/` resource directory)
+> **Details:** The app does not provide a dedicated high-contrast theme option. While system-level high contrast text works on Android 14+, users on older Android versions or those who prefer app-specific high-contrast modes have no option. The warm chromatic surface palette (surfaceDim at L89 light / L5 dark) is well-chosen for general use but not optimized for severe low vision.
+> **Suggestion:** Consider adding a "High contrast" toggle in Settings that switches to a pure black-on-white / white-on-black theme with increased border widths. This would complement the existing DayNight theme infrastructure.
+
+---
+
+### Phase 8 — Positive Verification Summary
+
+| Area | Verdict |
+|------|---------|
+| Touch targets ≥ 48dp on all interactive elements | ✅ Excellent |
+| accessibilityHeading on section titles/card headers | ✅ 38+ instances |
+| labelFor on Settings inputs | ✅ 6 instances |
+| importantForAccessibility on decorative vs informational | ✅ 90+ instances |
+| accessibilityLiveRegion for dynamic content | ✅ 70+ instances (polite/assertive) |
+| contentDescription coverage | ✅ 157 across 31 layouts |
+| Dedicated a11y string resources | ✅ 90+ strings |
+| Programmatic announceForAccessibility | ✅ Tab changes, scan, tree, snackbar |
+| MotionUtil reduced motion architecture | ✅ Best-in-class centralized approach |
+| effectiveDuration for custom ObjectAnimators | ✅ Scales/skips properly |
+| Focus order attributes in complex layouts | ✅ Browse layout explicitly ordered |
+| Material Dialog focus trapping | ✅ Built-in via AlertDialog |
+| WCAG-safe icon tints on colored backgrounds | ✅ Pre-computed variants |
+| Core text hierarchy AA on default surfaces | ✅ Both light and dark |
+| Framework-managed animation scale for XML anims | ✅ Navigation transitions respect system |
+
+---
+
+### Phase 8 — Cumulative Finding Count
+
+| Severity | P1 | P2 | P3 | P4 | P5 | P6 | P7 | P8 | Total |
+|----------|---------|---------|---------|---------|---------|---------|---------|---------|-------|
+| CRITICAL | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| HIGH | 1 | 0 | 2 | 0 | 0 | 0 | 0 | 1 | 4 |
+| MEDIUM | 6 | 2 | 5 | 3 | 0 | 1 | 2 | 2 | 21 |
+| LOW | 11 | 6 | 5 | 5 | 6 | 3 | 3 | 3 | 42 |
+| **Total** | **18** | **8** | **12** | **8** | **6** | **4** | **5** | **6** | **67** |
+
+**Next: Phase 9 — Compatibility (Category H)**
+
+Awaiting confirmation to proceed with Phase 9, or to fix findings from Phases 1-8.

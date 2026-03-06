@@ -145,6 +145,22 @@
             app:iconTint="@color/textSecondary" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_size_mode"
+            style="@style/Widget.FileCleaner.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button_height"
+            android:text="@string/size_label"
+            android:textAllCaps="false"
+            android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+            android:textColor="@color/textSecondary"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:icon="@drawable/ic_arrow_down"
+            app:iconSize="@dimen/icon_small"
+            app:iconGravity="end"
+            app:iconTint="@color/textSecondary" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_actions_menu"
             style="@style/Widget.FileCleaner.Button.Text"
             android:layout_width="wrap_content"
@@ -189,24 +205,6 @@
             android:popupBackground="@drawable/bg_spinner_dropdown"
             android:paddingHorizontal="@dimen/spacing_md"
             android:contentDescription="@string/a11y_sort_order" />
-
-        <!-- Size selector -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/size_label"
-            android:textAppearance="@style/TextAppearance.FileCleaner.Caption"
-            android:textColor="@color/textTertiary"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:layout_marginBottom="@dimen/spacing_xs" />
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chip_group_grid_columns"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:singleSelection="true"
-                app:selectionRequired="true"
-                app:chipSpacingHorizontal="@dimen/spacing_chip" />
     </LinearLayout>
 
     <!-- F5: Scan progress indicator -->

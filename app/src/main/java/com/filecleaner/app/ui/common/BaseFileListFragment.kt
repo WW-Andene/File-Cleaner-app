@@ -36,7 +36,6 @@ import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.ui.common.FileListDividerDecoration
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.viewmodel.ScanState
-import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -203,8 +202,8 @@ abstract class BaseFileListFragment : Fragment() {
         // View mode popup menu
         binding.btnViewMode.setOnClickListener { showViewModePopup() }
 
-        // Size chips
-        setupSizeChips()
+        // Size popup menu
+        binding.btnSizeMode.setOnClickListener { showSizeModePopup() }
 
         // Empty state "Scan Now" button
         binding.btnScanNow.setOnClickListener {
@@ -375,7 +374,29 @@ abstract class BaseFileListFragment : Fragment() {
             currentViewMode = ViewMode.of(style, currentViewMode.size)
             adapter.viewMode = currentViewMode
             applyLayoutManager()
-            syncSizeChips()
+            true
+        }
+        popup.show()
+    }
+
+    private fun showSizeModePopup() {
+        val popup = PopupMenu(requireContext(), binding.btnSizeMode)
+        val sizes = listOf(
+            getString(R.string.size_xxs) to ViewMode.Size.XXS,
+            getString(R.string.size_xs) to ViewMode.Size.XS,
+            getString(R.string.size_sm) to ViewMode.Size.SM,
+            getString(R.string.size_md) to ViewMode.Size.MD,
+            getString(R.string.size_lg) to ViewMode.Size.LG,
+            getString(R.string.size_xl) to ViewMode.Size.XL
+        )
+        sizes.forEachIndexed { index, (label, _) ->
+            popup.menu.add(0, index, index, label)
+        }
+        popup.setOnMenuItemClickListener { item ->
+            val (_, size) = sizes[item.itemId]
+            currentViewMode = ViewMode.of(currentViewMode.style, size)
+            adapter.viewMode = currentViewMode
+            applyLayoutManager()
             true
         }
         popup.show()
@@ -419,51 +440,6 @@ abstract class BaseFileListFragment : Fragment() {
         if (!currentViewMode.usesGridLayout) {
             dividerDecoration?.let { binding.recyclerView.addItemDecoration(it) }
         }
-    }
-
-    private var suppressSizeChipListener = false
-
-    private fun setupSizeChips() {
-        val chipGroup = binding.chipGroupGridColumns
-        val sizes = listOf(
-            getString(R.string.size_xxs) to ViewMode.Size.XXS,
-            getString(R.string.size_xs) to ViewMode.Size.XS,
-            getString(R.string.size_sm) to ViewMode.Size.SM,
-            getString(R.string.size_md) to ViewMode.Size.MD,
-            getString(R.string.size_lg) to ViewMode.Size.LG,
-            getString(R.string.size_xl) to ViewMode.Size.XL
-        )
-        for ((label, size) in sizes) {
-            val chip = Chip(requireContext()).apply {
-                text = label
-                isCheckable = true
-                isChecked = currentViewMode.size == size
-                tag = size
-            }
-            chipGroup.addView(chip)
-        }
-        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
-            if (suppressSizeChipListener) return@setOnCheckedStateChangeListener
-            if (checkedIds.isNotEmpty()) {
-                val selectedChip = group.findViewById<Chip>(checkedIds.first())
-                val size = selectedChip?.tag as? ViewMode.Size ?: return@setOnCheckedStateChangeListener
-                if (size != currentViewMode.size) {
-                    currentViewMode = ViewMode.of(currentViewMode.style, size)
-                    adapter.viewMode = currentViewMode
-                    applyLayoutManager()
-                }
-            }
-        }
-    }
-
-    private fun syncSizeChips() {
-        suppressSizeChipListener = true
-        val chipGroup = binding.chipGroupGridColumns
-        for (i in 0 until chipGroup.childCount) {
-            val chip = chipGroup.getChildAt(i) as? Chip ?: continue
-            chip.isChecked = chip.tag == currentViewMode.size
-        }
-        suppressSizeChipListener = false
     }
 
     // B5: Save all user-visible state for config change survival

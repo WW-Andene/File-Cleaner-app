@@ -194,10 +194,7 @@ class ArborescenceFragment : Fragment() {
 
         // Reset view button
         binding.fabResetView.setOnClickListener {
-            lastTreeRef = null
-            vm.directoryTree.value?.let { tree ->
-                binding.arborescenceView.setTree(tree)
-            }
+            binding.arborescenceView.resetView()
         }
 
         // Observe tree data

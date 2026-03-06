@@ -40,6 +40,8 @@ class ArborescenceFragment : Fragment() {
     private var lastTreeRef: DirectoryNode? = null
     // B3: Pending highlight path (replaces leaked nested observer)
     private var pendingHighlightPath: String? = null
+    // Currently selected tree node (for detail box tap → context menu)
+    private var selectedTreeNode: DirectoryNode? = null
 
     private val treeCategories by lazy {
         listOf(
@@ -94,6 +96,7 @@ class ArborescenceFragment : Fragment() {
 
         // Node selection detail
         binding.arborescenceView.onNodeSelected = { node ->
+            selectedTreeNode = node
             if (node != null) {
                 binding.tvNodeDetail.visibility = View.VISIBLE
                 binding.tvNodeDetail.text = if (node.children.isEmpty()) {
@@ -114,6 +117,23 @@ class ArborescenceFragment : Fragment() {
                 }
             } else {
                 binding.tvNodeDetail.visibility = View.GONE
+            }
+        }
+
+        // Tap on node detail box opens context menu for selected folder
+        binding.tvNodeDetail.setOnClickListener {
+            val node = selectedTreeNode ?: return@setOnClickListener
+            val file = File(node.path)
+            if (file.exists()) {
+                val item = FileItem(
+                    path = node.path,
+                    name = node.name,
+                    size = node.totalSize,
+                    lastModified = file.lastModified(),
+                    category = FileCategory.OTHER
+                )
+                FileContextMenu.show(requireContext(), binding.arborescenceView, item, contextMenuCallback,
+                    hasClipboard = vm.clipboardEntry.value != null)
             }
         }
 

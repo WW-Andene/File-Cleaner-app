@@ -3260,6 +3260,216 @@ No documentation exists (see F-066). No help screen, tooltip, or overlay for sho
 | LOW | 11 | 6 | 5 | 5 | 6 | 3 | 3 | 3 | 42 |
 | **Total** | **18** | **8** | **12** | **8** | **6** | **4** | **5** | **6** | **67** |
 
-**Next: Phase 9 — Compatibility (Category H)**
+---
 
-Awaiting confirmation to proceed with Phase 9, or to fix findings from Phases 1-8.
+## PHASE 9 — COMPATIBILITY (Category H)
+
+### Step 9.1 — §H1: Cross-Browser Matrix
+
+**N/A** — Native Android application. No browser/web rendering engine to audit.
+
+### Step 9.2 — §H2: PWA & Service Worker
+
+**N/A** — Native Android application. No service worker, web manifest, or PWA install prompt.
+
+### Step 9.3 — §H3: Mobile & Touch (Adapted for Native Android)
+
+#### SDK Targets
+
+`app/build.gradle`:
+- **compileSdk:** 35 (Android 15)
+- **targetSdk:** 35 (Android 15)
+- **minSdk:** 29 (Android 10)
+- **Java compatibility:** VERSION_17
+
+#### API-Level-Gated Code
+
+17 `Build.VERSION.SDK_INT` checks identified across the codebase — all correctly implemented:
+
+| API Gate | Purpose | Location |
+|----------|---------|----------|
+| R (30) | `MANAGE_EXTERNAL_STORAGE` / `isExternalStorageManager()` | `MainActivity.kt:392,429` |
+| R (30) | `HapticFeedbackConstants.CONFIRM/REJECT` (fallback to LONG_PRESS) | `BaseFileListFragment.kt:288,295,350`, `ArborescenceFragment.kt:240`, `DualPaneFragment.kt:175` |
+| O (26) | Notification channel creation, foreground service | `ScanService.kt:46,238` |
+| UPSIDE_DOWN_CAKE (34) | `FOREGROUND_SERVICE_DATA_SYNC` type | `ScanService.kt:89` |
+| P (28) | `GET_SIGNING_CERTIFICATES` / `signingInfo` (APK Signature v3) | `AppVerificationScanner.kt:65,142,159,264` |
+| M (23) | `FLAG_USES_CLEARTEXT_TRAFFIC` | `NetworkSecurityScanner.kt:149` |
+| 30 | `QUERY_ALL_PACKAGES` filtering | `PrivacyAuditor.kt:351` |
+
+**Positive:** All version gates provide proper fallback paths for the minSdk 29 baseline.
+
+#### Orientation Handling
+
+- **No `android:screenOrientation`** in manifest → supports all orientations ✅
+- **No `android:configChanges`** → proper Activity recreation on rotation ✅
+- **`android:supportsRtl="true"`** → RTL language support ✅
+- **Tablet dimens:** `values-sw600dp/dimens.xml` provides spacing increases (~1.5×) and typography bump (+1sp) for reading distance ✅
+- **No `layout-land/` directory** — portrait layouts reflow in landscape without optimization
+
+> **F-069** | Severity: **LOW** | Confidence: **MEDIUM**
+> **Title:** No landscape-specific layouts for key fragments
+> **Location:** `app/src/main/res/layout/` (no `layout-land/` directory)
+> **Details:** While the app supports rotation (no screenOrientation lock), there are no landscape-optimized layouts. Complex layouts like `fragment_raccoon_manager.xml` (726 lines, vertical scroll of cards), `fragment_browse.xml` (451 lines), and `fragment_dashboard.xml` (315 lines) will stretch vertically in landscape, requiring excessive scrolling. The `values-sw600dp/dimens.xml` handles tablet scaling but doesn't address landscape-specific layout restructuring.
+> **Suggestion:** Consider adding `layout-land/` variants for hub, browse, and dashboard — e.g., 2-column grid for hub cards in landscape.
+
+#### Gesture Conflict Analysis
+
+| Component | Gestures | Conflict Prevention |
+|-----------|----------|-------------------|
+| ArborescenceView | ScaleGestureDetector + GestureDetector (pinch, scroll, tap, double-tap) | `!isDragging` state check blocks scroll during drag ✅ |
+| FileViewerFragment | ScaleGestureDetector + OnTouchListener (pinch zoom + pan) | Pan only active when `scaleFactor > 1.0f` ✅ |
+| BrowseFragment | 2× RecyclerView.OnItemTouchListener (drag-to-select, swipe multi-select) | Non-overlapping state: first consumes MOVE only in selection+drag mode ✅ |
+| RaccoonBubble | OnTouchListener (drag floating button) | Single gesture, no conflict ✅ |
+
+**Positive:** All gesture handlers use explicit state checks to prevent scroll/swipe/pinch conflicts. No NestedScrollView or CoordinatorLayout nesting issues.
+
+#### Edge-to-Edge / Window Insets
+
+- **Edge-to-edge enabled:** `WindowCompat.setDecorFitsSystemWindows(window, false)` — `MainActivity.kt:76` ✅
+- **Inset handling:** `WindowInsetsExt.kt` provides `applyBottomInset()` and `applyTopInset()` extension functions using `WindowInsetsCompat` ✅
+- **Usage verified:** FileViewerFragment, DualPaneFragment apply insets correctly ✅
+- **No deprecated `fitsSystemWindows`** attribute usage ✅
+
+> **F-070** | Severity: **LOW** | Confidence: **MEDIUM**
+> **Title:** No display cutout handling for notched devices
+> **Location:** `AndroidManifest.xml` (no `layoutInDisplayCutoutMode`), `WindowInsetsExt.kt`
+> **Details:** The app doesn't set `layoutInDisplayCutoutMode` in the manifest and doesn't query `WindowInsetsCompat.Type.displayCutout()`. On Android 10+ devices with notches, the default `LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT` letterboxes content away from the cutout. This is safe but wastes screen area around notches, particularly in landscape mode. The edge-to-edge setup handles status/nav bars but not display cutouts explicitly.
+> **Suggestion:** Add `android:windowLayoutInDisplayCutoutMode="shortEdges"` to the theme and handle cutout insets in `WindowInsetsExt.kt` for optimal notch-aware rendering.
+
+#### Permissions
+
+All 12 declared permissions are properly gated:
+
+| Permission | maxSdkVersion | Purpose |
+|-----------|:-----------:|---------|
+| `READ_EXTERNAL_STORAGE` | 32 | Legacy storage (pre-Android 13) |
+| `WRITE_EXTERNAL_STORAGE` | 29 | Legacy write (pre-Android 11) |
+| `READ_MEDIA_IMAGES/VIDEO/AUDIO` | — | Android 13+ granular media |
+| `READ_MEDIA_VISUAL_USER_SELECTED` | — | Android 14+ partial media |
+| `MANAGE_EXTERNAL_STORAGE` | — | Android 11+ broad access |
+| `INTERNET` | — | Cloud file browsing |
+| `ACCESS_NETWORK_STATE` | — | Connectivity checks |
+| `FOREGROUND_SERVICE` | — | Scan service |
+| `FOREGROUND_SERVICE_DATA_SYNC` | — | Android 12+ service type |
+| `POST_NOTIFICATIONS` | — | Android 13+ notification |
+
+**Positive:** Proper `maxSdkVersion` guards prevent deprecated permissions on newer API levels. Modern granular media permissions declared for Android 13+/14+.
+
+### Step 9.4 — §H4: Network Resilience
+
+#### Offline Behavior
+
+Pre-flight connectivity check before all cloud operations:
+```
+CloudBrowserFragment.kt:219-232 — ConnectivityManager.activeNetwork + NetworkCapabilities.NET_CAPABILITY_INTERNET
+```
+Users see: *"No internet connection — Ricky can't reach the cloud right now."* (on-character error messaging)
+
+**Provider connection status:** Each provider maintains `isConnected` boolean — UI shows green/red dot indicator (`CloudBrowserFragment.kt:200-214`).
+
+**Local operations:** All file management (browse, delete, duplicate scan, junk detection, antivirus) operates entirely offline on local storage. Network is only needed for cloud features.
+
+#### Retry Logic — `RetryHelper.kt`
+
+Centralized `retryOnNetworkError()`:
+- **3 retries** with exponential backoff: 1s → 2s → 4s (capped at 30s)
+- **Retryable:** `IOException`, all subclasses (`SocketTimeoutException`, `ConnectException`, `UnknownHostException`), JSch network errors
+- **Non-retryable:** `CancellationException` (coroutine cooperative cancellation), JSch auth failures
+- **Coroutine-safe:** Uses `delay()` instead of `Thread.sleep()`
+
+| Provider | Uses `retryOnNetworkError`? |
+|----------|:-------------------------:|
+| GoogleDriveProvider | ✅ All 6 operations wrapped |
+| WebDavProvider | ✅ All 6 operations wrapped |
+| SftpProvider | ✅ All 4 operations wrapped |
+| GitHubProvider | ❌ **Not wrapped** |
+
+> **F-071** | Severity: **LOW** | Confidence: **HIGH**
+> **Title:** GitHubProvider omits retry wrapping on network calls
+> **Location:** `data/cloud/GitHubProvider.kt`
+> **Details:** All other cloud providers (GoogleDrive, WebDAV, SFTP) wrap their operations in `retryOnNetworkError {}`. GitHubProvider makes raw `HttpURLConnection` calls without retry wrapping, meaning transient network errors (socket timeout, connection reset) will fail immediately without retry. The retry infrastructure exists — it's just not applied to this provider.
+> **Suggestion:** Wrap `checkConnection()`, `listFiles()`, and `downloadFile()` in `retryOnNetworkError {}` consistent with other providers.
+
+#### Error Handling
+
+Differentiated error messages in `CloudBrowserFragment.kt:262-283`:
+
+| Exception | User Message |
+|-----------|-------------|
+| `SocketTimeoutException` | "Connection timed out — the server may be busy. Try again in a moment." |
+| `UnknownHostException` | "Server not found — double-check the hostname and try again." |
+| `JSchException` (auth) | "Authentication failed — double-check your credentials and try again." |
+| HTTP 401/403 | "Authentication failed..." |
+| Other | "Couldn't connect to {name} — please check your settings." |
+
+**Positive:** Friendly, actionable error messages with raccoon personality. Error styling via `Snackbar.styleAsError()`.
+
+#### Timeout Configuration
+
+| Provider | Connect | Read | Notes |
+|----------|:-------:|:----:|-------|
+| GitHub | 10s | 10-30s | Shorter for API, longer for download |
+| Google Drive | 15s | 15-60s | 60s for upload/download |
+| WebDAV | 15s | 15-30s | — |
+| SFTP | 15s (session) | 30s (socket) | Plus 10s channel connect |
+| OAuth token exchange | 15s | 15s | — |
+| Disconnect | — | — | 5s `withTimeout` to prevent hangs |
+
+**Positive:** Appropriate timeout differentiation by operation type.
+
+#### Cache & Persistence
+
+| Store | Mechanism | Security |
+|-------|-----------|----------|
+| Scan cache | JSON file (`scan_cache.json`) | 50K entry cap, 30-day expiry, 100 depth limit |
+| Cloud connections | `EncryptedSharedPreferences` | AES-256-GCM values, AES-256-SIV keys |
+| OAuth tokens | `EncryptedSharedPreferences` | Stored alongside cloud connections |
+| User prefs | `SharedPreferences` (`raccoon_prefs`) | Non-sensitive display/threshold settings |
+| No database | N/A | No Room/SQLite — all SharedPreferences + JSON |
+
+**Positive:** Encrypted credential storage with plaintext → encrypted migration path. 30-day cache auto-expiry limits persistent file inventory exposure.
+
+#### Network Security
+
+- **HTTPS-only:** `network_security_config.xml` sets `cleartextTrafficPermitted="false"` ✅
+- **System CA trust:** `<certificates src="system" />` ✅
+- **WebDAV HTTPS enforcement:** Converts `http://` to `https://` for Basic Auth safety ✅
+- **PKCE OAuth:** Code verifier + challenge for Google, state parameter for GitHub ✅
+- **Credential clearing:** SFTP credentials dropped after auth, WebDAV caches auth header only ✅
+
+---
+
+### Phase 9 — Positive Verification Summary
+
+| Area | Verdict |
+|------|---------|
+| API-level gating with proper fallbacks | ✅ 17 version checks, all correct |
+| Permission maxSdkVersion guards | ✅ Modern granular media permissions |
+| Edge-to-edge with WindowInsetsCompat | ✅ Proper inset handling |
+| Gesture conflict prevention via state checks | ✅ All 4 gesture components safe |
+| Tablet-aware dimension overrides | ✅ sw600dp spacing + typography |
+| RTL support enabled | ✅ supportsRtl="true" |
+| Pre-flight connectivity check | ✅ ConnectivityManager before cloud ops |
+| Exponential backoff retry (3 of 4 providers) | ✅ RetryHelper.kt centralized |
+| Differentiated network error messages | ✅ Friendly, actionable, on-character |
+| Operation-specific timeouts | ✅ 10-60s range, 5s disconnect cap |
+| Encrypted credential storage | ✅ AES-256-GCM/SIV |
+| HTTPS enforcement + PKCE OAuth | ✅ Network security config + code |
+| Scan cache with size/age limits | ✅ 50K entries, 30-day expiry |
+| Coroutine-safe retry (delay vs sleep) | ✅ Cooperative cancellation preserved |
+
+---
+
+### Phase 9 — Cumulative Finding Count
+
+| Severity | P1 | P2 | P3 | P4 | P5 | P6 | P7 | P8 | P9 | Total |
+|----------|---------|---------|---------|---------|---------|---------|---------|---------|---------|-------|
+| CRITICAL | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| HIGH | 1 | 0 | 2 | 0 | 0 | 0 | 0 | 1 | 0 | 4 |
+| MEDIUM | 6 | 2 | 5 | 3 | 0 | 1 | 2 | 2 | 0 | 21 |
+| LOW | 11 | 6 | 5 | 5 | 6 | 3 | 3 | 3 | 3 | 45 |
+| **Total** | **18** | **8** | **12** | **8** | **6** | **4** | **5** | **6** | **3** | **70** |
+
+**Next: Phase 10 — Code Quality & Architecture (Category I + §L1–L2)**
+
+Awaiting confirmation to proceed with Phase 10, or to fix findings from Phases 1-9.

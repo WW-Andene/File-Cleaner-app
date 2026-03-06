@@ -4084,6 +4084,283 @@ While no §K category directly covers "heuristic security scanning," the `AppInt
 | POLISH | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
 | **Total** | **18** | **8** | **12** | **8** | **6** | **4** | **5** | **6** | **3** | **7** | **6** | **1** | **84** |
 
-**Next: Phase 13 — Operations, i18n & Projections (Categories L3–L5, M, N, O)**
+---
 
-Awaiting confirmation to proceed with Phase 13, or to fix findings from Phase 12.
+## PHASE 13 — OPERATIONS, i18n & PROJECTIONS (Categories L3–L5, M, N, O)
+
+### Step 13.1 — §L3: Design System Standardization
+
+The app has a well-structured design token system:
+- `colors.xml`: Semantic color tokens (`surfaceBase`, `surfaceColor`, `textPrimary`, `textSecondary`, `borderDefault`, `borderSubtle`, `selectedBackground`, `selectedBorder`) + category colors + junk/size severity colors
+- `dimens.xml`: Spacing grid (`spacing_xs` through `spacing_xxl`), radius tokens, stroke widths, motion durations as integer resources
+- `styles.xml`: Text appearance styles (`TextAppearance_FileCleaner_Title`, `_Body`, `_Numeric`, `_Caption`)
+- `themes.xml`: Material theme override with proper color attribute mapping
+- `values-night/colors.xml`: Full dark mode palette
+- `values-sw600dp/`: Tablet-specific overrides
+
+**Positive Verifications:**
+- ✅ Colors are tokenized — all layout XML uses `@color/` references, not hex values
+- ✅ Spacing uses `@dimen/` resources consistently
+- ✅ Motion durations are resource-defined integers (`motion_micro`, `motion_enter`, `motion_exit`, `motion_page`, `motion_emphasis`, `motion_stagger_step`)
+- ✅ `MotionUtil.kt` centralizes all animation patterns with duration lookup from resources
+- ✅ `FileItemUtils` resolves colors once via `resolveColorsWithSelection()` — avoids per-bind color lookups
+- ✅ Three text appearance styles provide consistent hierarchy
+
+> **F-087** | Severity: **LOW** | Confidence: **HIGH**
+> **Title:** `StorageDashboardFragment` builds UI programmatically with mixed resource/hardcoded values
+> **Section:** §L3 — Design System Standardization
+> **Finding:** `StorageDashboardFragment.kt:408-409` uses `(2 * density).toInt()` for divider margins — a hardcoded dp value that should use a spacing token from `dimens.xml`. The same file correctly uses `spacing_xs`, `spacing_sm`, etc. for other margins but falls back to inline calculation for divider spacing. Similarly, dot indicator size uses `spacingMd` (a generic spacing token) rather than a purpose-built `dot_indicator_size` dimension.
+> **Why it matters:** Mixing resource-based and calculated spacing undermines the spacing grid and creates maintenance fragmentation.
+> **Recommendation:** Add `<dimen name="spacing_divider_margin">2dp</dimen>` to `dimens.xml` and reference it.
+> **Effort:** LOW
+> **Confidence:** HIGH — Source: [CODE]
+
+### Step 13.2 — §L4: Copy & Content Standardization
+
+All user-facing strings are in `strings.xml` with two notable exceptions:
+
+> **F-088** | Severity: **MEDIUM** | Confidence: **HIGH**
+> **Title:** `StorageOptimizer.kt` contains hardcoded English reason strings
+> **Section:** §L4 — Copy & Content Standardization
+> **Finding:** `StorageOptimizer.kt:50,58,65,72,79,91` contains hardcoded English strings for optimization suggestions: `"Organize photo by date"`, `"Organize video by date"`, `"Move audio to Music"`, `"Move document to Documents"`, `"Move APK to APKs folder"`, `"Old download (${ageDays}d)"`. These are user-facing suggestion labels that bypass the `strings.xml` resource system.
+> **Why it matters:** (1) Breaks i18n readiness — these strings cannot be translated. (2) Inconsistent with the rest of the app where all user-facing text is in `strings.xml`. (3) The `reason` field is displayed directly to users in the optimization suggestions UI.
+> **Recommendation:** Move all reason strings to `strings.xml` with parameterized placeholders (e.g., `<string name="optimize_old_download">Old download (%1$d days)</string>`). Pass a `Context` or string resource IDs instead of raw strings.
+> **Effort:** LOW
+> **Confidence:** HIGH — Source: [CODE]
+
+> **F-089** | Severity: **LOW** | Confidence: **HIGH**
+> **Title:** `DualPaneFragment` has hardcoded English status label
+> **Section:** §L4 — Copy & Content Standardization
+> **Finding:** `DualPaneFragment.kt:560` builds a status label via string concatenation: `"Duplicates: $dupCount • Large: $largeCount • Junk: $junkCount"`. This hardcoded English string bypasses `strings.xml` and would not translate.
+> **Why it matters:** User-facing label that breaks i18n. Inconsistent with the rest of the app.
+> **Recommendation:** Add a string resource: `<string name="dual_pane_analysis_summary">Duplicates: %1$d • Large: %2$d • Junk: %3$d</string>` and use `getString()`.
+> **Effort:** LOW
+> **Confidence:** HIGH — Source: [CODE]
+
+**Positive Verifications:**
+- ✅ Plurals used correctly (e.g., `R.plurals.n_files_with_size`, `R.plurals.scan_complete`, `R.plurals.tree_node_subtitle`)
+- ✅ Error messages are differentiated and actionable (cloud errors distinguish auth failure, network timeout, host not found)
+- ✅ Button labels are consistent ("Delete", "Cancel", "Scan", "Back")
+- ✅ Raccoon mascot personality is consistent ("Ricky is rummaging through your files...")
+
+### Step 13.3 — §L5: Interaction & Experience Polish
+
+**`MotionUtil.kt` (298 LOC) — Centralized Motion Vocabulary:**
+
+The app has an excellent, fully centralized motion system:
+- 6 duration tiers (micro 120ms → emphasis 400ms)
+- Custom interpolators defined in XML (`fast_out_slow_in_custom`, `overshoot_gentle`)
+- Reduced motion respected in every single public method
+- Consistent patterns: `fadeSlideIn/Out`, `scaleIn/Out`, `successPulse`, `crossfade`, `microFade`
+- Navigation transitions via `navOptions()` with shared enter/exit/popEnter/popExit animations
+- Stagger delay helper with cap at 160ms (4 steps)
+
+**Positive Verifications:**
+- ✅ Every animation method checks `isReducedMotion()` first — exemplary accessibility
+- ✅ Duration vocabulary is resource-based — can be tuned without code changes
+- ✅ Enter is slower than exit (220ms vs 160ms) — follows perception-based best practice
+- ✅ Stagger delay is capped — prevents excessive delay for long lists
+- ✅ `effectiveDuration()` helper scales with `ANIMATOR_DURATION_SCALE` system setting
+
+No findings for interaction polish — this is exceptionally well-implemented.
+
+### Step 13.4 — §L6: Performance Polish
+
+**Perceived Performance Patterns:**
+- Scan progress: indeterminate → determinate transition with phase labels and percentage
+- File lists: DiffUtil with payload-based partial rebind (no full layout recalculation)
+- Dashboard: view recycling with in-place updates (`canUpdateInPlace` pattern)
+- Thumbnail loading: Glide with placeholders (immediate visual feedback)
+- Navigation: shared element transitions via `MotionUtil.navOptions()`
+
+**Positive Verifications:**
+- ✅ Scan progress provides continuous feedback (no "Please wait..." black box)
+- ✅ File count shown during indexing phase ("Ricky found 12,345 files")
+- ✅ Cache debounce (3000ms) prevents excessive disk writes during rapid state changes
+- ✅ Scan cache enables instant startup with last scan results
+
+> **F-090** | Severity: **POLISH** | Confidence: **MEDIUM**
+> **Title:** No skeleton screen or shimmer for dashboard on first load before scan data
+> **Section:** §L6 — Performance Polish
+> **Finding:** `StorageDashboardFragment` shows the device storage bar immediately (from `StatFs`), but the category breakdown and top files sections either show "No scan data" or nothing until scan data arrives via LiveData. There is no skeleton/shimmer/placeholder for these sections — just a text message or absence.
+> **Why it matters:** On first app launch, the dashboard feels incomplete. A skeleton screen communicating "data will appear here" would set better expectations.
+> **Recommendation:** Add simple placeholder text or a subtle "Run a scan to see category breakdown" call-to-action card. This is already partially done with `dashboard_no_scan` text but could include a visual placeholder for the category area.
+> **Effort:** LOW
+> **Confidence:** MEDIUM — Source: [CODE]
+
+### Step 13.5 — §M1: Version & Update Management
+
+- **Version strategy:** `versionCode 4`, `versionName "1.2.1"` in `app/build.gradle:17-18`. Simple sequential versioning.
+- **Schema versioning:** `ScanCache` uses `CACHE_VERSION = 1` (`ScanCache.kt:16`). Reads check the version field and discard incompatible cache.
+- **Cloud connection migration:** `CloudConnectionStore.kt:51-65` has a plaintext → encrypted SharedPreferences migration with a `migration-complete` flag.
+- **No changelog or update notification mechanism** — appropriate for the app's maturity (v1.2.1).
+
+**Positive Verifications:**
+- ✅ Cache version field enables future schema migration
+- ✅ Cloud credential migration with idempotency flag (won't re-run)
+- ✅ Atomic cache writes via temp file + rename (`ScanCache.kt:43-49`)
+
+### Step 13.6 — §M2: Observability
+
+- **Crash reporting:** `CrashReporter.kt` (186 LOC) — custom UncaughtExceptionHandler that writes crash files to disk and creates GitHub Issues on next launch. Requires user opt-in (GitHub token + repo configured in settings).
+- **Logging:** Standard `android.util.Log` calls (minimal, only in catch blocks and critical paths)
+- **No analytics:** No Firebase Analytics, Mixpanel, Amplitude, or any telemetry SDK
+- **No performance monitoring:** No Firebase Performance or ANR reporting beyond crash files
+
+**Positive Verifications:**
+- ✅ Crash reports include: app version, device info, Android version, thread name, full stack trace (capped at 8KB)
+- ✅ CrashReporter is opt-in with user-controlled GitHub token — privacy-first approach
+- ✅ Synchronous crash file write before process death — reliable capture
+- ✅ Pending report count exposed for settings UI (`pendingReportCount()`)
+
+> **F-091** | Severity: **LOW** | Confidence: **HIGH**
+> **Title:** No duplicate detection for crash reports — same crash creates multiple GitHub Issues
+> **Section:** §M2 — Observability
+> **Finding:** `CrashReporter.kt:160-184` creates a new GitHub Issue for every crash file. If the same crash occurs repeatedly (e.g., a consistent startup crash), each occurrence generates a separate Issue. The `extractTitle()` method at line 141 creates titles from the exception message, but identical crashes produce identical-titled Issues rather than being deduplicated.
+> **Why it matters:** Repeated crashes flood the GitHub Issues with duplicates, making it harder to triage.
+> **Recommendation:** Before creating an Issue, compute a hash of the exception class + top 3 stack frames. Store previously reported hashes in SharedPreferences. Skip upload if the hash was already reported within the last 7 days.
+> **Effort:** MEDIUM
+> **Confidence:** HIGH — Source: [CODE]
+
+### Step 13.7 — §M3: Feature Flags
+
+**No feature flag system exists.** There are no feature toggles, A/B tests, remote configuration, or rollback mechanisms. All features are always enabled.
+
+**Assessment:** Appropriate for the app's maturity (v1.2.1, single developer, no backend). Feature flags add complexity that is not justified at this scale. **No finding needed.**
+
+### Step 13.8 — §N1–N4: i18n & Localization
+
+**Current State:**
+- `res/values/strings.xml`: All primary user-facing strings (with plurals support)
+- `res/values-night/colors.xml`: Dark mode colors
+- `res/values-sw600dp/`: Tablet layout overrides
+- **No translation directories** (`values-fr/`, `values-es/`, etc.)
+- **No RTL layout support** (no `values-ldrtl/` or `android:supportsRtl` in manifest)
+
+> **F-092** | Severity: **LOW** | Confidence: **HIGH**
+> **Title:** No i18n infrastructure — app is English-only with no path to localization
+> **Section:** §N1 — i18n & Localization
+> **Finding:** The app has no translated string resources. While most strings are properly in `strings.xml` (making translation mechanically possible), there are several barriers: (1) Two Kotlin files contain hardcoded English strings (F-088, F-089). (2) `FileItemUtils.kt:231` uses `Locale.getDefault()` for date formatting but `SearchQueryParser.kt:37` uses `Locale.US` for date parsing in search queries — meaning date-based search only accepts US date format. (3) No RTL layout support declared.
+> **Why it matters:** For a file manager app, i18n is a significant growth lever. File managers are used globally, and the current architecture is 90% ready — the remaining 10% (hardcoded strings, locale-specific parsing) would block localization.
+> **Recommendation:** (1) Fix the 2 hardcoded string files (F-088, F-089). (2) Add `android:supportsRtl="true"` to AndroidManifest. (3) Document date format expectations for search queries. These changes make the app localization-ready without requiring actual translations.
+> **Effort:** LOW (readiness) / HIGH (actual translations)
+> **Confidence:** HIGH — Source: [CODE]
+
+### Step 13.9 — §O1: Scale Cliff Analysis
+
+**Cliff 1 — MainViewModel as Single State Holder (790 LOC):**
+The entire app's file state flows through one `MainViewModel` with ~15 `LiveData` properties. Currently manageable at 790 LOC, but adding features (search indexing, background sync, multi-tab browsing) will push this past 1,000 LOC. The cliff arrives when two features need to modify the same state simultaneously (e.g., background scan + user rename).
+
+**Cliff 2 — JSON-based ScanCache (50,000 file cap):**
+`ScanCache.kt` serializes all scanned files to a single JSON file. At 50,000 files (the cap), this produces a multi-MB JSON file. Parsing performance degrades linearly. The cliff is `O(n)` startup time as file count grows.
+
+**Cliff 3 — In-Memory File Lists:**
+All file data is held in memory as `List<FileItem>`. A device with 200,000+ files (common on phones with years of photos) will consume significant heap. The duplicate detection (`DuplicateFinder`) also holds full file lists in memory during MD5 hashing.
+
+**Assessment:** For "single user, thousands of files" (from §0), these cliffs are distant. The first cliff to hit is likely the ScanCache JSON parse time at ~30,000-50,000 files.
+
+### Step 13.10 — §O2: Feature Addition Risk Map
+
+| Feature | Difficulty | Structural Changes Required |
+|---------|-----------|---------------------------|
+| Background auto-scan | MEDIUM | Requires `WorkManager`, state synchronization between `ScanService` and `MainViewModel`, cache invalidation logic |
+| Search indexing (full-text) | HIGH | Requires SQLite/Room for inverted index, migration from in-memory lists, background index builder |
+| Multi-language support | LOW | String resources ready (90%), fix 2 hardcoded files, add `supportsRtl` |
+| File sharing/transfer | LOW | Intent-based, no structural changes needed |
+| Cloud sync (bidirectional) | HIGH | Conflict resolution, delta tracking, offline queue — significant architecture addition |
+
+### Step 13.11 — §O3: Technical Debt Compounding Map
+
+| Debt | Current Cost | 6-Month Trajectory | Compounding Risk |
+|------|-------------|-------------------|-----------------|
+| MainViewModel size (790 LOC) | LOW | MEDIUM — each feature adds ~50-100 LOC | State coupling makes refactoring harder over time |
+| JSON ScanCache | LOW | MEDIUM — parse time grows linearly with file count | Migration to Room/SQLite becomes harder as cache schema evolves |
+| No automated tests beyond unit | LOW | HIGH — regression risk compounds with each feature | Manual testing burden grows exponentially |
+| Hardcoded English strings (2 files) | LOW | LOW — but blocks i18n entirely until fixed | Opportunity cost: every release without i18n delays global reach |
+
+### Step 13.12 — §O4: Dependency Decay Forecast
+
+| Dependency | Current Version | Status | EOL Risk |
+|-----------|----------------|--------|----------|
+| Kotlin | 1.9.24 | ⚠️ Behind (2.0+ is stable) | LOW — no breaking changes, but missing K2 compiler benefits |
+| Material Components | 1.12.0 | ✅ Latest stable | LOW |
+| Navigation | 2.7.7 | ⚠️ Behind (2.8+ has type-safe routes) | LOW — functional, SafeArgs deprecated in favor of KSP routes |
+| Lifecycle | 2.8.7 | ✅ Latest | LOW |
+| Glide | 4.16.0 | ✅ Latest | LOW |
+| Security Crypto | 1.1.0-alpha06 | ⚠️ Alpha — no GA release exists | MEDIUM — alpha APIs may change |
+| JSch (mwiede) | 0.2.21 | ✅ Active fork | LOW |
+| Coroutines | 1.8.1 | ⚠️ Behind (1.9+ available) | LOW |
+
+> **F-093** | Severity: **LOW** | Confidence: **MEDIUM**
+> **Title:** Kotlin 1.9.24 — should plan migration to Kotlin 2.0+
+> **Section:** §O4 — Dependency Decay Forecast
+> **Finding:** `build.gradle:3` pins `kotlin_version = "1.9.24"`. Kotlin 2.0 introduced the K2 compiler (faster compilation, better type inference) and Kotlin 2.1+ is now stable. While 1.9.x is still supported, new Kotlin features target 2.x.
+> **Why it matters:** Delaying the upgrade makes it harder as the gap widens. The migration is generally smooth but may require `ksp` plugin version updates.
+> **Recommendation:** Plan Kotlin 2.0+ migration in the next medium-term cycle. Test with `languageVersion = "2.0"` first to identify any breaking changes.
+> **Effort:** MEDIUM
+> **Confidence:** MEDIUM — Source: [CODE]
+
+### Step 13.13 — §O5: Constraint Evolution Analysis
+
+**Current Constraints:**
+1. **Single-Activity MVVM** — appropriate, no reason to evolve
+2. **No backend server** — trigger: if cloud sync, push notifications, or remote threat definitions are needed
+3. **SharedPreferences for settings** — trigger: if settings schema exceeds ~20 keys or needs complex queries
+4. **JSON file cache** — trigger: 30,000+ files or need for indexed queries. Migration: Room/SQLite
+5. **No DI framework** — trigger: when more than 3 singletons need mocking for tests
+
+**Assessment:** None of these constraints are currently problematic. The most likely trigger is #4 (JSON cache) for power users with large file collections.
+
+### Step 13.14 — §O6: Maintenance Trap Inventory
+
+| Pattern | Current Impact | Scale Impact |
+|---------|---------------|-------------|
+| Programmatic UI in `StorageDashboardFragment` (427 LOC of manual View building) | Manageable | Hard to maintain — any design change requires rewriting imperative layout code |
+| Single `MainViewModel` for all state | Manageable | State coupling — changes to scan state may break file operations or dashboard |
+| `AntivirusFragment` polling via Handler | Works | Fragile — not lifecycle-aware, doesn't follow the reactive pattern used elsewhere |
+
+### Step 13.15 — §O7: Bus Factor
+
+**Single Developer Risks:**
+- `ArborescenceView.kt` (1,235 LOC) — custom Canvas rendering with layout algorithms. Complex geometry code requiring deep Android Canvas knowledge.
+- `AppIntegrityScanner.kt` (712 LOC) — security heuristic knowledge (root detection, hooking framework detection) is domain-specific.
+- `MotionUtil.kt` — well-documented, but the motion vocabulary is a design decision encoded in code.
+
+**Mitigations already in place:**
+- ✅ Inline audit references (I5-01, D1, B1, etc.) provide rationale for design decisions
+- ✅ File naming aligns with class names (76/76) — easy navigation
+- ✅ 25 packages with clear separation — good discoverability
+- ✅ `MotionUtil` KDoc documents the design philosophy
+
+---
+
+### Phase 13 — Positive Verification Summary
+
+| Area | Verdict |
+|------|---------|
+| Design tokens: colors, spacing, radius, motion durations all in resources | ✅ Excellent |
+| MotionUtil: centralized, reduced-motion aware, resource-based | ✅ Exemplary |
+| Crash reporting: privacy-first opt-in via GitHub Issues | ✅ Good for maturity |
+| Cache versioning with migration-ready structure | ✅ Forward-looking |
+| Cloud credential migration with idempotency | ✅ Properly implemented |
+| DiffUtil with payload-based partial rebind | ✅ Performance-conscious |
+| All primary strings in strings.xml with plurals | ✅ i18n foundation solid |
+| No feature flags — appropriate for v1.2.1 | ✅ Correct decision |
+| Dependency versions mostly current, no known CVEs | ✅ Well-maintained |
+
+---
+
+### Phase 13 — Cumulative Finding Count
+
+| Severity | P1 | P2 | P3 | P4 | P5 | P6 | P7 | P8 | P9 | P10 | P11 | P12 | P13 | Total |
+|----------|---|---|---|---|---|---|---|---|---|---|---|---|---|-------|
+| CRITICAL | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| HIGH | 1 | 0 | 2 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 4 |
+| MEDIUM | 6 | 2 | 5 | 3 | 0 | 1 | 2 | 2 | 0 | 3 | 0 | 0 | 1 | 25 |
+| LOW | 11 | 6 | 5 | 5 | 6 | 3 | 3 | 3 | 3 | 4 | 5 | 1 | 4 | 59 |
+| POLISH | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 2 |
+| **Total** | **18** | **8** | **12** | **8** | **6** | **4** | **5** | **6** | **3** | **7** | **6** | **1** | **6** | **90** |
+
+**Next: Phase 14 — Cross-Cutting Concern Map (§VIII)**
+
+Awaiting confirmation to proceed with Phase 14, or to fix findings from Phase 13.

@@ -234,14 +234,14 @@
             android:accessibilityLiveRegion="polite"
             android:visibility="gone" />
 
-        <!-- Back-to-root mini FAB (bottom-start) -->
+        <!-- Re-center mini FAB (top-end) -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_reset_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|start"
-            android:layout_marginStart="@dimen/spacing_lg"
-            android:layout_marginBottom="@dimen/spacing_bottom_inset"
+            android:layout_gravity="top|end"
+            android:layout_marginEnd="@dimen/spacing_lg"
+            android:layout_marginTop="@dimen/spacing_md"
             android:contentDescription="@string/reset_view"
             android:focusable="true"
             android:src="@drawable/ic_recenter"

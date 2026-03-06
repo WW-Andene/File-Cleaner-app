@@ -465,11 +465,23 @@ class ArborescenceView @JvmOverloads constructor(
     fun getExpandedPaths(): Set<String> =
         layouts.filter { it.value.expanded }.keys.toSet()
 
-    /** Reset zoom and pan to center the tree at 1x scale, without rebuilding layout. */
+    /** Re-center: if a folder is selected, center on it; otherwise center on root. */
     fun resetView() {
-        viewMatrix.reset()
         scaleFactor = 1f
-        viewMatrix.postTranslate(treeInitialOffset, treeInitialOffset)
+        viewMatrix.reset()
+
+        val targetLayout = if (selectedPath != null) layouts[selectedPath] else null
+        val layout = targetLayout ?: rootNode?.let { layouts[it.path] }
+
+        if (layout != null) {
+            val centerX = layout.x + layout.w / 2f
+            val centerY = layout.y + layout.h / 2f
+            val dx = width / 2f - centerX
+            val dy = height / 2f - centerY
+            viewMatrix.postTranslate(dx, dy)
+        } else {
+            viewMatrix.postTranslate(treeInitialOffset, treeInitialOffset)
+        }
         invalidate()
     }
 

@@ -1584,6 +1584,427 @@ disable animations and respects accessibility preferences.
 | LOW | 11 | 6 | 5 | 5 | 27 |
 | **Total** | **18** | **8** | **12** | **8** | **46** |
 
-**Next: Phase 5 — Visual Design & Aesthetics (Category E)**
+---
 
-Awaiting confirmation to proceed with Phase 5, or to fix findings from Phase 1/2/3/4.
+## PHASE 5 — VISUAL DESIGN & AESTHETICS (Category E)
+
+> **Calibration reminder:** §E was set to STANDARD during Phase 0 (Productivity/Utility domain).
+> File managers are judged more on clarity, information density, and speed than on delight.
+> Visual design should serve navigability and reduce cognitive load above all else.
+
+### Step 5.1 — §E1: Design Token System
+
+```
+[POSITIVE VERIFICATION] — Comprehensive design token architecture
+The app implements a thorough, well-documented design token system across three files:
+
+**Color tokens (colors.xml, 217 lines light / 218 lines dark):**
+- OKLCH perceptual lightness model for surface elevation ladder
+- Forest green primary (#247A58) with warm amber accent (#E8861F)
+- Chromatic warm surfaces (never neutral gray) — green-tinted hierarchy
+- Full M3 surface container hierarchy (Lowest/Low/Mid/High/Highest)
+- 8 file category colors, 6 duplicate group colors, 5 junk category colors
+- All tokens have documented OKLCH lightness values and WCAG contrast ratios
+- Complete dark mode parity with lifted colors and chromatic near-blacks
+
+**Spacing tokens (dimens.xml, 204 lines):**
+- 4dp base grid: micro/2dp → xs/4dp → sm/8dp → md/12dp → lg/16dp → xl/20dp → xxl/24dp → 3xl/32dp
+- Documented off-grid exceptions (spacing_10 for chip dot/legend)
+- Corner radius scale with semantic naming (radius_btn, radius_card, radius_modal, radius_pill)
+- Elevation scale: 0/1/2/4/8/16dp with semantic names
+- Stroke widths: none/default/selected
+- Icon size scale: small/inline/nav/file_list/empty_state
+- Touch target minimum: 48dp (Material guideline)
+
+**Motion tokens (dimens.xml, lines 196-203):**
+- 5-tier motion vocabulary: micro/120ms, enter/220ms, exit/160ms, page/280ms, emphasis/400ms
+- Documented character: "considerate utility — brisk but not mechanical"
+- Exit animations faster than enter (160ms vs 220ms) — correct asymmetry
+- Stagger step: 40ms per item, capped at 160ms total
+
+**Typography tokens (dimens.xml, lines 181-194):**
+- Major Third (1.25×) scale for upper range: 14 → 16 → 20 → 26 → 32sp
+- Compressed lower range (10, 11, 12, 13sp) for legibility at small sizes
+- Separate emoji size (24sp)
+```
+
+```
+[LOW] — F-047: Off-grid spacing_10 used without systematic need documentation
+Section: §E1 — Design Token System
+Finding: dimens.xml:9 — `spacing_10` (10dp) is the only off-grid value, documented
+  as "chip dot and legend spacing." However, the comment doesn't explain WHY 8dp or
+  12dp wouldn't work. Off-grid values weaken the spatial system's predictability.
+  Additionally, `spacing_chip` (6dp) is another off-grid value without similar
+  documentation. The `bottom_nav_height` at 57dp is also oddly off-grid.
+Why it matters: Minor — 2-3 off-grid values in a 200-line token file is exceptionally
+  clean. The system is well-governed overall.
+Recommendation: Add brief rationale for each off-grid value (e.g., "10dp: optical
+  correction for legend dot centering").
+Effort: TRIVIAL
+Confidence: LOW — Source: [CODE]
+```
+
+### Step 5.2 — §E2: Visual Rhythm & Spatial Composition
+
+```
+[POSITIVE VERIFICATION] — Consistent spatial rhythm across layouts
+Layout files demonstrate disciplined use of the spacing token system:
+
+- **fragment_raccoon_manager.xml**: All padding uses spacing_lg (16dp), card margins
+  use spacing_md (12dp) or spacing_lg (16dp), icon-to-text margins use spacing_lg (16dp).
+  The hero card uses spacing_xl (20dp) for more breathing room — correct hierarchy.
+- **fragment_browse.xml**: Horizontal padding consistently spacing_lg (16dp), vertical
+  spacing follows xs (4dp) → sm (8dp) → md (12dp) progression.
+- **item_file.xml**: Padding spacing_md (12dp), icon-to-text margin spacing_md (12dp),
+  consistent touch target 48dp minimum on checkbox.
+- **fragment_dashboard.xml**: Card sections use consistent spacing_md (12dp) margins
+  between cards, spacing_lg (16dp) inner padding.
+
+All layouts use token references (`@dimen/spacing_*`) instead of hardcoded dp values.
+Zero hardcoded spacing values found in key layout files.
+```
+
+```
+[LOW] — F-048: Dashboard quick action buttons use Widget.MaterialComponents parent instead of branded style
+Section: §E2 — Visual Rhythm & Spatial Composition
+Finding: fragment_dashboard.xml:269-309 — The three quick action buttons (Clean Junk,
+  View Duplicates, View Large) use `style="@style/Widget.MaterialComponents.Button.OutlinedButton"`
+  directly instead of the branded `@style/Widget.FileCleaner.Button.Outlined`. This means
+  they miss the branded cornerRadius, letterSpacing, and minHeight from the app's style system.
+Why it matters: Visual inconsistency — these buttons will render with the Material default
+  corner radius (4dp) instead of the branded 12dp, creating a visual seam with other buttons
+  in the app.
+Recommendation: Change to `style="@style/Widget.FileCleaner.Button.Outlined"`.
+Effort: TRIVIAL
+Confidence: HIGH — Source: [CODE]
+```
+
+### Step 5.3 — §E3: Color Craft & Contrast
+
+```
+[POSITIVE VERIFICATION] — OKLCH-based color system with documented contrast ratios
+The color system is exceptionally well-crafted:
+
+**Light mode brand colors:**
+- Primary: #247A58 (forest green, OKLCH L=0.51) — strong identity
+- Accent: #E8861F (warm amber, OKLCH L=0.65) — excellent complementary contrast
+- Error: #C62828 (deep red) — distinct from primary/accent hue
+
+**Surface elevation ladder (light):**
+- surfaceBase: #FBFAF8 (L=0.98) — warmest, no pure white
+- surfaceColor: #F5F4F1 (L=0.96) — card backgrounds
+- surfaceElevated: #F0EFEC (L=0.94) — dialogs, drawers
+- surfaceContainer hierarchy: Lowest(#F5F3F0), Low(#EBE9E5), Mid(#E1DFDB), High(#D7D5D1), Highest(#CDCBC7)
+- All steps ~2-3% OKLCH lightness apart — perceptually uniform
+
+**Dark mode counterparts:**
+- surfaceBase: #1A1C1B (L=0.12) — chromatic near-black with green tint, never #000000
+- Primary lifted: #5ECE9E (L=0.78) — higher lightness for dark backgrounds
+- Surface elevation through lighter greens, not pure grays
+
+**Text hierarchy (chromatic, never pure gray):**
+- textPrimary: #1B3C2E (green-tinted near-black) vs dark #E8ECE9
+- textSecondary: #4E6B5C vs dark #B5C4BB
+- textTertiary: #7A9488 vs dark #8DA498
+- All maintain ≥4.5:1 contrast on their respective surface colors (documented)
+
+**Category colors (8 file types):**
+- Each has unique hue + documented WCAG ratios for icon-on-tint usage
+- catImage #3B82F6, catVideo #A855F7, catAudio #EC4899, catDocument #0D9488,
+  catApp #F97316, catArchive #8B5CF6, catDownload #06B6D4, catOther #6B7280
+```
+
+```
+[LOW] — F-049: Some alpha values hardcoded instead of using tokens
+Section: §E3 — Color Craft & Contrast
+Finding: Multiple layouts use hardcoded alpha values:
+  - fragment_raccoon_manager.xml:131 — `android:alpha="@dimen/alpha_raccoon_logo"` (tokenized, good)
+  - fragment_raccoon_manager.xml:141 — `android:alpha="0.87"` (hardcoded)
+  - fragment_dashboard.xml:92 — `android:alpha="0.8"` (hardcoded)
+  These represent secondary text emphasis levels that should be defined as tokens.
+Why it matters: Minor inconsistency — some alpha values are tokenized (alpha_raccoon_logo)
+  while others are inline constants.
+Recommendation: Define alpha_text_emphasis (0.87) and alpha_text_secondary_on_surface (0.8)
+  as token dimens.
+Effort: TRIVIAL
+Confidence: MEDIUM — Source: [CODE]
+```
+
+### Step 5.4 — §E4: Typography Craft
+
+```
+[POSITIVE VERIFICATION] — Complete typography system with optical corrections
+themes.xml defines 20+ text appearances with careful optical corrections:
+
+**Scale (Major Third 1.25×):**
+- Display: 32sp bold, -0.02 tracking, 1.2× line height
+- Headline: 26sp bold, -0.01 tracking, 1.2× line height
+- Title: 20sp medium, -0.005 tracking, 1.2× line height
+- Subtitle: 16sp medium, 0 tracking, 1.3× line height (bridge)
+- Body: 14sp regular, +0.005 tracking, 1.4× line height
+- BodySmall: 12sp regular, +0.01 tracking, 1.5× line height
+- Label: 11sp medium, +0.06 tracking, ALL CAPS, 1.5× line height
+- Caption: 10sp regular, +0.03 tracking, 1.5× line height
+
+**Optical corrections:**
+- Negative tracking on headings (-0.02, -0.01) for visual tightening at large sizes
+- Positive tracking on small text (+0.01, +0.03, +0.06) for legibility
+- Line height increases as text size decreases (1.2× → 1.5×) — correct for readability
+- Label uses +0.06 tracking with ALL CAPS — mandatory for caps legibility
+
+**Specialized variants:**
+- Numeric: `fontFeatureSettings="tnum"` for tabular lining figures in data displays
+- NumericDisplay/NumericHeadline/NumericTitle/NumericMedium — tnum at every scale
+- Mono: monospace for code paths and package names
+- FileViewer.Filename, FileViewer.Info, FileViewer.Content — domain-specific
+- SectionHeader: primary-colored label for settings/grouped content
+
+All text appearances use token references for sizes (@dimen/text_*), not hardcoded sp values.
+```
+
+```
+[LOW] — F-050: Overline text style duplicates Label configuration
+Section: §E4 — Typography Craft
+Finding: themes.xml:440-447 — TextAppearance.FileCleaner.Overline uses 11sp, medium,
+  ALL CAPS, +0.1 tracking, textSecondary — which is very similar to
+  TextAppearance.FileCleaner.Label (11sp, medium, ALL CAPS, +0.06 tracking, textSecondary).
+  The only difference is tracking (0.06 vs 0.1). Having two near-identical styles
+  risks inconsistent usage by developers.
+Why it matters: Minor — two visually-similar-but-not-identical styles can lead to
+  arbitrary choice by developers, weakening the type system.
+Recommendation: Consider consolidating or making the distinction more explicit in naming
+  (e.g., "LabelWide" for the wider-tracked variant).
+Effort: TRIVIAL
+Confidence: LOW — Source: [CODE]
+```
+
+### Step 5.5 — §E5: Component Visual Quality
+
+```
+[POSITIVE VERIFICATION] — Comprehensive component style system
+themes.xml defines 30+ component styles forming a complete, branded design language:
+
+**Buttons (6 variants):**
+- Filled (Widget.FileCleaner.Button): 12dp corners, no all-caps, 48dp min height
+- Outlined (Button.Outlined): matching corners + branded stroke color
+- Destructive (Button.Destructive): colorError background, textOnPrimary text
+- Text (Button.Text): low-emphasis, primary-colored text
+- Ghost (Button.Ghost): lowest emphasis, secondary text with border ripple
+- Icon (Button.Icon): circular touch target with 50% corner size
+- Small variants (Button.Small, Button.Outlined.Small): 36dp height for compact contexts
+
+**Cards (4 variants):**
+- Default (Widget.FileCleaner.Card): 16dp corners, 2dp elevation, 1dp stroke
+- Selected (Card.Selected): highlighted background + selected border
+- Elevated (Card.Elevated): 4dp elevation, no stroke — hero/raised emphasis
+- Flat (Card.Flat): 0dp elevation, border only — less prominent
+- Outlined (Card.Outlined): 0dp elevation, explicit outlined variant
+
+**Chips (3 variants):** Filter, Choice, Action — all pill-shaped, state-aware backgrounds
+
+**Interactive state selectors:** chip_bg_color, bottom_nav_color, switch_thumb/track,
+card_stroke_color — all cover checked/pressed/focused/disabled states correctly.
+
+**StateListAnimator:** card_state_list_anim provides translationZ changes:
+- Dragged: +6dp (lift for drag), Pressed: 0dp (pushed in), Focused: +4dp, Default: +2dp
+- All transitions use motion_micro (120ms) — correct for state feedback
+```
+
+```
+[LOW] — F-051: Hero card uses stateListAnimator but also sets cardElevation
+Section: §E5 — Component Visual Quality
+Finding: fragment_raccoon_manager.xml:89 — The hero scan card sets both
+  `app:cardElevation="@dimen/elevation_raised"` (4dp) and
+  `android:stateListAnimator="@animator/hero_card_state_list_anim"`.
+  The stateListAnimator controls translationZ (the interactive elevation delta),
+  while cardElevation sets the base elevation. The interaction is correct —
+  total visible elevation = cardElevation + translationZ. However, if the
+  hero_card_state_list_anim sets different base translationZ values than the
+  regular card_state_list_anim, the total elevation stack may not follow the
+  intended elevation scale.
+Why it matters: Minor — the combined elevation works correctly in practice.
+  Both animators use the same structure with motion_micro timing.
+Recommendation: Document the intended total elevation for each card variant
+  (e.g., "hero: 4dp base + 2dp translationZ = 6dp resting").
+Effort: TRIVIAL
+Confidence: LOW — Source: [CODE]
+```
+
+### Step 5.6 — §E6: Interaction Design Quality
+
+```
+[POSITIVE VERIFICATION] — Rich, state-aware interaction design
+The app demonstrates thorough attention to interaction feedback:
+
+**Touch feedback:**
+- All interactive cards have `android:foreground="@drawable/ripple_card"` or
+  `android:foreground="?attr/selectableItemBackground"` for Material ripple feedback
+- Hero card uses branded `ripple_hero_card` drawable
+- Buttons maintain 48dp minimum touch targets (touch_target_min)
+- CheckBox minWidth/minHeight both set to 48dp touch target
+
+**State communication:**
+- chip_bg_color.xml covers 6 states: disabled, checked+pressed, checked+focused,
+  checked, pressed, focused, default — exhaustive state coverage
+- bottom_nav_color.xml: disabled, checked+pressed, checked, pressed, default
+- Card stroke colors change on focus/selection for keyboard navigation
+- card_state_list_anim provides physical-feeling elevation changes on press/focus/drag
+
+**Focus management (keyboard/accessibility):**
+- fragment_browse.xml uses nextFocusDown/nextFocusRight/nextFocusLeft for logical
+  focus traversal order in the selection action bar
+- fragment_raccoon_manager.xml defines nextFocusUp/nextFocusDown/nextFocusRight/nextFocusLeft
+  for the entire hub card grid — full 2D focus navigation
+
+**Motion character:**
+- Custom pathInterpolator (fast_out_slow_in_custom): "M 0,0 C 0.35,0 0.1,1 1,1"
+  — slightly snappier than Material default, matching "considerate utility" character
+- Enter animations: slide+fade with staggered content reveal
+- Exit animations: faster than enter (160ms vs 220ms) — correct asymmetry
+- Dialog enter: subtle 90% scale-up with fade — non-distracting
+- Page transitions: 5% lateral slide — minimal, functional
+```
+
+### Step 5.7 — §E7: Overall Visual Professionalism
+
+```
+[POSITIVE VERIFICATION] — High visual professionalism for a utility app
+The design system exhibits professional-grade craft:
+
+1. **Consistent naming conventions** — all tokens follow prefix_category_variant pattern
+   (spacing_*, radius_*, elevation_*, text_*, color prefix convention)
+2. **Exhaustive dark mode** — 218 dark mode color tokens, 1:1 parity with light mode
+3. **Documented rationale** — XML comments explain WHY choices were made (OKLCH values,
+   WCAG ratios, "considerate utility" motion character)
+4. **Chromatic warmth** — surfaces are never neutral gray; green tint carries through
+   all surface levels, creating warmth distinctive from generic Material apps
+5. **Hub layout information architecture** — hero card gradient for primary action,
+   full-width cards for secondary actions, 2-column grid for advanced tools,
+   section headers for grouping — clear visual hierarchy without complex ConstraintLayout
+6. **Empty states** — branded with raccoon mascot, constrained max-width text,
+   centered composition with appropriate vertical spacing
+7. **Skeleton loading** — dedicated shimmer dimensions for loading placeholders
+```
+
+### Step 5.8 — §E8: Product Aesthetics Axis-Driven
+
+```
+[POSITIVE VERIFICATION] — Appropriate utility-first aesthetics
+For a Productivity/Utility app (per Phase 0 calibration):
+
+- **Clarity over delight**: Information density is prioritized — file names, sizes,
+  dates are immediately visible without decoration
+- **Functional color**: Category colors serve navigation (file type identification),
+  not just decoration. Duplicate group colors distinguish grouping.
+- **Restrained animation**: motion_micro at 120ms for state feedback, motion_page at
+  280ms for navigation — no playful bounces or excessive easing
+- **Warm but professional**: Chromatic green-tinted surfaces add personality without
+  impeding utility. The raccoon branding (logo, mascot naming) adds warmth.
+- **Data-first layouts**: Dashboard surfaces numeric data prominently
+  (NumericBody, NumericMedium, NumericTitle styles all use tabular lining figures)
+```
+
+### Step 5.9 — §E9: Visual Identity & Recognizability
+
+```
+[POSITIVE VERIFICATION] — Strong visual identity through design choices
+The app has distinctive visual DNA:
+
+1. **Forest green + warm amber** — an unusual color combination that stands out from
+   Material's default purple/teal palette. The green communicates nature/organic
+   (raccoon theme), while amber adds energy.
+2. **Raccoon mascot** — used in empty states, hub header, app icon. Creates memorable
+   personality. Subdued at 0.85 alpha when decorative.
+3. **Chromatic surfaces** — the green-tinted surface ladder is unique; most apps use
+   neutral gray surfaces. This creates warmth recognizable even in screenshots.
+4. **Hero card gradient** — heroCardStart to heroCardEnd at 135° creates a distinctive
+   primary action card that anchors the hub screen.
+5. **"Ricky" character naming** — the mascot has a name (referenced in empty state
+   placeholder text), adding personality to a utility app.
+```
+
+### Step 5.10 — §E10: Data Storytelling & Visual Communication
+
+```
+[POSITIVE VERIFICATION] — Thoughtful data visualization tokens
+The design system includes dedicated data visualization infrastructure:
+
+- **Segmented bar** dimensions: category_bar_height (6dp), segment_gap (1dp),
+  category_bar_radius (3dp) — for storage breakdown visualization
+- **Top file bar** dimensions: top_file_bar_height (3dp), rank_width (20dp),
+  bar_min_width (4dp/2dp) — for ranked file size display
+- **Size severity colors**: sizeWarn, sizeDanger, sizeCritical —
+  graduated urgency for large file indicators
+- **Category colors with distinct hues**: 8 file types with maximally-different
+  hues (blue, purple, pink, teal, orange, violet, cyan, gray)
+- **Tabular numerals** throughout: tnum fontFeatureSettings ensures aligned
+  columns in numeric displays (storage sizes, file counts, dates)
+- **Dashboard card architecture**: storage card → savings card → stats card →
+  category breakdown → top files → quick actions — progressive disclosure of
+  increasing detail
+```
+
+```
+[LOW] — F-052: Dashboard storage ProgressBar uses platform style instead of branded
+Section: §E10 — Data Storytelling & Visual Communication
+Finding: fragment_dashboard.xml:68-74 — The main storage usage progress bar uses
+  `style="@android:style/Widget.ProgressBar.Horizontal"` (platform default) instead of
+  the app's branded `@style/Widget.FileCleaner.ProgressIndicator`. This means it renders
+  with the platform's default track shape and doesn't use the branded trackCornerRadius
+  or trackThickness.
+Why it matters: The storage bar is the hero data visualization on the dashboard —
+  it should use the branded progress style for visual consistency.
+Recommendation: Switch to Material LinearProgressIndicator with the branded style.
+Effort: LOW
+Confidence: MEDIUM — Source: [CODE]
+```
+
+---
+
+### Phase 5 Summary
+
+| Step | Findings | CRIT | HIGH | MED | LOW |
+|------|----------|------|------|-----|-----|
+| §E1 — Design Token System | 1 | 0 | 0 | 0 | 1 |
+| §E2 — Visual Rhythm & Spatial Composition | 1 | 0 | 0 | 0 | 1 |
+| §E3 — Color Craft & Contrast | 1 | 0 | 0 | 0 | 1 |
+| §E4 — Typography Craft | 1 | 0 | 0 | 0 | 1 |
+| §E5 — Component Visual Quality | 1 | 0 | 0 | 0 | 1 |
+| §E6 — Interaction Design Quality | 0 | 0 | 0 | 0 | 0 |
+| §E7 — Overall Visual Professionalism | 0 | 0 | 0 | 0 | 0 |
+| §E8 — Product Aesthetics Axis-Driven | 0 | 0 | 0 | 0 | 0 |
+| §E9 — Visual Identity & Recognizability | 0 | 0 | 0 | 0 | 0 |
+| §E10 — Data Storytelling | 1 | 0 | 0 | 0 | 1 |
+| **TOTAL** | **6** | **0** | **0** | **0** | **6** |
+
+### Positive Verifications (Phase 5)
+
+1. **Comprehensive design token architecture** — 3-file token system covering color (OKLCH), spacing (4dp grid), motion (5 tiers), typography (Major Third) [CODE]
+2. **Consistent spatial rhythm across layouts** — all spacing uses token references, zero hardcoded dp values [CODE]
+3. **OKLCH-based color system** — perceptually uniform surface elevation ladder, chromatic warm surfaces, documented WCAG ratios [CODE]
+4. **Complete typography system** — 20+ text appearances with optical tracking corrections and line height scaling [CODE]
+5. **Comprehensive component style system** — 6 button variants, 4 card variants, 3 chip variants, state-aware selectors [CODE]
+6. **Rich interaction design** — Material ripple on all interactive elements, 48dp touch targets, 2D focus navigation for keyboard/accessibility [CODE]
+7. **State-aware interaction feedback** — exhaustive state coverage in color selectors (disabled/checked/pressed/focused) [CODE]
+8. **Custom motion character** — pathInterpolator with "considerate utility" easing, enter/exit asymmetry, motion vocabulary tokens [CODE]
+9. **High visual professionalism** — documented rationale, exhaustive dark mode parity, consistent naming conventions [CODE]
+10. **Strong visual identity** — forest green + warm amber palette, raccoon mascot, chromatic surfaces, distinctive hub layout [CODE]
+11. **Data visualization infrastructure** — tabular numerals, segmented bars, size severity colors, progressive disclosure dashboard [CODE]
+
+---
+
+**Phase 5 is complete.**
+
+**Cumulative findings: Phase 1 + Phase 2 + Phase 3 + Phase 4 + Phase 5**
+
+| Severity | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Total |
+|----------|---------|---------|---------|---------|---------|-------|
+| CRITICAL | 0 | 0 | 0 | 0 | 0 | 0 |
+| HIGH | 1 | 0 | 2 | 0 | 0 | 3 |
+| MEDIUM | 6 | 2 | 5 | 3 | 0 | 16 |
+| LOW | 11 | 6 | 5 | 5 | 6 | 33 |
+| **Total** | **18** | **8** | **12** | **8** | **6** | **52** |
+
+**Next: Phase 6 — Deep Aesthetic Analysis (Category E continued)**
+
+Awaiting confirmation to proceed with Phase 6, or to fix findings from Phase 1/2/3/4/5.

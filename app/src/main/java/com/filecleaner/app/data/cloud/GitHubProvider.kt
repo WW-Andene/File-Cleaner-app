@@ -9,6 +9,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLEncoder
 
 /**
  * Cloud provider for GitHub repositories via REST API v3.
@@ -25,6 +26,9 @@ class GitHubProvider(
         private set
 
     private val token get() = connection.authToken
+
+    // F-030: URL-encode individual path segments to prevent path injection
+    private fun encPath(segment: String): String = URLEncoder.encode(segment, "UTF-8")
 
     override suspend fun connect(): Boolean = withContext(Dispatchers.IO) {
         try {
@@ -53,15 +57,16 @@ class GitHubProvider(
             // List user's repos
             "https://api.github.com/user/repos?per_page=100&sort=updated"
         } else {
-            // Path format: /owner/repo/path/to/dir
+            // F-030: URL-encode path segments to prevent path injection
             val parts = remotePath.trimStart('/').split("/", limit = 3)
-            val owner = parts.getOrElse(0) { "" }
-            val repo = parts.getOrElse(1) { "" }
+            val owner = encPath(parts.getOrElse(0) { "" })
+            val repo = encPath(parts.getOrElse(1) { "" })
             val path = parts.getOrElse(2) { "" }
             if (path.isEmpty()) {
                 "https://api.github.com/repos/$owner/$repo/contents/"
             } else {
-                "https://api.github.com/repos/$owner/$repo/contents/$path"
+                val encodedPath = path.split("/").joinToString("/") { encPath(it) }
+                "https://api.github.com/repos/$owner/$repo/contents/$encodedPath"
             }
         }
 
@@ -115,12 +120,14 @@ class GitHubProvider(
     }
 
     override suspend fun download(remotePath: String, output: OutputStream) = withContext(Dispatchers.IO) {
+        // F-030: URL-encode path segments to prevent path injection
         val parts = remotePath.trimStart('/').split("/", limit = 3)
-        val owner = parts.getOrElse(0) { "" }
-        val repo = parts.getOrElse(1) { "" }
+        val owner = encPath(parts.getOrElse(0) { "" })
+        val repo = encPath(parts.getOrElse(1) { "" })
         val path = parts.getOrElse(2) { "" }
+        val encodedPath = path.split("/").joinToString("/") { encPath(it) }
 
-        val apiUrl = "https://api.github.com/repos/$owner/$repo/contents/$path"
+        val apiUrl = "https://api.github.com/repos/$owner/$repo/contents/$encodedPath"
         val url = URL(apiUrl)
         val conn = url.openConnection() as HttpURLConnection
         conn.setRequestProperty("Authorization", "Bearer $token")

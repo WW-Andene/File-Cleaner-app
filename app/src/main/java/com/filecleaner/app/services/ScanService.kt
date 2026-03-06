@@ -78,6 +78,17 @@ class ScanService : Service() {
         fun clearResults() {
             updateStatus { copy(scanResults = null, scanComplete = false, currentProgress = 0, currentPhase = "") }
         }
+
+        // F-038: Consume-on-read — atomically read and clear results to minimize
+        // static data retention window after scan completion.
+        fun consumeResults(): List<ThreatResult>? {
+            var results: List<ThreatResult>? = null
+            updateStatus {
+                results = scanResults
+                if (scanResults != null) copy(scanResults = null) else this
+            }
+            return results
+        }
     }
 
     private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())

@@ -17,7 +17,7 @@ import java.net.URLEncoder
  * and stored in the connection's authToken field.
  */
 class GoogleDriveProvider(
-    private val connection: CloudConnection,
+    private var connection: CloudConnection,
     @Suppress("unused") context: Context
 ) : CloudProvider {
 
@@ -32,7 +32,9 @@ class GoogleDriveProvider(
 
     override val isConnected: Boolean get() = connected
 
-    private val accessToken: String get() = connection.authToken
+    // F-029: Cache token for use after credential clearing, matching SftpProvider/WebDavProvider pattern
+    private var cachedAccessToken: String = connection.authToken
+    private val accessToken: String get() = cachedAccessToken
 
     override suspend fun connect(): Boolean = withContext(Dispatchers.IO) {
         try {
@@ -53,6 +55,8 @@ class GoogleDriveProvider(
                     conn?.disconnect()
                 }
             }
+            // F-029: Drop credential reference after auth completes (matching SftpProvider pattern)
+            connection = connection.copy(authToken = "")
             connected
         } catch (e: Exception) {
             connected = false

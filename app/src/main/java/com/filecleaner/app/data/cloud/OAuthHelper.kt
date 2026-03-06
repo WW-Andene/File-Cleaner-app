@@ -48,20 +48,26 @@ object OAuthHelper {
     private const val PKCE_PREFS = "oauth_pkce_state"
     private const val KEY_CODE_VERIFIER = "pending_code_verifier"
     private const val KEY_PROVIDER = "pending_provider"
+    // F-028: Persist state parameter for CSRF validation on callback
+    private const val KEY_OAUTH_STATE = "pending_oauth_state"
 
     // In-memory cache (loaded from SharedPreferences on access)
     private var pendingCodeVerifier: String? = null
     private var pendingProvider: ProviderType? = null
+    // F-028: In-memory cache for state parameter (CSRF token)
+    private var pendingOAuthState: String? = null
 
     /** F-007: Persist PKCE state to SharedPreferences so it survives process death. */
-    private fun savePkceState(context: Context, verifier: String?, provider: ProviderType?) {
+    private fun savePkceState(context: Context, verifier: String?, provider: ProviderType?, oauthState: String? = null) {
         val prefs = context.getSharedPreferences(PKCE_PREFS, Context.MODE_PRIVATE)
         prefs.edit()
             .putString(KEY_CODE_VERIFIER, verifier)
             .putString(KEY_PROVIDER, provider?.name)
+            .putString(KEY_OAUTH_STATE, oauthState) // F-028
             .apply()
         pendingCodeVerifier = verifier
         pendingProvider = provider
+        pendingOAuthState = oauthState
     }
 
     /** F-007: Restore PKCE state from SharedPreferences after process death. */
@@ -69,6 +75,7 @@ object OAuthHelper {
         if (pendingCodeVerifier != null && pendingProvider != null) return
         val prefs = context.getSharedPreferences(PKCE_PREFS, Context.MODE_PRIVATE)
         pendingCodeVerifier = prefs.getString(KEY_CODE_VERIFIER, null)
+        pendingOAuthState = prefs.getString(KEY_OAUTH_STATE, null) // F-028
         val providerName = prefs.getString(KEY_PROVIDER, null)
         pendingProvider = providerName?.let {
             try { ProviderType.valueOf(it) } catch (_: Exception) { null }
@@ -81,6 +88,7 @@ object OAuthHelper {
         prefs.edit().clear().apply()
         pendingCodeVerifier = null
         pendingProvider = null
+        pendingOAuthState = null // F-028
     }
 
     data class OAuthConfig(
@@ -145,8 +153,8 @@ object OAuthHelper {
             ProviderType.GITHUB -> {
                 // GitHub uses state parameter for CSRF protection
                 val state = generateState()
-                // F-007: Persist PKCE state before launching browser
-                savePkceState(context, state, provider)
+                // F-007+F-028: Persist PKCE state with separate oauthState for CSRF validation
+                savePkceState(context, state, provider, oauthState = state)
 
                 "$GITHUB_AUTH_URL?" +
                     "client_id=${enc(clientId)}" +
@@ -191,8 +199,8 @@ object OAuthHelper {
         val config = getConfig(context, ProviderType.GITHUB) ?: return null
 
         val state = generateState()
-        // F-007: Persist PKCE state before launching browser
-        savePkceState(context, state, ProviderType.GITHUB)
+        // F-007+F-028: Persist PKCE state with separate oauthState for CSRF validation
+        savePkceState(context, state, ProviderType.GITHUB, oauthState = state)
 
         return "$GITHUB_AUTH_URL?" +
             "client_id=${enc(config.clientId)}" +
@@ -275,12 +283,25 @@ object OAuthHelper {
 
     /**
      * Parse the OAuth callback URI for the authorization code.
-     * Supports both the new filecleaner:// scheme and the legacy com.filecleaner.app:// scheme.
+     * F-028: Also validates the state parameter against the stored CSRF token.
+     * F-037: Only accepts the filecleaner:// scheme (legacy scheme removed).
      */
-    fun parseCallbackCode(uri: Uri?): String? {
+    fun parseCallbackCode(uri: Uri?, context: Context? = null): String? {
         if (uri == null) return null
         val scheme = uri.scheme ?: return null
-        if (scheme != "filecleaner" && scheme != "com.filecleaner.app") return null
+        // F-037: Only accept filecleaner:// scheme (legacy com.filecleaner.app:// removed)
+        if (scheme != "filecleaner") return null
+
+        // F-028: Validate state parameter for CSRF protection (RFC 6749 §10.12)
+        val returnedState = uri.getQueryParameter("state")
+        if (context != null) {
+            loadPkceState(context)
+        }
+        val expectedState = pendingOAuthState
+        if (expectedState != null && returnedState != expectedState) {
+            return null // CSRF: state mismatch — reject callback
+        }
+
         return uri.getQueryParameter("code")
     }
 

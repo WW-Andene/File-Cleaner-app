@@ -53,14 +53,11 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="com.filecleaner.app"
-                    android:host="oauth2callback" />
-            </intent-filter>
+            <!-- F-037: Removed legacy com.filecleaner.app:// scheme to reduce deep link
+                 hijacking attack surface. OAuth state validation (F-028) provides CSRF
+                 protection against authorization code injection via the remaining scheme.
+                 TODO: Migrate to Android App Links (https:// with assetlinks.json) for
+                 cryptographic verification of the redirect target. -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />

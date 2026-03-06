@@ -65,7 +65,8 @@ class AntivirusFragment : Fragment() {
                 _binding?.tvPhase?.text = ScanService.currentPhase
                 progressHandler.postDelayed(this, 500)
             } else if (ScanService.scanComplete) {
-                val results = ScanService.scanResults
+                // F-038: Consume-on-read to clear static state after reading results
+                val results = ScanService.consumeResults()
                 if (results != null) {
                     allThreats.clear()
                     allThreats.addAll(results)
@@ -127,10 +128,14 @@ class AntivirusFragment : Fragment() {
             binding.progressContainer.visibility = View.VISIBLE
             startShieldPulse()
             progressHandler.post(progressRunnable)
-        } else if (ScanService.scanComplete && ScanService.scanResults != null) {
-            allThreats.clear()
-            allThreats.addAll(ScanService.scanResults!!)
-            showResults()
+        } else if (ScanService.scanComplete) {
+            // F-038: Consume-on-read to clear static state after reading results
+            val results = ScanService.consumeResults()
+            if (results != null) {
+                allThreats.clear()
+                allThreats.addAll(results)
+                showResults()
+            }
         }
     }
 

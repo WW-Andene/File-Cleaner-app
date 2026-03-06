@@ -72,8 +72,10 @@ object CrashReporter {
             for (file in files) {
                 try {
                     val content = file.readText()
-                    val title = extractTitle(content)
-                    if (createGitHubIssue(token, repo, title, content)) {
+                    // F-034: Redact file paths before uploading to public GitHub Issues
+                    val redacted = redactPaths(content)
+                    val title = extractTitle(redacted)
+                    if (createGitHubIssue(token, repo, title, redacted)) {
                         file.delete()
                     }
                 } catch (_: Exception) {
@@ -137,6 +139,14 @@ object CrashReporter {
     }
 
     // ── GitHub API ──
+
+    // F-034: Redact file paths from crash report bodies to prevent PII leakage
+    // in public GitHub Issues. Matches /storage/emulated/... and /data/... paths.
+    private val PATH_PATTERN = Regex("""/(?:storage|data|sdcard|mnt)[^\s:)\]]*""")
+
+    private fun redactPaths(text: String): String {
+        return PATH_PATTERN.replace(text, "<path-redacted>")
+    }
 
     private fun extractTitle(content: String): String {
         // Extract the exception line for the issue title

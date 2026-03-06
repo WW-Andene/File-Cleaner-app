@@ -438,6 +438,17 @@
                     android:textColor="@color/textSecondary"
                     android:layout_marginBottom="@dimen/spacing_lg" />
 
+                <!-- F-036: Re-showable privacy notice -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_privacy_notice"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_height"
+                    android:text="@string/settings_privacy_notice"
+                    android:textAllCaps="false"
+                    android:layout_marginBottom="@dimen/spacing_sm"
+                    app:cornerRadius="@dimen/radius_btn" />
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_clear_data"
                     style="@style/Widget.FileCleaner.Button.Destructive"

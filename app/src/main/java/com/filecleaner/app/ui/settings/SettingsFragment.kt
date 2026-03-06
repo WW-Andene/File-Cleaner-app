@@ -133,6 +133,17 @@ class SettingsFragment : Fragment() {
         // Note: Settings take effect on next scan
         binding.tvSettingsNote.text = getString(R.string.settings_rescan_note)
 
+        // F-036: Re-showable privacy notice from Settings
+        binding.btnPrivacyNotice.setOnClickListener {
+            val ctx = context ?: return@setOnClickListener
+            activeDialog?.dismiss()
+            activeDialog = MaterialAlertDialogBuilder(ctx)
+                .setTitle(getString(R.string.privacy_notice_title))
+                .setMessage(getString(R.string.privacy_notice_message))
+                .setPositiveButton(getString(R.string.privacy_notice_accept), null)
+                .show()
+        }
+
         // Clear All Data (P3 Security: GDPR data erasure)
         binding.btnClearData.setOnClickListener {
             val ctx = context ?: return@setOnClickListener

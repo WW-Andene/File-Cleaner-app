@@ -2,6 +2,8 @@ package com.filecleaner.app.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 
 /**
  * Singleton wrapper for user preferences. Replaces all previously hardcoded thresholds
@@ -20,10 +22,30 @@ object UserPreferences {
         ctx.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
+    // F-027: Encrypted prefs for sensitive credentials (crash report GitHub token)
+    private val securePrefs: SharedPreferences by lazy {
+        val ctx = appContext ?: throw IllegalStateException(
+            "UserPreferences.init(context) must be called before accessing preferences")
+        val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+        try {
+            EncryptedSharedPreferences.create(
+                "raccoon_secure_prefs",
+                masterKeyAlias,
+                ctx,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        } catch (_: Exception) {
+            // Fallback to regular prefs if encryption fails (rare, e.g. corrupted keystore)
+            ctx.getSharedPreferences("raccoon_secure_prefs_fallback", Context.MODE_PRIVATE)
+        }
+    }
+
     fun init(context: Context) {
         appContext = context.applicationContext
         // Eagerly trigger the lazy init on the calling thread
         prefs
+        securePrefs
     }
 
     // ── Scan thresholds ──
@@ -110,9 +132,19 @@ object UserPreferences {
         get() = prefs.getBoolean("crash_reporting_enabled", false)
         set(value) = prefs.edit().putBoolean("crash_reporting_enabled", value).apply()
 
+    // F-027: Store GitHub token in EncryptedSharedPreferences (has repo scope)
     var crashReportGithubToken: String
-        get() = prefs.getString("crash_report_github_token", "") ?: ""
-        set(value) = prefs.edit().putString("crash_report_github_token", value).apply()
+        get() {
+            // Migrate from plaintext prefs if present
+            val plain = prefs.getString("crash_report_github_token", null)
+            if (plain != null && plain.isNotEmpty()) {
+                securePrefs.edit().putString("crash_report_github_token", plain).apply()
+                prefs.edit().remove("crash_report_github_token").apply()
+                return plain
+            }
+            return securePrefs.getString("crash_report_github_token", "") ?: ""
+        }
+        set(value) = securePrefs.edit().putString("crash_report_github_token", value).apply()
 
     /** GitHub repo in "owner/repo" format. */
     var crashReportRepo: String

@@ -348,7 +348,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleOAuthIntent(intent: Intent?) {
         val uri = intent?.data ?: return
-        val code = OAuthHelper.parseCallbackCode(uri) ?: return
+        // F-028: Pass context to validate state parameter (CSRF protection)
+        val code = OAuthHelper.parseCallbackCode(uri, this) ?: return
 
         // Try the setup dialog callback first (dialog is still open).
         // If it returns true, the setup dialog handled the code exchange itself.

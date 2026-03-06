@@ -47,6 +47,17 @@ class WebDavProvider(private var connection: CloudConnection) : CloudProvider {
 
     override val isConnected: Boolean get() = connected
 
+    // F-031: Validate that constructed URL stays within the expected host to prevent
+    // malicious server hrefs from redirecting requests (and leaking credentials) elsewhere.
+    private fun safeUrl(path: String): URL {
+        val constructed = URL("$baseUrl$path")
+        val expectedHost = URL(baseUrl).host
+        if (constructed.host != expectedHost) {
+            throw java.io.IOException("F-031: URL host mismatch — expected $expectedHost, got ${constructed.host}")
+        }
+        return constructed
+    }
+
     override suspend fun connect(): Boolean = withContext(Dispatchers.IO) {
         try {
             retryOnNetworkError {
@@ -93,7 +104,7 @@ class WebDavProvider(private var connection: CloudConnection) : CloudProvider {
                 var conn: HttpURLConnection? = null
                 try {
                     val path = remotePath.trimEnd('/') + "/"
-                    val url = URL("$baseUrl$path")
+                    val url = safeUrl(path)
                     conn = (url.openConnection() as HttpURLConnection).apply {
                         requestMethod = "PROPFIND"
                         setRequestProperty("Authorization", authHeader())
@@ -128,7 +139,7 @@ class WebDavProvider(private var connection: CloudConnection) : CloudProvider {
         retryOnNetworkError {
             var conn: HttpURLConnection? = null
             try {
-                val url = URL("$baseUrl$remotePath")
+                val url = safeUrl(remotePath)
                 conn = (url.openConnection() as HttpURLConnection).apply {
                     requestMethod = "GET"
                     setRequestProperty("Authorization", authHeader())
@@ -153,7 +164,7 @@ class WebDavProvider(private var connection: CloudConnection) : CloudProvider {
                 var conn: HttpURLConnection? = null
                 try {
                     val path = remotePath.trimEnd('/') + "/$fileName"
-                    val url = URL("$baseUrl$path")
+                    val url = safeUrl(path)
                     conn = (url.openConnection() as HttpURLConnection).apply {
                         requestMethod = "PUT"
                         setRequestProperty("Authorization", authHeader())
@@ -178,7 +189,7 @@ class WebDavProvider(private var connection: CloudConnection) : CloudProvider {
         retryOnNetworkError {
             var conn: HttpURLConnection? = null
             try {
-                val url = URL("$baseUrl$remotePath")
+                val url = safeUrl(remotePath)
                 conn = (url.openConnection() as HttpURLConnection).apply {
                     requestMethod = "DELETE"
                     setRequestProperty("Authorization", authHeader())
@@ -199,7 +210,7 @@ class WebDavProvider(private var connection: CloudConnection) : CloudProvider {
         retryOnNetworkError {
             var conn: HttpURLConnection? = null
             try {
-                val url = URL("$baseUrl$remotePath")
+                val url = safeUrl(remotePath)
                 conn = (url.openConnection() as HttpURLConnection).apply {
                     requestMethod = "MKCOL"
                     setRequestProperty("Authorization", authHeader())

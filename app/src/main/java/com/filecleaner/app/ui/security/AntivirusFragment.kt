@@ -5,8 +5,7 @@ import android.content.ComponentName
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+// F-078: Handler import removed — replaced with LiveData observation
 import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
@@ -57,27 +56,6 @@ class AntivirusFragment : Fragment() {
     private var currentFilter: SeverityFilter = SeverityFilter.ALL
     private var pulseAnimation: Animation? = null
 
-    private val progressHandler = Handler(Looper.getMainLooper())
-    private val progressRunnable = object : Runnable {
-        override fun run() {
-            if (ScanService.isRunning) {
-                updateProgress(ScanService.currentProgress)
-                _binding?.tvPhase?.text = ScanService.currentPhase
-                progressHandler.postDelayed(this, 500)
-            } else if (ScanService.scanComplete) {
-                // F-038: Consume-on-read to clear static state after reading results
-                val results = ScanService.consumeResults()
-                if (results != null) {
-                    allThreats.clear()
-                    allThreats.addAll(results)
-                    isScanning = false
-                    stopShieldPulse()
-                    showResults()
-                }
-            }
-        }
-    }
-
     private enum class SeverityFilter {
         ALL, CRITICAL, HIGH, MEDIUM, LOW_INFO
     }
@@ -120,16 +98,36 @@ class AntivirusFragment : Fragment() {
         // Show last scan time
         showLastScanTime()
 
-        // Restore state if the service is running or has completed results
-        if (ScanService.isRunning) {
-            isScanning = true
-            binding.btnScan.isEnabled = false
-            binding.btnScan.text = getString(R.string.av_scanning)
-            binding.progressContainer.visibility = View.VISIBLE
-            startShieldPulse()
-            progressHandler.post(progressRunnable)
-        } else if (ScanService.scanComplete) {
-            // F-038: Consume-on-read to clear static state after reading results
+        // F-078: Observe ScanService status reactively via LiveData instead of
+        // polling @Volatile properties every 500ms with Handler.postDelayed.
+        // This is lifecycle-aware (no updates when paused) and saves CPU/battery.
+        ScanService.statusLiveData.observe(viewLifecycleOwner) { status ->
+            if (status.isRunning) {
+                if (!isScanning) {
+                    // Transition to scanning UI (restore state after config change)
+                    isScanning = true
+                    binding.btnScan.isEnabled = false
+                    binding.btnScan.text = getString(R.string.av_scanning)
+                    binding.progressContainer.visibility = View.VISIBLE
+                    startShieldPulse()
+                }
+                updateProgress(status.currentProgress)
+                _binding?.tvPhase?.text = status.currentPhase
+            } else if (status.scanComplete && isScanning) {
+                // F-038: Consume-on-read to clear static state after reading results
+                val results = ScanService.consumeResults()
+                if (results != null) {
+                    allThreats.clear()
+                    allThreats.addAll(results)
+                    isScanning = false
+                    stopShieldPulse()
+                    showResults()
+                }
+            }
+        }
+
+        // Restore completed results if service already finished before Fragment created
+        if (!ScanService.isRunning && ScanService.scanComplete) {
             val results = ScanService.consumeResults()
             if (results != null) {
                 allThreats.clear()
@@ -182,11 +180,8 @@ class AntivirusFragment : Fragment() {
         // Pulse the shield icon during scan
         startShieldPulse()
 
-        // Start the foreground service
+        // Start the foreground service — LiveData observer handles progress updates
         ScanService.start(requireContext())
-
-        // Start polling for progress
-        progressHandler.post(progressRunnable)
     }
 
     private fun updatePhase(titleRes: Int, descRes: Int) {
@@ -751,7 +746,7 @@ class AntivirusFragment : Fragment() {
     override fun onDestroyView() {
         activeDialog?.dismiss()
         activeDialog = null
-        progressHandler.removeCallbacksAndMessages(null)
+        // F-078: No Handler cleanup needed — LiveData is lifecycle-aware
         stopShieldPulse()
         super.onDestroyView()
         _binding = null

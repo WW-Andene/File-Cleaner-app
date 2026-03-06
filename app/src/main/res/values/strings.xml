@@ -365,6 +365,8 @@
     <string name="op_invalid_path">Ricky can\u0027t reach that location \u2014 it\u0027s outside accessible storage.</string>
     <string name="error_no_files_to_compress">Ricky needs some files to pack \u2014 select a few first!</string>
     <string name="op_scan_failed">Ricky hit a snag while scanning. Give it another try!</string>
+    <string name="op_undo_failed">Ricky couldn\u0027t restore those files \u2014 something went wrong.</string>
+    <string name="op_confirm_delete_failed">Ricky couldn\u0027t finish cleaning up trash.</string>
 
     <!-- Undo / Trash feedback -->
     <string name="undo_deleted_single">Moved %1$s to trash (%2$s). Undo?</string>
@@ -952,6 +954,7 @@
     <string name="optimize_reanalyze">Re-analyze</string>
     <string name="optimize_analyzing">Ricky is analyzing your files\u2026</string>
     <string name="optimize_no_scan_data">Ricky needs scan data to suggest optimizations.</string>
+    <string name="optimize_analysis_failed">Ricky hit a snag while analyzing \u2014 try again later.</string>
     <string name="optimize_total_reorganize_size">%1$d files totaling %2$s can be reorganized</string>
 
     <!-- Cloud OAuth -->

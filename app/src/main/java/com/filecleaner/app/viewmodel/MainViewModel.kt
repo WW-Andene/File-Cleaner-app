@@ -482,6 +482,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun undoDelete() {
         if (isScanning) return
         viewModelScope.launch {
+            // F-072: Wrap in runCatching — file I/O (safeMove, findDuplicates) can throw
+            runCatching {
             val snapshot = trashMutex.withLock {
                 if (pendingTrash.isEmpty()) return@launch
                 pendingTrash.toMap().also { pendingTrash.clear() }
@@ -526,16 +528,28 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 }
                 saveCache()
             }
+            }.onFailure { e ->
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                android.util.Log.e("MainViewModel", "undoDelete failed", e)
+                _deleteResult.postValue(DeleteResult(0, 0, 0L, canUndo = false,
+                    singleFileName = str(R.string.op_undo_failed)))
+            }
         }
     }
 
     /** Permanently delete trashed files (called when undo window expires). */
     fun confirmDelete() {
         viewModelScope.launch {
-            trashMutex.withLock {
-                if (pendingTrash.isNotEmpty()) {
-                    commitPendingTrashLocked()
+            // F-072: Wrap in runCatching — commitPendingTrashLocked does file I/O
+            runCatching {
+                trashMutex.withLock {
+                    if (pendingTrash.isNotEmpty()) {
+                        commitPendingTrashLocked()
+                    }
                 }
+            }.onFailure { e ->
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                android.util.Log.w("MainViewModel", "confirmDelete failed", e)
             }
             // F-025: Clear snapshot — undo no longer possible after confirm
             pendingDupeSnapshot = null

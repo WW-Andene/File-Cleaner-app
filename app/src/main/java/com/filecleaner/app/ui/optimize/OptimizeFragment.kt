@@ -147,8 +147,21 @@ class OptimizeFragment : Fragment() {
         binding.tvEmpty.visibility = View.GONE
 
         viewLifecycleOwner.lifecycleScope.launch {
+            // F-073: Wrap in try/catch so a corrupt file or permission error
+            // doesn't leave the progress spinner stuck indefinitely.
+            try {
             allSuggestions = withContext(Dispatchers.IO) {
                 StorageOptimizer.analyze(allFiles, storagePath)
+            }
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                if (_binding == null) return@launch
+                binding.progressAnalyzing.visibility = View.GONE
+                binding.tvEmpty.visibility = View.VISIBLE
+                binding.tvEmptyText.text = getString(R.string.optimize_analysis_failed)
+                binding.recyclerSuggestions.visibility = View.GONE
+                Snackbar.make(binding.root, getString(R.string.optimize_analysis_failed), Snackbar.LENGTH_SHORT).show()
+                return@launch
             }
 
             if (_binding == null) return@launch

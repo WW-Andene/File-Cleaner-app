@@ -13,6 +13,8 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.filecleaner.app.MainActivity
 import com.filecleaner.app.R
 import com.filecleaner.app.utils.antivirus.*
@@ -40,6 +42,11 @@ class ScanService : Service() {
 
         private val _status = AtomicReference(ScanStatus())
 
+        // F-078: LiveData for reactive UI updates — replaces Handler-based polling.
+        // Fragment observes this instead of polling @Volatile properties every 500ms.
+        private val _statusLiveData = MutableLiveData(ScanStatus())
+        val statusLiveData: LiveData<ScanStatus> get() = _statusLiveData
+
         // Public accessors for backward compatibility
         val status: ScanStatus get() = _status.get()
         val isRunning: Boolean get() = _status.get().isRunning
@@ -55,6 +62,8 @@ class ScanService : Service() {
                 current = _status.get()
                 next = current.transform()
             } while (!_status.compareAndSet(current, next))
+            // F-078: Push to LiveData so observers get reactive updates
+            _statusLiveData.postValue(next)
         }
 
         fun start(context: Context) {

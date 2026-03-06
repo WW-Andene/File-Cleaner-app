@@ -957,6 +957,15 @@
     <string name="optimize_reanalyze">Re-analyze</string>
     <string name="optimize_analyzing">Ricky is analyzing your files\u2026</string>
     <string name="optimize_no_scan_data">Ricky needs scan data to suggest optimizations.</string>
+    <!-- F-088: Optimization suggestion reason strings (previously hardcoded in StorageOptimizer.kt) -->
+    <string name="optimize_reason_photo_by_date">Organize photo by date</string>
+    <string name="optimize_reason_video_by_date">Organize video by date</string>
+    <string name="optimize_reason_audio_to_music">Move audio to Music</string>
+    <string name="optimize_reason_doc_to_documents">Move document to Documents</string>
+    <string name="optimize_reason_apk_to_folder">Move APK to APKs folder</string>
+    <string name="optimize_reason_old_download">Old download (%1$d days)</string>
+    <!-- F-089: DualPaneFragment analysis summary (previously hardcoded) -->
+    <string name="dual_pane_analysis_summary">Duplicates: %1$d \u2022 Large: %2$d \u2022 Junk: %3$d</string>
     <string name="optimize_analysis_failed">Ricky hit a snag while analyzing \u2014 try again later.</string>
     <string name="optimize_total_reorganize_size">%1$d files totaling %2$s can be reorganized</string>
 

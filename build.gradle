@@ -1,6 +1,7 @@
 // Top-level build file
 buildscript {
-    ext.kotlin_version = "1.9.24"
+    // F-093: Upgraded from 1.9.24 to 2.0.21 for K2 compiler benefits
+    ext.kotlin_version = "2.0.21"
     repositories {
         google()
         mavenCentral()
@@ -13,7 +14,8 @@ buildscript {
 }
 
 plugins {
-    id 'com.google.devtools.ksp' version '1.9.24-1.0.20' apply false
+    // F-093: KSP version must match Kotlin version
+    id 'com.google.devtools.ksp' version '2.0.21-1.0.28' apply false
 }
 
 allprojects {

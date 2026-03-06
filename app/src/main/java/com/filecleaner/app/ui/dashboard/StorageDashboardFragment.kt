@@ -122,6 +122,17 @@ class StorageDashboardFragment : Fragment() {
                     is ScanState.Scanning -> getString(R.string.dashboard_scanning)
                     else -> getString(R.string.dashboard_no_scan)
                 }
+                // F-090: Show a scan icon hint when no data — makes the placeholder feel
+                // like a CTA rather than just absent content
+                val icon = if (state !is ScanState.Scanning) {
+                    ContextCompat.getDrawable(requireContext(), R.drawable.ic_scan)?.apply {
+                        val sz = resources.getDimensionPixelSize(R.dimen.icon_small)
+                        setBounds(0, 0, sz, sz)
+                    }
+                } else null
+                binding.tvCategoryBreakdown.setCompoundDrawables(icon, null, null, null)
+                binding.tvCategoryBreakdown.compoundDrawablePadding =
+                    resources.getDimensionPixelSize(R.dimen.spacing_xs)
                 binding.tvCategoryBreakdown.visibility = View.VISIBLE
                 binding.categoryRowsContainer.visibility = View.GONE
             }
@@ -326,12 +337,13 @@ class StorageDashboardFragment : Fragment() {
 
         binding.cardTopFiles.visibility = View.VISIBLE
         val ctx = requireContext()
-        val density = resources.displayMetrics.density
         val spacingXs = ctx.resources.getDimensionPixelSize(R.dimen.spacing_xs)
         val spacingSm = ctx.resources.getDimensionPixelSize(R.dimen.spacing_sm)
         val spacingChip = ctx.resources.getDimensionPixelSize(R.dimen.spacing_chip)
         val spacingXl = ctx.resources.getDimensionPixelSize(R.dimen.spacing_xl)
         val strokeDefault = ctx.resources.getDimensionPixelSize(R.dimen.stroke_default)
+        // F-087: Use dimen resource instead of inline density calculation
+        val dividerMargin = ctx.resources.getDimensionPixelSize(R.dimen.spacing_divider_margin)
         val newPaths = topFiles.map { it.path }
 
         // For N files the container has N rows + (N-1) dividers = 2N-1 children.
@@ -433,8 +445,8 @@ class StorageDashboardFragment : Fragment() {
                             LinearLayout.LayoutParams.MATCH_PARENT,
                             strokeDefault
                         ).apply {
-                            topMargin = (2 * density).toInt()
-                            bottomMargin = (2 * density).toInt()
+                            topMargin = dividerMargin
+                            bottomMargin = dividerMargin
                         }
                         setBackgroundColor(ContextCompat.getColor(ctx, R.color.borderSubtle))
                     }

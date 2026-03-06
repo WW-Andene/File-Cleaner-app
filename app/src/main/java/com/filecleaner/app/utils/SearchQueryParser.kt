@@ -37,7 +37,9 @@ object SearchQueryParser {
     private val EXT_PATTERN = Regex("""ext:([a-zA-Z0-9,]+)""", RegexOption.IGNORE_CASE)
     private val DATE_PATTERN = Regex("""(after|before):(\d{4}-\d{2}-\d{2})""", RegexOption.IGNORE_CASE)
     private const val MILLIS_PER_DAY = 86_400_000L
-    // ThreadLocal to avoid thread-safety issues with SimpleDateFormat
+    // ThreadLocal to avoid thread-safety issues with SimpleDateFormat.
+    // F-092: Locale.US is intentional — search query syntax uses ISO 8601 dates
+    // (e.g., "after:2025-01-15") which are locale-independent, not user-facing display.
     private val dateFormat: ThreadLocal<SimpleDateFormat> = ThreadLocal.withInitial {
         SimpleDateFormat("yyyy-MM-dd", Locale.US)
     }

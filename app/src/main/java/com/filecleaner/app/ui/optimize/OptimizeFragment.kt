@@ -151,7 +151,7 @@ class OptimizeFragment : Fragment() {
             // doesn't leave the progress spinner stuck indefinitely.
             try {
             allSuggestions = withContext(Dispatchers.IO) {
-                StorageOptimizer.analyze(allFiles, storagePath)
+                StorageOptimizer.analyze(allFiles, storagePath, requireContext())
             }
             } catch (e: Exception) {
                 if (e is kotlinx.coroutines.CancellationException) throw e

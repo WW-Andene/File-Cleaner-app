@@ -557,7 +557,8 @@ class DualPaneFragment : Fragment() {
         val dupCount = vm.duplicates.value?.size ?: 0
         val largeCount = vm.largeFiles.value?.size ?: 0
         val junkCount = vm.junkFiles.value?.size ?: 0
-        updateCountLabel(pane, "Duplicates: $dupCount \u2022 Large: $largeCount \u2022 Junk: $junkCount")
+        // F-089: Use string resource instead of hardcoded English label
+        updateCountLabel(pane, getString(R.string.dual_pane_analysis_summary, dupCount, largeCount, junkCount))
     }
 
     private fun updateCountLabel(pane: Pane, text: String) {

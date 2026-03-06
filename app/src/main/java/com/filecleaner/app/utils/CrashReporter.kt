@@ -14,6 +14,7 @@ import java.io.PrintWriter
 import java.io.StringWriter
 import java.net.HttpURLConnection
 import java.net.URL
+import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -32,6 +33,8 @@ object CrashReporter {
 
     private const val CRASH_DIR = "crash_reports"
     private const val MAX_STACK_TRACE_LENGTH = 8000 // GitHub issue body limit is ~65k, keep it reasonable
+    // F-091: Dedup window — skip uploading crashes with the same signature within 7 days
+    private const val DEDUP_WINDOW_MS = 7L * 24 * 60 * 60 * 1000
 
     private lateinit var crashDir: File
     private var defaultHandler: Thread.UncaughtExceptionHandler? = null
@@ -72,10 +75,17 @@ object CrashReporter {
             for (file in files) {
                 try {
                     val content = file.readText()
+                    // F-091: Skip duplicate crashes already reported within the dedup window
+                    val hash = computeCrashHash(content)
+                    if (isDuplicate(hash)) {
+                        file.delete()
+                        continue
+                    }
                     // F-034: Redact file paths before uploading to public GitHub Issues
                     val redacted = redactPaths(content)
                     val title = extractTitle(redacted)
                     if (createGitHubIssue(token, repo, title, redacted)) {
+                        recordHash(hash)
                         file.delete()
                     }
                 } catch (_: Exception) {
@@ -136,6 +146,51 @@ object CrashReporter {
 
         // Write synchronously — process is about to die
         file.writeText(report)
+    }
+
+    // ── F-091: Crash dedup ──
+
+    /** Hash file stores "hash=timestamp" lines for recently reported crashes. */
+    private val reportedHashesFile: File get() = File(crashDir, ".reported_hashes")
+
+    /**
+     * Compute a fingerprint from exception class + top 3 stack frames.
+     * This groups identical crashes regardless of timestamp or device info.
+     */
+    private fun computeCrashHash(content: String): String {
+        // Extract exception class line and first few stack frames
+        val lines = content.lines()
+        val exLine = lines.firstOrNull { it.contains("Exception:") || it.contains("Error:") } ?: ""
+        val stackStart = lines.indexOfFirst { it.trimStart().startsWith("at ") }
+        val topFrames = if (stackStart >= 0) {
+            lines.drop(stackStart).take(3).joinToString("\n")
+        } else ""
+        val fingerprint = "$exLine\n$topFrames"
+        val digest = MessageDigest.getInstance("SHA-256").digest(fingerprint.toByteArray())
+        return digest.joinToString("") { "%02x".format(it) }.take(16)
+    }
+
+    /** Returns true if this crash hash was already reported within the dedup window. */
+    private fun isDuplicate(hash: String): Boolean {
+        if (!reportedHashesFile.exists()) return false
+        val now = System.currentTimeMillis()
+        return reportedHashesFile.readLines().any { line ->
+            val parts = line.split("=", limit = 2)
+            parts.size == 2 && parts[0] == hash &&
+                (now - (parts[1].toLongOrNull() ?: 0L)) < DEDUP_WINDOW_MS
+        }
+    }
+
+    /** Record that a crash hash was reported. Also prunes entries older than the window. */
+    private fun recordHash(hash: String) {
+        val now = System.currentTimeMillis()
+        val existing = if (reportedHashesFile.exists()) {
+            reportedHashesFile.readLines().filter { line ->
+                val ts = line.substringAfter("=", "0").toLongOrNull() ?: 0L
+                (now - ts) < DEDUP_WINDOW_MS
+            }
+        } else emptyList()
+        reportedHashesFile.writeText((existing + "$hash=$now").joinToString("\n"))
     }
 
     // ── GitHub API ──

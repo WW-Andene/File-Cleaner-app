@@ -37,6 +37,8 @@
     <dimen name="spacing_5xl">64dp</dimen>
     <dimen name="divider_width">1dp</dimen>
     <dimen name="divider_thick">4dp</dimen>
+    <!-- F-087: Divider margin token (replaces inline 2*density calculation) -->
+    <dimen name="spacing_divider_margin">2dp</dimen>
     <dimen name="spacing_bottom_inset">72dp</dimen>
     <!-- F-047: Off 4dp grid: 57dp = 56dp Material spec + 1dp top divider stroke -->
     <dimen name="bottom_nav_height">57dp</dimen>

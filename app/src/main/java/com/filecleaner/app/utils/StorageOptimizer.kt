@@ -1,5 +1,7 @@
 package com.filecleaner.app.utils
 
+import android.content.Context
+import com.filecleaner.app.R
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
 import java.io.File
@@ -31,8 +33,9 @@ object StorageOptimizer {
     /**
      * Analyze files and generate optimization suggestions.
      * [storagePath] is the root external storage path.
+     * F-088: [context] is required for localized reason strings.
      */
-    fun analyze(files: List<FileItem>, storagePath: String): List<Suggestion> {
+    fun analyze(files: List<FileItem>, storagePath: String, context: Context? = null): List<Suggestion> {
         val suggestions = mutableListOf<Suggestion>()
         val usedPaths = mutableSetOf<String>()
         // F-003: Use Locale.ROOT to ensure Gregorian calendar consistency across all devices
@@ -48,7 +51,7 @@ object StorageOptimizer {
                     val targetDir = "$storagePath/Pictures/$monthFolder"
                     if (parentDir != targetDir && !parentDir.startsWith("$storagePath/Pictures/")) {
                         Suggestion(file, file.path, "$targetDir/${file.name}",
-                            "Organize photo by date")
+                            context?.getString(R.string.optimize_reason_photo_by_date) ?: "Organize photo by date")
                     } else null
                 }
                 FileCategory.VIDEO -> {
@@ -56,28 +59,28 @@ object StorageOptimizer {
                     val targetDir = "$storagePath/Videos/$monthFolder"
                     if (parentDir != targetDir && !parentDir.startsWith("$storagePath/Videos/")) {
                         Suggestion(file, file.path, "$targetDir/${file.name}",
-                            "Organize video by date")
+                            context?.getString(R.string.optimize_reason_video_by_date) ?: "Organize video by date")
                     } else null
                 }
                 FileCategory.AUDIO -> {
                     val targetDir = "$storagePath/Music"
                     if (!parentDir.startsWith(targetDir)) {
                         Suggestion(file, file.path, "$targetDir/${file.name}",
-                            "Move audio to Music")
+                            context?.getString(R.string.optimize_reason_audio_to_music) ?: "Move audio to Music")
                     } else null
                 }
                 FileCategory.DOCUMENT -> {
                     val targetDir = "$storagePath/Documents"
                     if (!parentDir.startsWith(targetDir)) {
                         Suggestion(file, file.path, "$targetDir/${file.name}",
-                            "Move document to Documents")
+                            context?.getString(R.string.optimize_reason_doc_to_documents) ?: "Move document to Documents")
                     } else null
                 }
                 FileCategory.APK -> {
                     val targetDir = "$storagePath/APKs"
                     if (!parentDir.startsWith(targetDir)) {
                         Suggestion(file, file.path, "$targetDir/${file.name}",
-                            "Move APK to APKs folder")
+                            context?.getString(R.string.optimize_reason_apk_to_folder) ?: "Move APK to APKs folder")
                     } else null
                 }
                 FileCategory.DOWNLOAD -> {
@@ -89,7 +92,7 @@ object StorageOptimizer {
                         if (ageDays > 90) {
                             val targetDir = "$storagePath/OldDownloads"
                             Suggestion(file, file.path, "$targetDir/${file.name}",
-                                "Old download (${ageDays}d)")
+                                context?.getString(R.string.optimize_reason_old_download, ageDays.toInt()) ?: "Old download (${ageDays}d)")
                         } else null
                     }
                 }

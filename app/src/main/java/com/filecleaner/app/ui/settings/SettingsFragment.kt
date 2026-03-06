@@ -103,6 +103,14 @@ class SettingsFragment : Fragment() {
             override fun onStopTrackingTouch(sb: SeekBar?) {}
         })
 
+        // F-068: High-contrast toggle
+        binding.switchHighContrast.isChecked = UserPreferences.highContrastEnabled
+        binding.switchHighContrast.setOnCheckedChangeListener { _, isChecked ->
+            UserPreferences.highContrastEnabled = isChecked
+            // Recreate activity to apply the high-contrast theme overlay
+            activity?.recreate()
+        }
+
         // Show hidden files toggle
         binding.switchHiddenFiles.isChecked = UserPreferences.showHiddenFiles
         binding.switchHiddenFiles.setOnCheckedChangeListener { _, isChecked ->
@@ -226,6 +234,7 @@ class SettingsFragment : Fragment() {
         binding.seekLargeFile.setOnSeekBarChangeListener(null)
         binding.seekStaleAge.setOnSeekBarChangeListener(null)
         binding.seekUndoTimeout.setOnSeekBarChangeListener(null)
+        binding.switchHighContrast.setOnCheckedChangeListener(null)
         binding.switchHiddenFiles.setOnCheckedChangeListener(null)
         binding.switchCrashReporting.setOnCheckedChangeListener(null)
         super.onDestroyView()

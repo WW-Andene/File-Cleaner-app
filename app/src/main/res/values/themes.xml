@@ -535,4 +535,16 @@
     <style name="TextAppearance.FileCleaner.NumericHeadline" parent="TextAppearance.FileCleaner.Headline">
         <item name="android:fontFeatureSettings">tnum</item>
     </style>
+
+    <!-- ═══ F-068: High-Contrast Theme Overlay ═══ -->
+    <!-- Applied at runtime when UserPreferences.highContrastEnabled is true.
+         Pure black/white surfaces, increased border widths, no chromatic warmth. -->
+    <style name="ThemeOverlay.FileCleaner.HighContrast" parent="">
+        <item name="colorSurface">@color/hc_surface</item>
+        <item name="colorOnSurface">@color/hc_onSurface</item>
+        <item name="android:colorBackground">@color/hc_background</item>
+        <item name="android:windowBackground">@color/hc_background</item>
+        <item name="android:textColorPrimary">@color/hc_onSurface</item>
+        <item name="android:textColorSecondary">@color/hc_onSurface</item>
+    </style>
 </resources>

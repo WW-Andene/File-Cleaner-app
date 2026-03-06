@@ -221,4 +221,10 @@
     <color name="syntaxComment">#5A6E65</color>
     <color name="syntaxNumber">#9E6210</color>
     <color name="syntaxType">#3A6E96</color>
+
+    <!-- ── F-068: High-contrast theme colors (light mode) ── -->
+    <color name="hc_background">#FFFFFF</color>
+    <color name="hc_surface">#FFFFFF</color>
+    <color name="hc_onSurface">#000000</color>
+    <color name="hc_border">#000000</color>
 </resources>

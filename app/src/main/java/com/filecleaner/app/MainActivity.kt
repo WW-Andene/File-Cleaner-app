@@ -73,6 +73,11 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
+        // F-068: Apply high-contrast overlay if enabled
+        if (UserPreferences.highContrastEnabled) {
+            theme.applyStyle(R.style.ThemeOverlay_FileCleaner_HighContrast, true)
+        }
+
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         binding = ActivityMainBinding.inflate(layoutInflater)

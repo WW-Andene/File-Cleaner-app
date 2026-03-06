@@ -1,9 +1,8 @@
 package com.filecleaner.app.ui.onboarding
 
 import android.content.Context
-import android.view.View
-import android.view.ViewGroup
-import android.widget.LinearLayout
+import android.view.LayoutInflater
+import android.widget.ImageView
 import android.widget.TextView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.filecleaner.app.R
@@ -11,6 +10,7 @@ import com.filecleaner.app.data.UserPreferences
 
 /**
  * 3-step onboarding dialog shown on first launch (P13).
+ * F-060: Inflates dialog_onboarding_step.xml instead of programmatic construction.
  */
 object OnboardingDialog {
 
@@ -40,22 +40,14 @@ object OnboardingDialog {
         val current = steps[step]
         val isLast = step == steps.lastIndex
 
-        val padding = context.resources.getDimensionPixelSize(R.dimen.spacing_xxl)
-        val halfPadding = context.resources.getDimensionPixelSize(R.dimen.spacing_md)
-        val container = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(padding, padding, padding, halfPadding)
-        }
+        // F-060: Inflate XML layout instead of building views programmatically
+        val container = LayoutInflater.from(context)
+            .inflate(R.layout.dialog_onboarding_step, null)
 
-        val stepIndicator = TextView(context).apply {
-            text = context.getString(R.string.onboarding_step, step + 1, steps.size)
-            setTextAppearance(R.style.TextAppearance_FileCleaner_BodySmall)
-            setTextColor(context.getColor(R.color.textTertiary))
-            // §G1: Announce step changes to TalkBack
-            contentDescription = context.getString(R.string.a11y_onboarding_step, step + 1, steps.size)
-            accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
-        }
-        container.addView(stepIndicator)
+        val stepIndicator = container.findViewById<TextView>(R.id.tv_step_indicator)
+        stepIndicator.text = context.getString(R.string.onboarding_step, step + 1, steps.size)
+        // §G1: Announce step changes to TalkBack
+        stepIndicator.contentDescription = context.getString(R.string.a11y_onboarding_step, step + 1, steps.size)
 
         val iconRes = when (step) {
             0 -> R.drawable.ic_raccoon_logo
@@ -70,25 +62,12 @@ object OnboardingDialog {
             2 -> context.getString(R.string.a11y_onboarding_icon_scan)
             else -> context.getString(R.string.a11y_onboarding_icon_welcome)
         }
-        val iconView = android.widget.ImageView(context).apply {
-            setImageResource(iconRes)
-            contentDescription = iconDesc
-            val size = context.resources.getDimensionPixelSize(R.dimen.onboarding_icon_size)
-            layoutParams = LinearLayout.LayoutParams(size, size).apply {
-                gravity = android.view.Gravity.CENTER_HORIZONTAL
-                topMargin = halfPadding
-            }
-            scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
-        }
-        container.addView(iconView)
+        val iconView = container.findViewById<ImageView>(R.id.iv_step_icon)
+        iconView.setImageResource(iconRes)
+        iconView.contentDescription = iconDesc
 
-        val bodyView = TextView(context).apply {
-            text = current.body
-            setTextAppearance(R.style.TextAppearance_FileCleaner_Body)
-            setPadding(0, halfPadding, 0, 0)
-            setLineSpacing(4f, 1.2f)
-        }
-        container.addView(bodyView)
+        val bodyView = container.findViewById<TextView>(R.id.tv_step_body)
+        bodyView.text = current.body
 
         val builder = MaterialAlertDialogBuilder(context)
             .setTitle(current.title)

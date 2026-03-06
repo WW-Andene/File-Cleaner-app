@@ -219,4 +219,10 @@
     <color name="syntaxComment">#7E8E86</color>
     <color name="syntaxNumber">#E8B872</color>
     <color name="syntaxType">#7CB8D8</color>
+
+    <!-- ── F-068: High-contrast theme colors (dark mode) ── -->
+    <color name="hc_background">#000000</color>
+    <color name="hc_surface">#000000</color>
+    <color name="hc_onSurface">#FFFFFF</color>
+    <color name="hc_border">#FFFFFF</color>
 </resources>

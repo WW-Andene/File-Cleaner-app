@@ -484,6 +484,10 @@
     <string name="theme_system">System default</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <!-- F-068: High-contrast theme -->
+    <string name="settings_high_contrast">High contrast</string>
+    <string name="settings_high_contrast_desc">Increase contrast for easier reading</string>
+    <string name="a11y_switch_high_contrast">Toggle high-contrast theme</string>
 
     <!-- Onboarding (P13) -->
     <string name="onboarding_step">Step %1$d of %2$d</string>

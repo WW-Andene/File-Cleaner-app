@@ -116,6 +116,11 @@ object UserPreferences {
         get() = prefs.getInt("theme_mode", 0)
         set(value) = prefs.edit().putInt("theme_mode", value.coerceIn(0, 2)).apply()
 
+    /** F-068: High-contrast theme toggle for low-vision users */
+    var highContrastEnabled: Boolean
+        get() = prefs.getBoolean("high_contrast_enabled", false)
+        set(value) = prefs.edit().putBoolean("high_contrast_enabled", value).apply()
+
     // ── Onboarding ──
 
     var hasSeenOnboarding: Boolean

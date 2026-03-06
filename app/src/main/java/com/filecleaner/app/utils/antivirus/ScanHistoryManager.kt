@@ -20,6 +20,8 @@ object ScanHistoryManager {
     private const val KEY_HISTORY = "scan_records"
     private const val KEY_LAST_SCAN = "last_scan_time"
     private const val MAX_RECORDS = 20
+    // F-021: Time-based expiry matching ScanCache (30 days)
+    private const val MAX_AGE_MS = 30L * 24 * 60 * 60 * 1000
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -63,11 +65,15 @@ object ScanHistoryManager {
             JSONArray()
         }
 
-        // Prepend new record
+        // Prepend new record, pruning expired entries (F-021)
         val updated = JSONArray()
         updated.put(record)
         for (i in 0 until history.length().coerceAtMost(MAX_RECORDS - 1)) {
-            updated.put(history.getJSONObject(i))
+            val entry = history.getJSONObject(i)
+            val age = now - entry.optLong("timestamp", 0L)
+            if (age <= MAX_AGE_MS) {
+                updated.put(entry)
+            }
         }
 
         // Atomic write: save both last scan time and history in a single edit
@@ -95,13 +101,17 @@ object ScanHistoryManager {
             return emptyList()
         }
 
+        val now = System.currentTimeMillis()
         val records = mutableListOf<ScanRecord>()
         for (i in 0 until history.length()) {
             try {
                 val obj = history.getJSONObject(i)
+                val timestamp = obj.getLong("timestamp")
+                // F-021: Skip records older than 30 days
+                if (now - timestamp > MAX_AGE_MS) continue
                 records.add(
                     ScanRecord(
-                        timestamp = obj.getLong("timestamp"),
+                        timestamp = timestamp,
                         totalFindings = obj.getInt("total"),
                         threatCount = obj.getInt("threats"),
                         critical = obj.getInt("critical"),

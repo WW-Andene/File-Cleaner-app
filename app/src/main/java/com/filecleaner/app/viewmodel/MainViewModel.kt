@@ -151,6 +151,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val trashMutex = Mutex()
     private var pendingTrash = java.util.concurrent.ConcurrentHashMap<String, String>()
 
+    // F-025: Snapshot of duplicate list before delete, for O(1) undo restore
+    private var pendingDupeSnapshot: List<FileItem>? = null
+
     // In-memory copies for reliable cache saving (postValue is async,
     // so LiveData .value may be stale when saveCache reads it)
     private var latestFiles: List<FileItem> = emptyList()
@@ -173,8 +176,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun cancelScan() {
         scanJob?.cancel()
         scanJob = null
-        // B1: Use postValue for thread-safety (cancelScan can be called from any thread)
-        _scanState.postValue(ScanState.Cancelled)
+        // F-020: Use setValue on Main thread for deterministic ordering (cancelScan is always called from UI)
+        _scanState.value = ScanState.Cancelled
         _isScanning = false
         // F-008: Clear partial state from cancelled scan so stale data isn't cached
         latestFiles = emptyList()
@@ -204,9 +207,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     val enrichedTree = enrichTreeWithFiles(tree, filesByDir)
                     val byCategory = files.groupBy { it.category }
                     val dupes = pruneOrphanDuplicates(files.filter { it.duplicateGroup >= 0 })
-                    val minLargeFileMb = try { UserPreferences.largeFileThresholdMb } catch (_: Exception) { 50 }
-                    val maxLargeFileCount = try { UserPreferences.maxLargeFiles } catch (_: Exception) { 200 }
-                    val large = JunkFinder.findLargeFiles(files, minLargeFileMb * 1024L * 1024L, maxLargeFileCount)
+                    // F-022: Remove try/catch — UserPreferences.init() is called in Application.onCreate();
+                    // if accessed before init, fail loudly instead of silently using wrong defaults.
+                    val large = JunkFinder.findLargeFiles(files, UserPreferences.largeFileThresholdMb * 1024L * 1024L, UserPreferences.maxLargeFiles)
                     val junk = JunkFinder.findJunk(files)
                     object {
                         val enrichedTree = enrichedTree
@@ -242,8 +245,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                         duplicateSize = analysisResult.dupes.sumOf { it.size },
                         largeSize     = analysisResult.large.sumOf { it.size }
                     ))
-                    // P2-A4-02: Transition to Done inside mutex to prevent race with startScan()
-                    _scanState.postValue(ScanState.Done)
+                    // F-020+P2-A4-02: Use setValue (already on Main) for deterministic ordering
+                    _scanState.value = ScanState.Done
                     _isScanning = false
                 }
             }
@@ -291,7 +294,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun startScan(minLargeFileMb: Int = try { UserPreferences.largeFileThresholdMb } catch (_: Exception) { 50 }) {
+    // F-022: Direct access — UserPreferences.init() guaranteed by Application.onCreate()
+    fun startScan(minLargeFileMb: Int = UserPreferences.largeFileThresholdMb) {
         scanJob?.cancel()
         scanJob = viewModelScope.launch {
             _scanState.value = ScanState.Scanning(0)
@@ -307,7 +311,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     _scanState.postValue(ScanState.Scanning(count, ScanPhase.INDEXING, progressPercent = -1))
                 }
 
-                val protectedPaths = try { UserPreferences.protectedPaths } catch (_: Exception) { emptySet<String>() }
+                val protectedPaths = UserPreferences.protectedPaths
 
                 // Finding 2 fix: Run heavy I/O outside stateMutex
                 _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.DUPLICATES, progressPercent = ScanPhase.DUPLICATES.baseProgress()))
@@ -324,8 +328,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 // LiveData churn — both findLargeFiles and findJunk are fast in-memory
                 // operations, so separate progress updates only cause UI flicker.
                 _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.ANALYZING, progressPercent = ScanPhase.ANALYZING.baseProgress()))
-                val maxLargeFileCount = try { UserPreferences.maxLargeFiles } catch (_: Exception) { 200 }
-                val large = JunkFinder.findLargeFiles(files, minLargeFileMb * 1024L * 1024L, maxLargeFileCount)
+                val large = JunkFinder.findLargeFiles(files, minLargeFileMb * 1024L * 1024L, UserPreferences.maxLargeFiles)
                 val junk = JunkFinder.findJunk(files)
                     .filter { it.path !in protectedPaths }
 
@@ -350,10 +353,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 }
 
                 ensureActive() // P2-A4-01: Check cancellation before transitioning to Done
-                _scanState.postValue(ScanState.Done)
+                // F-020: Use setValue on Main thread for deterministic ordering vs cancelScan()
+                _scanState.value = ScanState.Done
             }.onFailure { e ->
                 if (e is kotlinx.coroutines.CancellationException) throw e
-                _scanState.postValue(ScanState.Error(e.localizedMessage ?: str(R.string.op_scan_failed)))
+                // F-020: Use setValue on Main thread for deterministic ordering
+                _scanState.value = ScanState.Error(e.localizedMessage ?: str(R.string.op_scan_failed))
             }
 
             // Cache results to disk — outside runCatching so save failure
@@ -393,7 +398,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             if (!deleteMutex.tryLock()) return@launch
             try {
             // Filter out protected paths before deletion
-            val protectedPaths = try { UserPreferences.protectedPaths } catch (_: Exception) { emptySet<String>() }
+            val protectedPaths = UserPreferences.protectedPaths
             val safeToDelete = toDelete.filter { it.path !in protectedPaths }
             if (safeToDelete.isEmpty()) return@launch
 
@@ -437,6 +442,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 latestFiles = remaining
                 _filesByCategory.postValue(remaining.groupBy { it.category })
 
+                // F-025: Save pre-delete duplicate snapshot for O(1) undo restore
+                pendingDupeSnapshot = _duplicates.value
+
                 // Filter deleted paths, then remove orphan groups (< 2 files remaining)
                 val filteredDupes = pruneOrphanDuplicates(
                     (_duplicates.value ?: emptyList()).filter { it.path !in deletedPaths }
@@ -479,18 +487,24 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             }
 
             if (restored.isNotEmpty()) {
-                // Compute updated file list under mutex, then run heavy I/O outside
+                // F-025: Restore pre-delete duplicate snapshot instead of re-hashing (O(1) vs O(n))
+                val savedDupes = pendingDupeSnapshot
+                pendingDupeSnapshot = null
+
                 val updated = stateMutex.withLock {
                     val files = latestFiles + restored
                     latestFiles = files
                     _filesByCategory.postValue(files.groupBy { it.category })
                     files
                 }
-                // Heavy I/O outside mutex to avoid blocking other state operations
-                val dupes = DuplicateFinder.findDuplicates(updated)
-                val minLargeFileMb = try { UserPreferences.largeFileThresholdMb } catch (_: Exception) { 50 }
-                val maxLargeFileCount = try { UserPreferences.maxLargeFiles } catch (_: Exception) { 200 }
-                val large = JunkFinder.findLargeFiles(updated, minLargeFileMb * 1024L * 1024L, maxLargeFileCount)
+
+                // F-025: Use saved snapshot if available; fall back to re-hashing only if needed
+                val dupes = if (savedDupes != null) {
+                    pruneOrphanDuplicates(savedDupes)
+                } else {
+                    DuplicateFinder.findDuplicates(updated)
+                }
+                val large = JunkFinder.findLargeFiles(updated, UserPreferences.largeFileThresholdMb * 1024L * 1024L, UserPreferences.maxLargeFiles)
                 val junk = JunkFinder.findJunk(updated)
                 stateMutex.withLock {
                     _duplicates.postValue(dupes)
@@ -511,6 +525,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     commitPendingTrashLocked()
                 }
             }
+            // F-025: Clear snapshot — undo no longer possible after confirm
+            pendingDupeSnapshot = null
         }
     }
 
@@ -619,9 +635,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 latestFiles to dupesResult
             }
             // Heavy I/O outside mutex
-            val minLargeFileMb = try { UserPreferences.largeFileThresholdMb } catch (_: Exception) { 50 }
-            val maxLargeFileCount = try { UserPreferences.maxLargeFiles } catch (_: Exception) { 200 }
-            val large = JunkFinder.findLargeFiles(files, minLargeFileMb * 1024L * 1024L, maxLargeFileCount)
+            val large = JunkFinder.findLargeFiles(files, UserPreferences.largeFileThresholdMb * 1024L * 1024L, UserPreferences.maxLargeFiles)
             val junk = JunkFinder.findJunk(files)
             stateMutex.withLock {
                 _duplicates.postValue(dupes)
@@ -700,9 +714,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                         }
                 )
 
-                val minLargeFileMb = try { UserPreferences.largeFileThresholdMb } catch (_: Exception) { 50 }
-                val maxLargeFileCount = try { UserPreferences.maxLargeFiles } catch (_: Exception) { 200 }
-                val large = JunkFinder.findLargeFiles(files, minLargeFileMb * 1024L * 1024L, maxLargeFileCount)
+                val large = JunkFinder.findLargeFiles(files, UserPreferences.largeFileThresholdMb * 1024L * 1024L, UserPreferences.maxLargeFiles)
                 val junk = JunkFinder.findJunk(files)
                 _duplicates.postValue(updatedDupes)
                 _largeFiles.postValue(large)

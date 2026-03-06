@@ -40,6 +40,9 @@ object BatchRenameDialog {
     private const val MODE_FIND_REPLACE = 2
     private const val MODE_CHANGE_CASE = 3
 
+    // F-023: Invalid filesystem characters for pre-validation feedback
+    private val INVALID_FS_CHARS = charArrayOf('/', '\u0000', ':', '*', '?', '"', '<', '>', '|')
+
     fun show(
         context: Context,
         files: List<FileItem>,
@@ -174,7 +177,16 @@ object BatchRenameDialog {
             val preview = buildString {
                 for ((index, file) in files.take(3).withIndex()) {
                     val newName = computeRename(file, index)
-                    appendLine("${file.name} \u2192 $newName")
+                    // F-023: Show inline feedback for invalid filesystem characters
+                    val invalidChars = newName.filter { c -> c in INVALID_FS_CHARS }.toSet()
+                    if (invalidChars.isNotEmpty()) {
+                        val chars = invalidChars.joinToString(" ") { "'$it'" }
+                        appendLine("${file.name} \u2192 $newName  \u26A0 invalid: $chars")
+                    } else if (newName.isBlank()) {
+                        appendLine("${file.name} \u2192 (empty)  \u26A0 blank name")
+                    } else {
+                        appendLine("${file.name} \u2192 $newName")
+                    }
                 }
                 if (files.size > 3) {
                     appendLine("\u2026 and ${files.size - 3} more")
@@ -242,9 +254,9 @@ object BatchRenameDialog {
                 val renames = files.mapIndexed { index, file ->
                     file to computeRename(file, index)
                 }.filter { (original, newName) ->
-                    // C2: Skip renames that produce invalid filenames
+                    // C2+F-023: Skip renames that produce invalid filenames
                     newName.isNotBlank() && newName != original.name && newName.none { c ->
-                        c in charArrayOf('/', '\u0000', ':', '*', '?', '"', '<', '>', '|')
+                        c in INVALID_FS_CHARS
                     }
                 }
                 if (renames.isNotEmpty()) onConfirm(renames)

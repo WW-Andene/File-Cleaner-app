@@ -3470,6 +3470,292 @@ Differentiated error messages in `CloudBrowserFragment.kt:262-283`:
 | LOW | 11 | 6 | 5 | 5 | 6 | 3 | 3 | 3 | 3 | 45 |
 | **Total** | **18** | **8** | **12** | **8** | **6** | **4** | **5** | **6** | **3** | **70** |
 
-**Next: Phase 10 — Code Quality & Architecture (Category I + §L1–L2)**
+---
 
-Awaiting confirmation to proceed with Phase 10, or to fix findings from Phases 1-9.
+## PHASE 10 — CODE QUALITY & ARCHITECTURE (Category I + §L1–L2)
+
+### Step 10.1 — §I1: Dead Code & Waste
+
+#### Commented-Out Code
+
+No `TODO`, `FIXME`, `HACK`, or `XXX` markers found anywhere in the 76-file, 20,731-line codebase. Zero commented-out code blocks detected. ✅
+
+#### Unused Code
+
+- **`@Suppress("unused") context: Context`** in `GoogleDriveProvider.kt:21` — constructor parameter explicitly marked unused. Context is accepted for API consistency with other providers but not needed for HTTP calls. Acceptable design trade-off. ✅
+- **`@Suppress("DEPRECATION")`** — 30 instances across the codebase, all justified by backward-compatible storage/permission APIs that have no non-deprecated alternative for minSdk 29. ✅
+
+#### Not-Null Assertions (`!!`)
+
+26 total `!!` usages across 17 files — very low density (1.3 per 1000 lines):
+
+| File | Count | Context |
+|------|:-----:|---------|
+| ArborescenceView.kt | 5 | Drag path + category color map lookups (guarded by null checks on prior lines) |
+| FileViewerFragment.kt | 3 | Binding, PdfRenderer fd, MediaPlayer (all lifecycle-managed) |
+| FileAdapter.kt | 2 | ViewHolder binding access |
+| RetryHelper.kt | 1 | `lastException!!` — guaranteed non-null by loop structure |
+| Other (12 files) | 1 each | Various lifecycle-safe contexts |
+
+Most are safe patterns (binding access after `_binding != null` guards, map lookups with known keys). No high-risk `!!` on user input or network data.
+
+**Positive:** Zero dead code, zero TODO debt, minimal suppress annotations — all justified.
+
+### Step 10.2 — §I2: Naming Quality
+
+#### File-to-Class Alignment
+
+All 76 Kotlin files follow the standard one-primary-class-per-file pattern with matching names. ✅
+
+#### Domain Vocabulary Consistency
+
+| Concept | Consistent Term | Used In |
+|---------|----------------|---------|
+| Storage items | `FileItem` | Data model, adapters, viewmodel |
+| Scan process | `scan*` / `ScanState` / `ScanPhase` | FileScanner, MainViewModel, ScanService |
+| Duplicates | `duplicate*` / `DuplicateFinder` | DuplicateFinder, DuplicatesFragment |
+| Trash/undo | `trash*` / `pendingTrash` | MainViewModel (trash-based undo) |
+| Cloud files | `CloudFile` / `CloudProvider` | data/cloud package |
+| Categories | `FileCategory` enum | Consistent throughout |
+
+One inconsistency noted in Phase 7 (F-061): UI strings use "Delete" vs "Move to Trash" inconsistently, though the code consistently uses the trash-undo pattern internally.
+
+#### Naming Conventions
+
+- **Functions:** Verb-first naming (`scanFiles`, `findDuplicates`, `deleteFiles`, `moveFile`, `undoDelete`) ✅
+- **LiveData:** `_private` / `public` paired naming convention throughout ✅
+- **Constants:** `UPPER_SNAKE_CASE` in companion objects ✅
+- **XML IDs:** `snake_case` with type prefixes (`tv_`, `btn_`, `rv_`, `iv_`, `card_`) ✅
+- **Resource names:** Consistent `a11y_*` for accessibility, `cloud_*` for cloud, `op_*` for operations ✅
+
+**Positive:** Strong naming discipline across the codebase. No single-letter variables outside loop indices, no misleading names.
+
+### Step 10.3 — §I3: Error Handling Coverage
+
+#### ViewModel Coroutine Error Handling
+
+| Method | Launch Site | Error Handling | Status |
+|--------|------------|----------------|:------:|
+| `startScan()` | `viewModelScope.launch` | `runCatching` + `onFailure` → `ScanState.Error` | ✅ |
+| `deleteFiles()` | `viewModelScope.launch` | `deleteMutex.tryLock` + `try/finally` | ✅ |
+| `moveFile()` | `viewModelScope.launch` | `FileOperationService` returns `Result(success, message)` | ✅ |
+| `renameFile()` | `viewModelScope.launch` | Same Result pattern | ✅ |
+| `undoDelete()` | `viewModelScope.launch` | ❌ **No try/catch** | ⚠️ |
+| `confirmDelete()` | `viewModelScope.launch` | No try/catch (but only deletes temp files) | ⚠️ |
+| `saveCache()` / `saveCacheNow()` | `viewModelScope.launch` | ❌ **No try/catch** on disk I/O | ⚠️ |
+
+> **F-072** | Severity: **MEDIUM** | Confidence: **HIGH**
+> **Title:** Several ViewModel coroutine launches lack error handling
+> **Location:** `viewmodel/MainViewModel.kt:454` (undoDelete), `:498` (confirmDelete), `:713,735` (saveCache)
+> **Details:** `undoDelete()` calls `DuplicateFinder.findDuplicates()` (I/O-heavy) and file move operations without try/catch. If any I/O operation fails, the coroutine fails silently — the user sees no error feedback. `saveCache()` and `saveCacheNow()` perform disk I/O that could throw `IOException` without catching it. The scan path (`startScan`) correctly uses `runCatching` as the model pattern.
+> **Suggestion:** Wrap `undoDelete` body in `runCatching` with snackbar error reporting via `SingleLiveEvent`. Apply the same pattern to `saveCache` (silent failure is acceptable for cache, but logging would help diagnostics).
+
+#### Fragment Coroutine Error Handling
+
+| Fragment | Launch Site | Error Handling |
+|----------|------------|:--------------:|
+| CloudBrowserFragment (6 launches) | All cloud operations | ✅ try/catch with differentiated snackbar errors |
+| OptimizeFragment:149 | `StorageOptimizer.analyze()` | ❌ No try/catch |
+| AntivirusFragment:358 | Threat fix operation | ✅ try/catch |
+| BrowseFragment:218 | Search debounce | ✅ (pure in-memory filtering, no I/O) |
+
+> **F-073** | Severity: **LOW** | Confidence: **MEDIUM**
+> **Title:** OptimizeFragment analysis launch lacks error handling
+> **Location:** `ui/optimize/OptimizeFragment.kt:149-152`
+> **Details:** `StorageOptimizer.analyze()` runs on `Dispatchers.IO` without try/catch. If the optimizer encounters a corrupt file or permission issue, the coroutine fails silently and the progress spinner remains visible indefinitely.
+> **Suggestion:** Wrap in try/catch, hide progress on error, and show an error snackbar.
+
+### Step 10.4 — §I4: Code Duplication
+
+#### BaseFileListFragment Pattern — Excellent
+
+`BaseFileListFragment` (483 lines) is shared by `JunkFragment` (26 lines), `LargeFilesFragment` (26 lines), and `DuplicatesFragment` (30 lines). The derived fragments only override data source and title — no logic duplication. ✅
+
+#### CloudProvider Interface — Clean
+
+All 4 cloud providers implement the `CloudProvider` interface (11 methods). Each has protocol-specific connection logic (HTTP, SFTP, WebDAV, GitHub REST) — this is appropriate specialization, not duplication. ✅
+
+#### HTTP Connection Setup
+
+GoogleDriveProvider and WebDavProvider both use `HttpURLConnection` with similar patterns (set timeouts, set headers, check response code). This is acceptable protocol-level repetition — abstracting it would add unnecessary indirection for 2 consumers.
+
+#### Magic Numbers
+
+`DuplicateFinder.kt` extracts all constants with documentation:
+- `PARTIAL_HASH_BYTES = 4096L` (line 15) — documented rationale
+- `HASH_BUFFER_SIZE = 8192` (line 17) — documented rationale
+- `MAX_FULL_HASH_SIZE = 200L * 1024L * 1024L` (line 19) — documented rationale
+
+`RetryHelper.kt` uses `@Suppress("MagicNumber")` for inline constants (3 retries, 1000ms delay, 30s cap) — acceptable for a 66-line focused utility.
+
+**Positive:** No significant code duplication. BaseFileListFragment pattern is textbook shared-base-class usage.
+
+### Step 10.5 — §I5: Component & Module Architecture
+
+#### Package Structure
+
+```
+com.filecleaner.app/
+├── data/                    # Data models (FileItem, DirectoryNode, UserPreferences)
+│   └── cloud/               # Cloud provider interface + 4 implementations + OAuth
+├── services/                # ScanService (foreground service)
+├── ui/                      # 15 feature packages, each with Fragment(s)
+│   ├── adapters/            # Shared RecyclerView adapters
+│   ├── common/              # BaseFileListFragment, ConvertDialog, DirectoryPickerDialog
+│   ├── widget/              # RaccoonBubble custom widget
+│   └── [feature]/           # browse, duplicates, large, junk, cloud, viewer, etc.
+├── utils/                   # Focused utility classes (Scanner, DuplicateFinder, etc.)
+│   └── antivirus/           # 4 antivirus scanner modules
+└── viewmodel/               # MainViewModel + extracted managers
+```
+
+- **25 packages** for 76 files — good granularity ✅
+- **Feature-per-package** in UI layer ✅
+- **Separation:** Data models isolated from UI, utils have no UI imports ✅
+
+#### Single ViewModel Concern
+
+> **F-074** | Severity: **MEDIUM** | Confidence: **HIGH**
+> **Title:** Single MainViewModel (790 lines) handles all app state — approaching god-class territory
+> **Location:** `viewmodel/MainViewModel.kt` (790 lines, 15 `viewModelScope.launch` sites)
+> **Details:** MainViewModel manages: scan orchestration, file categorization, duplicate detection, junk detection, large file detection, storage stats, file deletion (trash-based undo), file moving, file renaming, clipboard, navigation events, cache persistence, and directory tree. It has already extracted `ClipboardManager` and `NavigationEvents` (noted in code: "I5-01: Extracted responsibilities into dedicated managers"), but the core scan/file-operation state remains monolithic. At 790 lines with 15 coroutine launch sites, it's the largest non-view file and the single point of complexity.
+> **Suggestion:** Consider extracting `ScanOrchestrator` (scan lifecycle + progress) and `FileOperationManager` (delete/move/rename + undo) as separate classes, following the existing extraction pattern for ClipboardManager/NavigationEvents.
+
+#### Separation of Concerns
+
+- **UI code contains no business logic** — Fragments observe LiveData, delegate actions to ViewModel ✅
+- **ViewModel uses `AndroidViewModel`** (needs `Application` for storage path and resources) — acceptable for file manager ✅
+- **File I/O delegated to `FileOperationService`** (line 89-90) — clean delegation ✅
+- **Scanning delegated to `FileScanner`, `DuplicateFinder`, `JunkFinder`** — proper utility extraction ✅
+
+#### Dependency Direction
+
+No circular imports detected. Clean layered dependency: `ui → viewmodel → data/utils`, `utils → data`. ✅
+
+### Step 10.6 — §I6: Documentation & Maintainability
+
+#### Algorithm Documentation
+
+| Algorithm | KDoc | Inline Comments | Quality |
+|-----------|:----:|:---------------:|:-------:|
+| DuplicateFinder (3-stage hash) | ✅ Full KDoc with stage description | ✅ Each stage commented | Excellent |
+| FileScanner (filesystem walk) | ✅ Function-level KDoc | ✅ Category logic documented | Good |
+| ArborescenceView (tree rendering) | ✅ Section headers, companion constants | ✅ Layout algorithm steps | Good |
+| MotionUtil (animation system) | ✅ Every method has KDoc | ✅ Cross-references to design specs (§DM1-DM5) | Excellent |
+| RetryHelper (exponential backoff) | ✅ Full KDoc | ✅ Retryable vs non-retryable documented | Excellent |
+| ScanCache (streaming JSON) | ✅ Format and limits documented | ✅ Security rationale (F-C5-01) | Good |
+| CloudProvider (interface) | ✅ Every method has KDoc | N/A | Good |
+
+#### Cross-References to Audit Findings
+
+The codebase contains inline references to previous audit findings (e.g., "I5-01", "D1", "D2", "D5", "B1", "B4", "F-017", "P2-A4-01", "F-C5-01", "I4-04"). This is excellent traceability — a new developer can trace why code exists. ✅
+
+#### Architecture Documentation
+
+No `ARCHITECTURE.md` or `README.md` found (beyond the audit files). The code is well-structured enough to be self-documenting, but a new developer would benefit from a high-level architecture overview.
+
+> **F-075** | Severity: **LOW** | Confidence: **MEDIUM**
+> **Title:** No architecture documentation for developer onboarding
+> **Location:** Project root (no ARCHITECTURE.md or README.md)
+> **Details:** While the code is well-organized with clear package structure and inline documentation, there's no high-level architecture document explaining: the single-Activity MVVM pattern, the scan pipeline (FileScanner → DuplicateFinder → JunkFinder), the trash-based undo system, the CloudProvider plugin architecture, or the design token system. A new developer would need to read MainViewModel.kt end-to-end to understand the app's data flow.
+> **Suggestion:** Add a brief ARCHITECTURE.md covering: package responsibilities, data flow diagram, key design decisions (single ViewModel, trash-undo pattern, scan pipeline), and the design system architecture.
+
+### Step 10.7 — §L1: Code Optimization Opportunities
+
+#### Algorithm Complexity
+
+- **DuplicateFinder:** 3-stage pipeline (size grouping → partial hash → full hash) is optimal — O(n) for Stage 1, O(k) for stages 2-3 where k ≪ n. `MAX_FULL_HASH_SIZE` (200MB) cap prevents mobile I/O stalls. ✅
+- **FileScanner:** Single-pass `walkFileTree` — O(n) where n = filesystem entries. ✅
+- **JunkFinder:** Single-pass filter with set-based path matching — O(n). ✅
+- **ArborescenceView layout:** Tree position computation is O(n) where n = visible nodes, with `computePositions` only called on expand/collapse, not per-frame. ✅
+
+#### Memoization
+
+- **DuplicateFinder:** Pre-allocated hex lookup table (`HEX_CHARS`, line 22) avoids per-byte `String.format` allocation. ✅
+- **ArborescenceView:** `cachedFiles`, `cachedMoreText` per node layout — avoids recomputing on each draw. ✅
+- **FileAdapter/BrowseAdapter:** DiffUtil with payload-based partial rebind — only updates changed fields. ✅
+
+#### Potential Optimization
+
+The `undoDelete()` method (line 454-493) calls `DuplicateFinder.findDuplicates(updated)` on the entire file list after restoring files. This re-hashes all files, not just the restored ones. For large file sets, this is unnecessarily expensive.
+
+> **F-076** | Severity: **LOW** | Confidence: **MEDIUM**
+> **Title:** undoDelete re-runs full duplicate detection instead of incremental update
+> **Location:** `viewmodel/MainViewModel.kt:480`
+> **Details:** After restoring files from trash, `undoDelete()` calls `DuplicateFinder.findDuplicates(updated)` on the entire file list (potentially 50K+ files). Since only a small number of files were restored, an incremental approach (re-checking only the restored files against existing hash groups) would be significantly faster.
+> **Suggestion:** Add an incremental duplicate check method that only hashes restored files and compares against cached hash groups from the previous scan.
+
+### Step 10.8 — §L2: Code Standardization
+
+#### Linting & Formatting
+
+- **No `.editorconfig`** — no cross-IDE formatting standard ⚠️
+- **No ktlint or detekt** — no automated Kotlin style enforcement ⚠️
+- **No lint.xml** — no custom Android lint configuration ⚠️
+
+Despite the absence of automated tooling, the codebase maintains consistent style:
+- Consistent 4-space indentation ✅
+- Consistent brace style (K&R / Kotlin standard) ✅
+- Consistent import ordering (platform → AndroidX → app) ✅
+- Consistent use of trailing lambda syntax ✅
+
+> **F-077** | Severity: **LOW** | Confidence: **HIGH**
+> **Title:** No static analysis or lint tooling configured
+> **Location:** Project root (no .editorconfig, ktlint, detekt, or lint.xml)
+> **Details:** The codebase has no automated style enforcement. While manual consistency is currently maintained across 76 files, this becomes harder to sustain as the team grows or contributors change. The `build.gradle` only includes JUnit for testing — no static analysis plugins.
+> **Suggestion:** Add ktlint (formatting) or detekt (comprehensive static analysis) as a Gradle plugin. Consider adding a `.editorconfig` for cross-IDE consistency. A basic setup takes ~10 minutes and catches issues automatically.
+
+#### Build Configuration
+
+- **R8/ProGuard:** Enabled for release builds with `minifyEnabled true`, `shrinkResources true` ✅
+- **ProGuard rules:** Proper keep rules for Parcelable, cloud data classes, Glide, coroutines, JSch ✅
+- **Dependencies:** All up-to-date, no deprecated libraries. `security-crypto:1.1.0-alpha06` is the latest stable alpha (no GA release exists) ✅
+- **KSP:** Used for Glide annotation processing (modern replacement for kapt) ✅
+- **Safe Args:** Navigation safe args plugin enabled ✅
+
+#### Error Handling Pattern
+
+Mixed patterns across the codebase:
+- **ViewModel scan:** `runCatching` / `onFailure` (Kotlin Result pattern)
+- **File operations:** Custom `OpResult(success, message)` return type
+- **Cloud operations:** try/catch with differentiated snackbar errors
+- **Retry logic:** Exception classification in `RetryHelper.isRetryable()`
+
+All patterns are reasonable, but there's no single canonical error type.
+
+---
+
+### Phase 10 — Positive Verification Summary
+
+| Area | Verdict |
+|------|---------|
+| Zero dead code / commented-out blocks / TODO debt | ✅ Excellent |
+| Only 26 `!!` across 20,731 lines (1.3 per 1000 LOC) | ✅ Very low risk |
+| File-to-class naming alignment (76/76 files) | ✅ Perfect |
+| Domain vocabulary consistency (FileItem, scan, trash, cloud) | ✅ Strong |
+| BaseFileListFragment reduces 3 fragments to 26-30 lines each | ✅ Excellent reuse |
+| CloudProvider interface enables clean plugin architecture | ✅ Well-designed |
+| DuplicateFinder 3-stage O(n) pipeline with documentation | ✅ Optimal |
+| Pre-allocated hex table and per-node caching | ✅ Thoughtful memoization |
+| DiffUtil with payload-based partial rebind | ✅ Standard best practice |
+| Inline audit finding references (I5-01, D1, B1, etc.) | ✅ Excellent traceability |
+| R8 + ProGuard properly configured | ✅ Release-ready |
+| KSP for annotation processing (modern) | ✅ |
+| 25 packages / 76 files — good granularity | ✅ Well-organized |
+| No circular dependencies | ✅ Clean layering |
+
+---
+
+### Phase 10 — Cumulative Finding Count
+
+| Severity | P1 | P2 | P3 | P4 | P5 | P6 | P7 | P8 | P9 | P10 | Total |
+|----------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|-------|
+| CRITICAL | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| HIGH | 1 | 0 | 2 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 4 |
+| MEDIUM | 6 | 2 | 5 | 3 | 0 | 1 | 2 | 2 | 0 | 2 | 23 |
+| LOW | 11 | 6 | 5 | 5 | 6 | 3 | 3 | 3 | 3 | 4 | 49 |
+| **Total** | **18** | **8** | **12** | **8** | **6** | **4** | **5** | **6** | **3** | **6** | **76** |
+
+**Next: Phase 11 — Data Presentation (Category J)**
+
+Awaiting confirmation to proceed with Phase 11, or to fix findings from Phases 1-10.

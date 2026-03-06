@@ -4492,6 +4492,212 @@ Phase 14 escalates existing findings via compound analysis — no new F-numbers 
 | POLISH | 2 |
 | **Grand Total** | **90** |
 
-**Next: Phase 15 — R&D & Feature Improvement (§X)**
+---
 
-Awaiting confirmation to proceed with Phase 15, or to fix findings.
+## PHASE 15 — R&D & FEATURE IMPROVEMENT (§X)
+
+### Step 15.1 — §X.0: Existing Feature Deep Evaluation
+
+#### Feature Assessment Matrix
+
+| # | Feature | Correctness | Usability | Discoverability | Visual Coherence | User Value | Completion | Action |
+|---|---------|-------------|-----------|-----------------|------------------|------------|------------|--------|
+| 1 | Storage scanning (4-phase) | SOLID | INTUITIVE | OBVIOUS | INTEGRATED | CORE | COMPLETE | **LEAVE** |
+| 2 | File browsing + filtering | SOLID | INTUITIVE | OBVIOUS | INTEGRATED | CORE | COMPLETE | **LEAVE** |
+| 3 | Search with parsed queries | SOLID | ADEQUATE | FINDABLE | INTEGRATED | IMPORTANT | COMPLETE | **EVOLVE** — date format awareness (F-081/F-092) |
+| 4 | Duplicate detection (MD5) | SOLID | INTUITIVE | OBVIOUS | INTEGRATED | CORE | COMPLETE | **LEAVE** |
+| 5 | Large file detection | SOLID | INTUITIVE | OBVIOUS | INTEGRATED | CORE | COMPLETE | **LEAVE** |
+| 6 | Junk detection | SOLID | INTUITIVE | OBVIOUS | INTEGRATED | CORE | COMPLETE | **LEAVE** |
+| 7 | Delete with undo | SOLID | INTUITIVE | OBVIOUS | INTEGRATED | CORE | COMPLETE | **LEAVE** |
+| 8 | Rename (single + batch) | SOLID | ADEQUATE | FINDABLE | INTEGRATED | IMPORTANT | COMPLETE | **LEAVE** |
+| 9 | Move/copy + clipboard | SOLID | ADEQUATE | FINDABLE | INTEGRATED | IMPORTANT | COMPLETE | **LEAVE** |
+| 10 | ZIP compression | SOLID | ADEQUATE | FINDABLE | INTEGRATED | MINOR | COMPLETE | **LEAVE** |
+| 11 | Archive extraction | SOLID | ADEQUATE | FINDABLE | INTEGRATED | MINOR | COMPLETE | **LEAVE** |
+| 12 | File format conversion | SOLID | ADEQUATE | FINDABLE | INTEGRATED | MINOR | 80% DONE | **ELEVATE** — missing error feedback (F-083/F-084) |
+| 13 | Arborescence tree | SOLID | INTUITIVE | FINDABLE | INTEGRATED | IMPORTANT | 80% DONE | **ELEVATE** — accessibility gap (F-065) |
+| 14 | Dual-pane browser | SOLID | ADEQUATE | FINDABLE | INTEGRATED | IMPORTANT | COMPLETE | **LEAVE** |
+| 15 | Storage dashboard | SOLID | INTUITIVE | OBVIOUS | INTEGRATED | CORE | 80% DONE | **ELEVATE** — add total row (F-082), fix staleness (F-085) |
+| 16 | Storage optimization | SOLID | ADEQUATE | FINDABLE | INTEGRATED | IMPORTANT | COMPLETE | **ELEVATE** — fix hardcoded strings (F-088) |
+| 17 | Cloud storage (4 providers) | FRAGILE | ADEQUATE | FINDABLE | INTEGRATED | IMPORTANT | COMPLETE | **ELEVATE** — fix SFTP Mutex (F-013), OAuth security (F-037) |
+| 18 | OAuth2 flow | FRAGILE | ADEQUATE | HIDDEN | INTEGRATED | IMPORTANT | COMPLETE | **ELEVATE** — deep link security (F-037) |
+| 19 | Antivirus scanning | SOLID | ADEQUATE | FINDABLE | INTEGRATED | MINOR | COMPLETE | **ELEVATE** — replace polling (F-078) |
+| 20 | App integrity verification | SOLID | ADEQUATE | FINDABLE | INTEGRATED | MINOR | COMPLETE | **LEAVE** |
+| 21 | Network security scanning | SOLID | ADEQUATE | FINDABLE | INTEGRATED | MINOR | COMPLETE | **LEAVE** |
+| 22 | Privacy auditing | SOLID | ADEQUATE | FINDABLE | INTEGRATED | MINOR | COMPLETE | **LEAVE** |
+| 23 | App verification | SOLID | ADEQUATE | FINDABLE | INTEGRATED | MINOR | COMPLETE | **LEAVE** |
+| 24 | File preview | SOLID | INTUITIVE | OBVIOUS | INTEGRATED | IMPORTANT | 80% DONE | **ELEVATE** — Glide safeguards (F-083/F-084) |
+| 25 | Scan cache | SOLID | N/A (invisible) | N/A | N/A | CORE | COMPLETE | **LEAVE** |
+| 26 | Raccoon Manager hub | SOLID | INTUITIVE | OBVIOUS | INTEGRATED | CORE | COMPLETE | **LEAVE** |
+| 27 | Raccoon bubble widget | SOLID | INTUITIVE | FINDABLE | INTEGRATED | MINOR | COMPLETE | **LEAVE** |
+| 28 | Onboarding dialog | SOLID | INTUITIVE | OBVIOUS | INTEGRATED | IMPORTANT | COMPLETE | **LEAVE** |
+| 29 | Settings | SOLID | ADEQUATE | OBVIOUS | INTEGRATED | IMPORTANT | COMPLETE | **LEAVE** |
+| 30 | Bottom nav + badges | SOLID | INTUITIVE | OBVIOUS | INTEGRATED | CORE | COMPLETE | **LEAVE** |
+| 31 | Keyboard shortcuts | SOLID | ADEQUATE | HIDDEN | INTEGRATED | MINOR | COMPLETE | **LEAVE** |
+| 32 | Privacy notice | SOLID | ADEQUATE | OBVIOUS | INTEGRATED | IMPORTANT | COMPLETE | **LEAVE** |
+| 33 | Dark mode | SOLID | INTUITIVE | OBVIOUS | INTEGRATED | IMPORTANT | COMPLETE | **LEAVE** |
+| 34 | Crash reporting | SOLID | N/A | FINDABLE | N/A | MINOR | 80% DONE | **ELEVATE** — deduplication (F-091), token security (F-027) |
+| 35 | Context menu | SOLID | INTUITIVE | OBVIOUS | INTEGRATED | IMPORTANT | COMPLETE | **LEAVE** |
+| 36 | Color-coded categories | SOLID | INTUITIVE | OBVIOUS | INTEGRATED | IMPORTANT | COMPLETE | **LEAVE** |
+| 37 | View modes (list/compact/grid) | SOLID | INTUITIVE | FINDABLE | INTEGRATED | IMPORTANT | COMPLETE | **LEAVE** |
+| 38 | Foreground scan service | SOLID | ADEQUATE | OBVIOUS | INTEGRATED | CORE | COMPLETE | **LEAVE** |
+| 39 | Protected path exclusion | SOLID | ADEQUATE | FINDABLE | INTEGRATED | IMPORTANT | COMPLETE | **LEAVE** |
+
+**Action Summary:**
+- **LEAVE:** 27 features — confirmed healthy, no action needed
+- **ELEVATE:** 8 features — quality uplift needed, same scope
+- **EVOLVE:** 1 feature — scope should expand (search + locale awareness)
+- **CONSOLIDATE/REIMAGINE/DEPRECATE:** 0 — no redundant or vestigial features
+
+#### Feature Relationship Map
+
+```
+Core Loop: Scan → Browse → Analyze → Act (delete/move/rename)
+  ├─ Storage scanning feeds: Dashboard, Browse, Duplicates, Junk, Large Files
+  ├─ Browse feeds: Dual-pane, Tree view, File preview, Context menu
+  ├─ Dashboard feeds: Optimization suggestions
+  └─ Cloud is semi-isolated: own browser, own credential store
+
+Security Layer: Antivirus, Integrity, Network, Privacy (independent)
+Personality Layer: Raccoon hub, Bubble widget, Onboarding (integrated)
+Infrastructure: Cache, Settings, Crash reporting (foundation)
+```
+
+**Dependencies:** Scan is the root dependency — everything downstream depends on scan data. If scan is slow or incomplete, all features degrade.
+
+**Missing Bridges:**
+- Cloud ↔ Local: No way to compare local vs cloud files or identify duplicates across storage types
+- Dashboard → Action: Dashboard shows data but has limited quick-actions (only 3 buttons — no "clean all junk" one-tap)
+- Tree view → File operations: Tree visualizes but file operations from tree context are limited
+
+### Step 15.2 — §X.1: Competitive & Landscape Research
+
+#### Top Competitors
+
+| Feature | **Raccoon File Manager** | **Files by Google** | **SD Maid 2/SE** | **Solid Explorer** | **MiXplorer** |
+|---------|----------------------|-------------------|----------------|-------------------|-------------|
+| File browsing | ✅ Full | ✅ Basic | ✅ Advanced | ✅ Full | ✅ Full |
+| Duplicate finder | ✅ MD5 | ✅ Basic | ✅ | ❌ | ❌ |
+| Junk cleaner | ✅ Pattern | ✅ Smart | ✅ CorpseFinder | ❌ | ❌ |
+| Storage analysis | ✅ Dashboard + Tree | ✅ Basic | ✅ StorageAnalyzer | ✅ | ❌ |
+| Cloud storage | ✅ 4 providers | ✅ Google Drive only | ❌ | ✅ 20+ providers | ✅ Many |
+| Security scanning | ✅ 5 scanners | ❌ | ❌ | ❌ | ❌ |
+| Dual-pane | ✅ | ❌ | ❌ | ✅ | ✅ |
+| File conversion | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Mascot/personality | ✅ Raccoon | ❌ | ❌ | ❌ | ❌ |
+| Offline file sharing | ❌ | ✅ (Nearby Share) | ❌ | ❌ | ✅ (FTP server) |
+| Database optimization | ❌ | ❌ | ✅ | ❌ | ❌ |
+| App remnant cleanup | ❌ | ❌ | ✅ (CorpseFinder) | ❌ | ❌ |
+| Scheduled cleanup | ❌ | ❌ | ✅ | ❌ | ❌ |
+| Root features | ❌ | ❌ | ✅ | ✅ (optional) | ✅ |
+| Price | Free | Free | Free/Paid | Paid ($2.99) | Free |
+
+#### Competitive Differentiation
+
+**Raccoon's Unique Strengths:**
+1. **Security scanning suite** — No other file manager offers 5 integrated security scanners (antivirus, integrity, network, privacy, app verification). This is a significant differentiator.
+2. **Arborescence tree visualization** — Unique in the category. No competitor has a custom Canvas-drawn interactive tree view.
+3. **File format conversion** — Unique: image resize, format conversion, video thumbnail extraction built-in.
+4. **Mascot personality** — Raccoon "Ricky" creates brand identity and approachability.
+5. **Cleaner + Manager + Security in one app** — Most competitors specialize in one area. Raccoon combines all three.
+
+**Gaps vs. Competitors:**
+1. **No scheduled/automatic cleanup** — SD Maid offers scheduled scanning; Files by Google sends proactive suggestions
+2. **No app remnant detection** — SD Maid's CorpseFinder finds files left by uninstalled apps
+3. **No offline file sharing** — Files by Google has Nearby Share; MiXplorer has FTP server
+4. **Limited cloud providers** (4 vs. Solid Explorer's 20+)
+5. **No root features** — Power users can't access `/data` or system files
+
+### Step 15.3 — §X.2: Improvement Prioritization
+
+#### Priority Matrix
+
+| Rank | Improvement | Impact | Effort | Strategic Value | Blocks on Findings? |
+|------|------------|--------|--------|----------------|-------------------|
+| 1 | **Fix 4 HIGH audit findings** (F-013, F-027, F-037, F-065) | HIGH | MEDIUM | Foundation | Yes — must fix before building new features |
+| 2 | **i18n readiness** (F-088, F-089 + RTL) | HIGH | LOW | Growth — unlocks global market | Yes — F-088, F-089 |
+| 3 | **Scheduled automatic cleanup** | HIGH | MEDIUM | Differentiator — matches SD Maid's key feature | No |
+| 4 | **Glide safety hardening** (F-083, F-084) | MEDIUM | LOW | Quality — prevents crashes | Yes |
+| 5 | **Dashboard polish** (F-080, F-082, F-085) | MEDIUM | LOW | Polish — improves data trust | Yes |
+| 6 | **App remnant detection** (CorpseFinder equivalent) | HIGH | HIGH | Differentiator — closes gap with SD Maid | No |
+| 7 | **Proactive cleanup suggestions** (notification-based) | MEDIUM | MEDIUM | Engagement — matches Files by Google | No |
+| 8 | **Additional cloud providers** (Dropbox, OneDrive) | MEDIUM | MEDIUM | Reach — matches Solid Explorer | No |
+| 9 | **Offline file sharing** | LOW | HIGH | Nice-to-have — not core to file cleaning | No |
+| 10 | **Kotlin 2.0 migration** (F-093) | LOW | MEDIUM | Foundation — future-proofing | No |
+
+### Step 15.4 — §X.3: R&D Roadmap
+
+```yaml
+IMMEDIATE — fix these before building anything new:
+  - F-027: Move CrashReporter GitHub token to EncryptedSharedPreferences [LOW effort]
+  - F-037: Add `android:autoVerify` or use App Links for OAuth deep link [MEDIUM effort]
+  - F-065: Implement ExploreByTouchHelper for ArborescenceView [MEDIUM effort]
+  - F-013: Replace SftpProvider single Mutex with per-connection locking [MEDIUM effort]
+  - F-088 + F-089: Move hardcoded strings to strings.xml [LOW effort]
+  - F-083 + F-084: Add Glide placeholder/error/override to preview + viewer [LOW effort]
+
+SHORT-TERM (1-2 release cycles):
+  - Dashboard improvements: total row (F-082), percentage rounding (F-080), StatFs refresh in onResume (F-085)
+  - Date format standardization (F-081): create DateFormatUtils, apply across app
+  - Crash report deduplication (F-091): hash-based dedup before GitHub Issue creation
+  - Replace AntivirusFragment polling with LiveData (F-078)
+  - Add android:supportsRtl="true" to manifest (F-092)
+  - Scan history: show last scan time + results count on dashboard
+
+MID-TERM (2-4 release cycles):
+  - Scheduled automatic cleanup via WorkManager
+    - User-configurable schedule (daily/weekly/monthly)
+    - Background scan + auto-delete of junk/cache with notification summary
+  - Proactive storage suggestions via notification
+    - "You have 45 duplicate files (230 MB). Tap to review."
+    - Triggered when storage drops below threshold
+  - App remnant detection (CorpseFinder equivalent)
+    - Track installed apps, detect orphaned files after uninstall
+    - Requires QUERY_ALL_PACKAGES or usage stats permission
+  - Kotlin 2.0 migration (F-093)
+  - i18n: Initial translations (Spanish, French, German, Portuguese, Chinese)
+
+LONG-TERM (future releases):
+  - Additional cloud providers (Dropbox, OneDrive) via CloudProvider interface
+  - Cross-storage duplicate detection (local ↔ cloud)
+  - Room/SQLite migration for ScanCache (scale cliff mitigation)
+  - MainViewModel decomposition (separate ScanViewModel, FileOpsViewModel)
+  - Offline file sharing (Nearby Share / Wi-Fi Direct)
+```
+
+#### Strategic Vision
+
+Raccoon File Manager occupies a unique position: **the only app that combines file management, storage cleaning, AND security scanning with a personality-driven UX.** The competitive moat is:
+
+1. **Security suite** — No competitor has integrated security scanning
+2. **Tree visualization** — Unique data exploration tool
+3. **Raccoon personality** — Brand differentiator and user affinity
+4. **Conversion tools** — Built-in image/video conversion
+
+The roadmap protects these strengths while closing the two main gaps:
+- **Scheduled cleanup** (matches SD Maid)
+- **Proactive suggestions** (matches Files by Google)
+
+---
+
+### Phase 15 — Final Audit Summary
+
+| Metric | Value |
+|--------|-------|
+| Total findings | **90** |
+| CRITICAL | 0 |
+| HIGH | 4 |
+| MEDIUM | 25 |
+| LOW | 59 |
+| POLISH | 2 |
+| Features audited | 39 |
+| Features healthy (LEAVE) | 27 (69%) |
+| Features needing uplift (ELEVATE) | 8 (21%) |
+| Features needing evolution (EVOLVE) | 1 (3%) |
+| Cross-cutting chains | 7 |
+| Compound CRITICAL escalations | 0 |
+
+**Overall Assessment:** The app is well-architected, consistently coded, and production-ready. The 4 HIGH findings are all fixable without structural changes. The remaining 86 findings are quality improvements, not blockers. The competitive position is strong with unique differentiators. The immediate priorities are: fix HIGH findings → i18n readiness → scheduled cleanup feature.
+
+---
+
+**AUDIT COMPLETE — All 15 phases delivered.**

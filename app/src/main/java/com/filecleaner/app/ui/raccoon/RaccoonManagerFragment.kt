@@ -5,13 +5,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.filecleaner.app.MainActivity
 import com.filecleaner.app.R
 import com.filecleaner.app.databinding.FragmentRaccoonManagerBinding
+import com.filecleaner.app.utils.MotionUtil
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.viewmodel.ScanPhase
@@ -26,8 +27,11 @@ import com.google.android.material.snackbar.Snackbar
 class RaccoonManagerFragment : Fragment() {
 
     private var _binding: FragmentRaccoonManagerBinding? = null
+    private var activeDialog: AlertDialog? = null
     private val binding get() = _binding!!
     private val vm: MainViewModel by activityViewModels()
+    /** Tracks whether a scan was in progress so we only celebrate on Scanning -> Done transitions. */
+    private var wasScanning = false
 
     override fun onCreateView(i: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
         _binding = FragmentRaccoonManagerBinding.inflate(i, c, false)
@@ -37,12 +41,8 @@ class RaccoonManagerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val navAnimOptions = NavOptions.Builder()
-            .setEnterAnim(R.anim.nav_enter)
-            .setExitAnim(R.anim.nav_exit)
-            .setPopEnterAnim(R.anim.nav_pop_enter)
-            .setPopExitAnim(R.anim.nav_pop_exit)
-            .build()
+        // §DM2: Use centralized motion vocabulary NavOptions for consistent transitions
+        val navAnimOptions = MotionUtil.navOptions()
 
         // Scan Storage — triggers permission check + scan
         binding.cardScan.setOnClickListener {
@@ -77,7 +77,8 @@ class RaccoonManagerFragment : Fragment() {
             val detail = resources.getQuantityString(
                 R.plurals.confirm_delete_detail,
                 junk.size, junk.size, totalSize, undoSeconds)
-            AlertDialog.Builder(requireContext())
+            activeDialog?.dismiss()
+            activeDialog = MaterialAlertDialogBuilder(requireContext())
                 .setTitle(getString(R.string.raccoon_quick_clean_title))
                 .setMessage(detail)
                 .setPositiveButton(getString(R.string.clean)) { _, _ ->
@@ -134,6 +135,22 @@ class RaccoonManagerFragment : Fragment() {
             val hasData = state is ScanState.Done
             val isScanning = state is ScanState.Scanning
             binding.progressScan.visibility = if (isScanning) View.VISIBLE else View.GONE
+            // DST4 / E6: Raccoon celebration bounce when scan finishes
+            if (hasData && wasScanning && !MotionUtil.isReducedMotion(requireContext())) {
+                val raccoonView = binding.ivRaccoonAvatar
+                raccoonView.animate()
+                    .scaleX(1.15f).scaleY(1.15f)
+                    .setDuration(resources.getInteger(R.integer.motion_emphasis).toLong() / 2)
+                    .setInterpolator(android.view.animation.OvershootInterpolator(2f))
+                    .withEndAction {
+                        raccoonView.animate()
+                            .scaleX(1f).scaleY(1f)
+                            .setDuration(resources.getInteger(R.integer.motion_emphasis).toLong() / 2)
+                            .start()
+                    }
+                    .start()
+            }
+            wasScanning = isScanning
             binding.tvSubtitle.text = when (state) {
                 is ScanState.Done -> {
                     val stats = vm.storageStats.value
@@ -152,10 +169,10 @@ class RaccoonManagerFragment : Fragment() {
                     ScanPhase.ANALYZING -> getString(R.string.scanning_phase_analyzing, state.filesFound)
                     ScanPhase.JUNK -> getString(R.string.scanning_phase_junk, state.filesFound)
                 }
-                else -> getString(R.string.raccoon_manager_subtitle)
+                else -> getString(R.string.raccoon_greeting_pre_scan)
             }
-            // F5: Dim cards that require scan data when none is available; full opacity when scanning or done
-            val alpha = if (hasData || isScanning) 1.0f else 0.5f
+            // F-059: Dim cards that require scan data; raised from 0.5 to 0.6 for better readability
+            val alpha = if (hasData || isScanning) 1.0f else 0.6f
             binding.cardAnalysis.alpha = alpha
             binding.cardQuickClean.alpha = alpha
             binding.cardArborescence.alpha = alpha
@@ -194,26 +211,57 @@ class RaccoonManagerFragment : Fragment() {
     private fun hasScanData(): Boolean = vm.scanState.value is ScanState.Done
 
     private fun showScanNeeded() {
-        Snackbar.make(binding.root, getString(R.string.raccoon_scan_needed), Snackbar.LENGTH_SHORT).show()
+        Snackbar.make(binding.root, getString(R.string.raccoon_scan_needed), Snackbar.LENGTH_SHORT)
+            .apply { view.rootView.findViewById<View?>(R.id.bottom_nav)?.let { anchorView = it } }
+            .show()
     }
 
     private fun showJanitorDialog() {
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(getString(R.string.raccoon_janitor_title))
             .setMessage(getString(R.string.raccoon_janitor_desc))
             .setPositiveButton(getString(R.string.raccoon_janitor_start)) { _, _ ->
-                // Deep clean starts a fresh scan then navigates to duplicates for review
+                // F-057: Deep clean starts a fresh scan, then shows review dialog on completion
                 (activity as? MainActivity)?.requestPermissionsAndScan()
-                // After scan completes, user can review duplicates/junk/large tabs
                 Snackbar.make(binding.root,
                     getString(R.string.raccoon_janitor_started),
                     Snackbar.LENGTH_LONG).show()
+                // Observe scan completion to show review guidance
+                vm.scanState.observe(viewLifecycleOwner) { state ->
+                    if (state is ScanState.Done) {
+                        vm.scanState.removeObservers(viewLifecycleOwner)
+                        showJanitorReviewDialog()
+                    }
+                }
             }
             .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 
+    /** F-057: Post-scan dialog guiding user to review tabs */
+    private fun showJanitorReviewDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.raccoon_janitor_done_title))
+            .setMessage(getString(R.string.raccoon_janitor_done_message))
+            .setPositiveButton(getString(R.string.raccoon_janitor_review_duplicates)) { _, _ ->
+                (activity as? MainActivity)?.let {
+                    it.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_nav)
+                        ?.selectedItemId = R.id.duplicatesFragment
+                }
+            }
+            .setNeutralButton(getString(R.string.raccoon_janitor_review_junk)) { _, _ ->
+                (activity as? MainActivity)?.let {
+                    it.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_nav)
+                        ?.selectedItemId = R.id.junkFragment
+                }
+            }
+            .setNegativeButton(getString(R.string.dismiss), null)
+            .show()
+    }
+
     override fun onDestroyView() {
+        activeDialog?.dismiss()
+        activeDialog = null
         super.onDestroyView()
         _binding = null
     }

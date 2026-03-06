@@ -22,18 +22,31 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import java.io.File
 
-enum class ScanPhase { INDEXING, DUPLICATES, ANALYZING, JUNK }
+enum class ScanPhase(val order: Int, val totalPhases: Int = 4) {
+    INDEXING(0),
+    DUPLICATES(1),
+    ANALYZING(2),
+    JUNK(3);
+
+    fun baseProgress(): Int = (order * 100) / totalPhases
+    fun endProgress(): Int = ((order + 1) * 100) / totalPhases
+}
 
 sealed class ScanState {
     object Idle : ScanState()
-    data class Scanning(val filesFound: Int, val phase: ScanPhase = ScanPhase.INDEXING) : ScanState()
+    data class Scanning(
+        val filesFound: Int,
+        val phase: ScanPhase = ScanPhase.INDEXING,
+        val progressPercent: Int = -1
+    ) : ScanState()
     object Done : ScanState()
     object Cancelled : ScanState()
     data class Error(val message: String) : ScanState()
@@ -44,7 +57,29 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     companion object {
         // D5: Debounce interval for cache writes after file operations
         private const val SAVE_CACHE_DEBOUNCE_MS = 3000L
+
+        /** I4-04: Remove orphan duplicate groups (groups with fewer than 2 members). */
+        private fun pruneOrphanDuplicates(dupes: List<FileItem>): List<FileItem> {
+            val validGroups = dupes.groupBy { it.duplicateGroup }
+                .filter { it.value.size >= 2 }.keys
+            return dupes.filter { it.duplicateGroup in validGroups }
+        }
     }
+
+    // I5-01: Extracted responsibilities into dedicated managers
+    val clipboard = ClipboardManager()
+    val navigation = NavigationEvents()
+    // Delegation for backward compatibility
+    val clipboardEntry: LiveData<ClipboardManager.ClipboardEntry?> get() = clipboard.clipboardEntry
+    fun setCutFile(item: FileItem) = clipboard.setCutFile(item)
+    fun setCopyFile(item: FileItem) = clipboard.setCopyFile(item)
+    fun clearClipboard() = clipboard.clearClipboard()
+    val navigateToBrowse: LiveData<String?> get() = navigation.navigateToBrowse
+    fun requestBrowseFolder(folderPath: String) = navigation.requestBrowseFolder(folderPath)
+    fun clearBrowseNavigation() = navigation.clearBrowseNavigation()
+    val navigateToTree: LiveData<String?> get() = navigation.navigateToTree
+    fun requestTreeHighlight(filePath: String) = navigation.requestTreeHighlight(filePath)
+    fun clearTreeHighlight() = navigation.clearTreeHighlight()
 
     // File manager needs broad storage access; MANAGE_EXTERNAL_STORAGE grants it
     @Suppress("DEPRECATION")
@@ -112,8 +147,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         )
 
     // Map of original path -> trash path for pending undo
+    // ConcurrentHashMap for safe snapshot in onCleared() when mutex is unavailable
     private val trashMutex = Mutex()
-    private var pendingTrash = mutableMapOf<String, String>()
+    private var pendingTrash = java.util.concurrent.ConcurrentHashMap<String, String>()
+
+    // F-025: Snapshot of duplicate list before delete, for O(1) undo restore
+    private var pendingDupeSnapshot: List<FileItem>? = null
 
     // In-memory copies for reliable cache saving (postValue is async,
     // so LiveData .value may be stale when saveCache reads it)
@@ -126,7 +165,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     // D5: Debounce cache writes — at most once per 3 seconds
     private var saveCacheJob: Job? = null
 
-    val isScanning: Boolean get() = _scanState.value is ScanState.Scanning
+    @Volatile
+    private var _isScanning = false
+    val isScanning: Boolean get() = _isScanning
 
     private fun str(@StringRes id: Int): String = getApplication<Application>().getString(id)
     private fun str(@StringRes id: Int, vararg args: Any): String =
@@ -135,8 +176,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun cancelScan() {
         scanJob?.cancel()
         scanJob = null
-        // B1: Use postValue for thread-safety (cancelScan can be called from any thread)
-        _scanState.postValue(ScanState.Cancelled)
+        // F-020: Use setValue on Main thread for deterministic ordering (cancelScan is always called from UI)
+        _scanState.value = ScanState.Cancelled
+        _isScanning = false
+        // F-008: Clear partial state from cancelled scan so stale data isn't cached
+        latestFiles = emptyList()
+        latestTree = null
     }
 
     init {
@@ -156,45 +201,53 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 // If all cached files were deleted on disk, don't show stale Done state
                 if (files.isEmpty()) return@launch
 
+                // D2: Run heavy analysis on background thread to avoid blocking cold start
+                val analysisResult = withContext(Dispatchers.Default) {
+                    val filesByDir = files.groupBy { File(it.path).parent ?: "" }
+                    val enrichedTree = enrichTreeWithFiles(tree, filesByDir)
+                    val byCategory = files.groupBy { it.category }
+                    val dupes = pruneOrphanDuplicates(files.filter { it.duplicateGroup >= 0 })
+                    // F-022: Remove try/catch — UserPreferences.init() is called in Application.onCreate();
+                    // if accessed before init, fail loudly instead of silently using wrong defaults.
+                    val large = JunkFinder.findLargeFiles(files, UserPreferences.largeFileThresholdMb * 1024L * 1024L, UserPreferences.maxLargeFiles)
+                    val junk = JunkFinder.findJunk(files)
+                    object {
+                        val enrichedTree = enrichedTree
+                        val byCategory = byCategory
+                        val dupes = dupes
+                        val large = large
+                        val junk = junk
+                    }
+                }
+
                 stateMutex.withLock {
                     // Skip cache load if a scan has already started (user tapped scan
                     // before cache finished loading — the scan's results take priority)
                     if (_scanState.value !is ScanState.Idle) return@withLock
 
                     latestFiles = files
-                    latestTree = tree
-                    _directoryTree.postValue(tree)
-                    _filesByCategory.postValue(files.groupBy { it.category })
+                    latestTree = analysisResult.enrichedTree
+                    _directoryTree.postValue(analysisResult.enrichedTree)
+                    _filesByCategory.postValue(analysisResult.byCategory)
 
                     // D2: Use cached duplicate group IDs from the saved cache instead
                     // of re-running the full MD5 hash pipeline on cold start.  The cache
                     // preserves duplicateGroup assignments from the last scan, so we only
                     // need to filter and prune orphan groups (< 2 members).
-                    val dupes = files.filter { it.duplicateGroup >= 0 }
-                        .let { dups ->
-                            val validGroups = dups.groupBy { it.duplicateGroup }
-                                .filter { it.value.size >= 2 }.keys
-                            dups.filter { it.duplicateGroup in validGroups }
-                        }
-                    _duplicates.postValue(dupes)
-
-                    val large = JunkFinder.findLargeFiles(files)
-                    _largeFiles.postValue(large)
-
-                    val junk = JunkFinder.findJunk(files)
-                    _junkFiles.postValue(junk)
+                    _duplicates.postValue(analysisResult.dupes)
+                    _largeFiles.postValue(analysisResult.large)
+                    _junkFiles.postValue(analysisResult.junk)
 
                     _storageStats.postValue(StorageStats(
                         totalFiles    = files.size,
                         totalSize     = files.sumOf { it.size },
-                        junkSize      = junk.sumOf { it.size },
-                        duplicateSize = dupes.sumOf { it.size },
-                        largeSize     = large.sumOf { it.size }
+                        junkSize      = analysisResult.junk.sumOf { it.size },
+                        duplicateSize = analysisResult.dupes.sumOf { it.size },
+                        largeSize     = analysisResult.large.sumOf { it.size }
                     ))
-                }
-                // Only transition to Done if no scan superseded the cache load
-                if (_scanState.value is ScanState.Idle) {
-                    _scanState.postValue(ScanState.Done)
+                    // F-020+P2-A4-02: Use setValue (already on Main) for deterministic ordering
+                    _scanState.value = ScanState.Done
+                    _isScanning = false
                 }
             }
         }
@@ -202,61 +255,91 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     override fun onCleared() {
         super.onCleared()
-        // Snapshot mutable state on the Main Thread (safe — all mutations dispatch to Main)
-        val trashSnapshot = pendingTrash.toMap()
-        pendingTrash.clear()
+        // P2-A6-01: Acquire trashMutex to prevent racing with deleteFiles()/undoDelete()
+        val trashSnapshot: Map<String, String>
+        if (trashMutex.tryLock()) {
+            try {
+                trashSnapshot = pendingTrash.toMap()
+                pendingTrash.clear()
+            } finally {
+                trashMutex.unlock()
+            }
+        } else {
+            // Lock held by another coroutine; take a defensive snapshot
+            trashSnapshot = pendingTrash.toMap()
+        }
         val files = latestFiles
         val tree = latestTree
 
-        // Run I/O on a background thread to avoid blocking Main Thread (ANR risk).
-        // If the process dies before completion, the init{} block cleans orphaned
-        // trash on next launch, so no data is permanently lost.
-        Thread {
-            for ((_, trashPath) in trashSnapshot) {
-                File(trashPath).delete()
+        // Use a standalone coroutine instead of Thread + runBlocking.
+        // NonCancellable ensures completion even after scope cancellation.
+        // F-014: Wrap in withTimeout to prevent indefinite coroutine if storage hangs.
+        kotlinx.coroutines.CoroutineScope(Dispatchers.IO + NonCancellable).launch {
+            try {
+                withTimeout(10_000) {
+                    for ((_, trashPath) in trashSnapshot) {
+                        File(trashPath).delete()
+                    }
+                    if (files.isNotEmpty() && tree != null) {
+                        try {
+                            ScanCache.save(getApplication(), files, tree)
+                        } catch (e: Exception) {
+                            android.util.Log.w("MainViewModel", "Cache save failed in onCleared", e)
+                        }
+                    }
+                }
+            } catch (_: kotlinx.coroutines.TimeoutCancellationException) {
+                android.util.Log.w("MainViewModel", "onCleared cleanup timed out after 10s")
             }
-            if (files.isNotEmpty() && tree != null) {
-                try {
-                    runBlocking { ScanCache.save(getApplication(), files, tree) }
-                } catch (_: Exception) { }
-            }
-        }.start()
+        }
     }
 
-    fun startScan(minLargeFileMb: Int = try { UserPreferences.largeFileThresholdMb } catch (_: Exception) { 50 }) {
+    // F-022: Direct access — UserPreferences.init() guaranteed by Application.onCreate()
+    fun startScan(minLargeFileMb: Int = UserPreferences.largeFileThresholdMb) {
         scanJob?.cancel()
         scanJob = viewModelScope.launch {
             _scanState.value = ScanState.Scanning(0)
+            _isScanning = true
             // B1: Reset derived state so stale data from previous scan isn't visible
             _duplicates.value = emptyList()
             _largeFiles.value = emptyList()
             _junkFiles.value = emptyList()
             val scanStartMs = System.currentTimeMillis()
+            try {
             runCatching {
                 val (files, tree) = FileScanner.scanWithTree(getApplication()) { count ->
-                    _scanState.postValue(ScanState.Scanning(count, ScanPhase.INDEXING))
+                    _scanState.postValue(ScanState.Scanning(count, ScanPhase.INDEXING, progressPercent = -1))
                 }
 
+                val protectedPaths = UserPreferences.protectedPaths
+
+                // Finding 2 fix: Run heavy I/O outside stateMutex
+                _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.DUPLICATES, progressPercent = ScanPhase.DUPLICATES.baseProgress()))
+                val dupBase = ScanPhase.DUPLICATES.baseProgress()
+                val dupEnd = ScanPhase.DUPLICATES.endProgress()
+                val dupes = DuplicateFinder.findDuplicates(files) { done, total ->
+                    if (total > 0) {
+                        val pct = dupBase + (done * (dupEnd - dupBase)) / total
+                        _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.DUPLICATES, progressPercent = pct))
+                    }
+                }.filter { it.path !in protectedPaths }
+
+                // D2: Batch ANALYZING+JUNK into a single phase update to reduce
+                // LiveData churn — both findLargeFiles and findJunk are fast in-memory
+                // operations, so separate progress updates only cause UI flicker.
+                _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.ANALYZING, progressPercent = ScanPhase.ANALYZING.baseProgress()))
+                val large = JunkFinder.findLargeFiles(files, minLargeFileMb * 1024L * 1024L, UserPreferences.maxLargeFiles)
+                val junk = JunkFinder.findJunk(files)
+                    .filter { it.path !in protectedPaths }
+
+                // Only hold stateMutex for the actual state updates
                 stateMutex.withLock {
                     latestFiles = files
                     latestTree = tree
                     _directoryTree.postValue(tree)
                     _filesByCategory.postValue(files.groupBy { it.category })
-
-                    val protectedPaths = try { UserPreferences.protectedPaths } catch (_: Exception) { emptySet<String>() }
-
-                    _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.DUPLICATES))
-                    val dupes = DuplicateFinder.findDuplicates(files)
-                        .filter { it.path !in protectedPaths }
                     _duplicates.postValue(dupes)
-
-                    _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.ANALYZING))
-                    val large = JunkFinder.findLargeFiles(files, minLargeFileMb * 1024L * 1024L)
                     _largeFiles.postValue(large)
-
-                    _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.JUNK))
-                    val junk = JunkFinder.findJunk(files)
-                        .filter { it.path !in protectedPaths }
                     _junkFiles.postValue(junk)
 
                     _storageStats.postValue(StorageStats(
@@ -269,16 +352,22 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     ))
                 }
 
-                _scanState.postValue(ScanState.Done)
+                ensureActive() // P2-A4-01: Check cancellation before transitioning to Done
+                // F-020: Use setValue on Main thread for deterministic ordering vs cancelScan()
+                _scanState.value = ScanState.Done
             }.onFailure { e ->
                 if (e is kotlinx.coroutines.CancellationException) throw e
-                _scanState.postValue(ScanState.Error(e.localizedMessage ?: str(R.string.op_scan_failed)))
+                // F-020: Use setValue on Main thread for deterministic ordering
+                _scanState.value = ScanState.Error(e.localizedMessage ?: str(R.string.op_scan_failed))
             }
 
             // Cache results to disk — outside runCatching so save failure
             // doesn't override ScanState.Done with Error.
             // D5: Flush immediately after scan (no debounce) since this is the primary save.
             saveCacheNow()
+            } finally {
+                _isScanning = false
+            }
         }
     }
 
@@ -309,7 +398,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             if (!deleteMutex.tryLock()) return@launch
             try {
             // Filter out protected paths before deletion
-            val protectedPaths = try { UserPreferences.protectedPaths } catch (_: Exception) { emptySet<String>() }
+            val protectedPaths = UserPreferences.protectedPaths
             val safeToDelete = toDelete.filter { it.path !in protectedPaths }
             if (safeToDelete.isEmpty()) return@launch
 
@@ -330,7 +419,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 for (item in safeToDelete) {
                     val src = File(item.path)
                     val dst = File(dir, "${System.nanoTime()}_${src.name}")
-                    if (src.renameTo(dst)) {
+                    if (safeMove(src, dst)) {
                         moved[item.path] = dst.absolutePath
                         freed += item.size
                     }
@@ -339,7 +428,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             }
 
             trashMutex.withLock {
-                pendingTrash = movedPaths.toMutableMap()
+                pendingTrash.clear()
+                pendingTrash.putAll(movedPaths)
             }
 
             val failed = safeToDelete.size - movedPaths.size
@@ -352,15 +442,13 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 latestFiles = remaining
                 _filesByCategory.postValue(remaining.groupBy { it.category })
 
+                // F-025: Save pre-delete duplicate snapshot for O(1) undo restore
+                pendingDupeSnapshot = _duplicates.value
+
                 // Filter deleted paths, then remove orphan groups (< 2 files remaining)
-                val filteredDupes = (_duplicates.value ?: emptyList())
-                    .filter { it.path !in deletedPaths }
-                    .let { dupes ->
-                        val validGroups = dupes.groupBy { it.duplicateGroup }
-                            .filter { it.value.size >= 2 }
-                            .keys
-                        dupes.filter { it.duplicateGroup in validGroups }
-                    }
+                val filteredDupes = pruneOrphanDuplicates(
+                    (_duplicates.value ?: emptyList()).filter { it.path !in deletedPaths }
+                )
                 val filteredLarge = (_largeFiles.value ?: emptyList())
                     .filter { it.path !in deletedPaths }
                 val filteredJunk = (_junkFiles.value ?: emptyList())
@@ -391,7 +479,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 for ((origPath, trashPath) in snapshot) {
                     val trashFile = File(trashPath)
                     val origFile = File(origPath)
-                    if (trashFile.renameTo(origFile)) {
+                    if (safeMove(trashFile, origFile)) {
                         items.add(FileScanner.fileToItem(origFile))
                     }
                 }
@@ -399,18 +487,30 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             }
 
             if (restored.isNotEmpty()) {
+                // F-025: Restore pre-delete duplicate snapshot instead of re-hashing (O(1) vs O(n))
+                val savedDupes = pendingDupeSnapshot
+                pendingDupeSnapshot = null
+
+                val updated = stateMutex.withLock {
+                    val files = latestFiles + restored
+                    latestFiles = files
+                    _filesByCategory.postValue(files.groupBy { it.category })
+                    files
+                }
+
+                // F-025: Use saved snapshot if available; fall back to re-hashing only if needed
+                val dupes = if (savedDupes != null) {
+                    pruneOrphanDuplicates(savedDupes)
+                } else {
+                    DuplicateFinder.findDuplicates(updated)
+                }
+                val large = JunkFinder.findLargeFiles(updated, UserPreferences.largeFileThresholdMb * 1024L * 1024L, UserPreferences.maxLargeFiles)
+                val junk = JunkFinder.findJunk(updated)
                 stateMutex.withLock {
-                    val updated = latestFiles + restored
-                    latestFiles = updated
-                    _filesByCategory.postValue(updated.groupBy { it.category })
-                    // Re-run classification for restored files
-                    val dupes = DuplicateFinder.findDuplicates(updated)
-                    val large = JunkFinder.findLargeFiles(updated)
-                    val junk = JunkFinder.findJunk(updated)
                     _duplicates.postValue(dupes)
                     _largeFiles.postValue(large)
                     _junkFiles.postValue(junk)
-                    recalcStats(updated, dupes, large, junk)
+                    recalcStats(latestFiles, dupes, large, junk)
                 }
                 saveCache()
             }
@@ -425,6 +525,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     commitPendingTrashLocked()
                 }
             }
+            // F-025: Clear snapshot — undo no longer possible after confirm
+            pendingDupeSnapshot = null
         }
     }
 
@@ -436,17 +538,23 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         pendingTrash.clear()
     }
 
-    // ── Clipboard for cut/copy/paste ──
-    enum class ClipboardMode { CUT, COPY }
-
-    data class ClipboardEntry(val item: FileItem, val mode: ClipboardMode)
-
-    private val _clipboardEntry = MutableLiveData<ClipboardEntry?>(null)
-    val clipboardEntry: LiveData<ClipboardEntry?> = _clipboardEntry
-
-    fun setCutFile(item: FileItem) { _clipboardEntry.value = ClipboardEntry(item, ClipboardMode.CUT) }
-    fun setCopyFile(item: FileItem) { _clipboardEntry.value = ClipboardEntry(item, ClipboardMode.COPY) }
-    fun clearClipboard() { _clipboardEntry.value = null }
+    /** Move file via rename; falls back to copy+delete across filesystem boundaries. */
+    private fun safeMove(src: File, dst: File): Boolean {
+        if (src.renameTo(dst)) return true
+        // Fallback: copy + delete (handles cross-filesystem moves)
+        return try {
+            src.copyTo(dst, overwrite = false)
+            if (!src.delete()) {
+                // Source still exists — clean up the copy and report failure
+                dst.delete()
+                return false
+            }
+            true
+        } catch (_: Exception) {
+            dst.delete() // Clean up partial copy
+            false
+        }
+    }
 
     /** Copy a file to a target directory (for paste after copy). */
     fun copyFile(filePath: String, targetDirPath: String) {
@@ -459,32 +567,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 refreshAfterFileChange(addedFile = dst)
             }
         }
-    }
-
-    // ── Navigate to Browse tab (filtered to a folder) ──
-    private val _navigateToBrowse = MutableLiveData<String?>()
-    val navigateToBrowse: LiveData<String?> = _navigateToBrowse
-
-    fun requestBrowseFolder(folderPath: String) {
-        _navigateToBrowse.value = folderPath
-    }
-
-    fun clearBrowseNavigation() {
-        _navigateToBrowse.value = null
-    }
-
-    // ── Navigate to tree highlight ──
-    // Uses MutableLiveData (not SingleLiveEvent) so both MainActivity (tab switch)
-    // and ArborescenceFragment (highlight) can observe the same value.
-    private val _navigateToTree = MutableLiveData<String?>()
-    val navigateToTree: LiveData<String?> = _navigateToTree
-
-    fun requestTreeHighlight(filePath: String) {
-        _navigateToTree.value = filePath
-    }
-
-    fun clearTreeHighlight() {
-        _navigateToTree.value = null
     }
 
     // ── File operations ──
@@ -516,17 +598,17 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                         failed++
                         continue
                     }
-                    if (src.renameTo(dst)) success++ else failed++
+                    if (safeMove(src, dst)) success++ else failed++
                 }
                 success to failed
             }
             val (success, failed) = results
             val msg = str(R.string.batch_rename_result, success, failed)
-            _operationResult.postValue(MoveResult(true, msg))
+            _operationResult.postValue(MoveResult(success > 0, msg))
 
             // B1+D1: Rebuild derived state after batch rename, but carry duplicate
             // groups from old items since renaming doesn't change file content.
-            stateMutex.withLock {
+            val (files, dupes) = stateMutex.withLock {
                 val renamedPaths = renames.map { it.first.path }.toSet()
                 // Build a map of old path → duplicate group for carrying over
                 val oldDupeGroups = latestFiles.filter { it.path in renamedPaths && it.duplicateGroup >= 0 }
@@ -546,15 +628,16 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 _filesByCategory.postValue(latestFiles.groupBy { it.category })
                 // D1: Incrementally update duplicate list by replacing old paths
                 val currentDupes = _duplicates.value ?: emptyList()
-                val dupes = currentDupes.filter { it.path !in renamedPaths }
-                    .plus(newItems.filter { it.duplicateGroup >= 0 })
-                    .let { dups ->
-                        val validGroups = dups.groupBy { it.duplicateGroup }
-                            .filter { it.value.size >= 2 }.keys
-                        dups.filter { it.duplicateGroup in validGroups }
-                    }
-                val large = JunkFinder.findLargeFiles(latestFiles)
-                val junk = JunkFinder.findJunk(latestFiles)
+                val dupesResult = pruneOrphanDuplicates(
+                    currentDupes.filter { it.path !in renamedPaths }
+                        .plus(newItems.filter { it.duplicateGroup >= 0 })
+                )
+                latestFiles to dupesResult
+            }
+            // Heavy I/O outside mutex
+            val large = JunkFinder.findLargeFiles(files, UserPreferences.largeFileThresholdMb * 1024L * 1024L, UserPreferences.maxLargeFiles)
+            val junk = JunkFinder.findJunk(files)
+            stateMutex.withLock {
                 _duplicates.postValue(dupes)
                 _largeFiles.postValue(large)
                 _junkFiles.postValue(junk)
@@ -618,24 +701,20 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 // path, preserving the duplicate group.  No file I/O required.
                 val currentDupes = _duplicates.value ?: emptyList()
                 val oldDupe = if (removedPath != null) currentDupes.find { it.path == removedPath } else null
-                val updatedDupes = currentDupes
-                    .filter { it.path != removedPath }
-                    .let { dupes ->
-                        val newItem = if (addedFile != null) files.find { it.path == addedFile.absolutePath } else null
-                        if (newItem != null && oldDupe != null) {
-                            dupes + newItem.copy(duplicateGroup = oldDupe.duplicateGroup)
-                        } else {
-                            dupes
+                val updatedDupes = pruneOrphanDuplicates(
+                    currentDupes
+                        .filter { it.path != removedPath }
+                        .let { dupes ->
+                            val newItem = if (addedFile != null) files.find { it.path == addedFile.absolutePath } else null
+                            if (newItem != null && oldDupe != null) {
+                                dupes + newItem.copy(duplicateGroup = oldDupe.duplicateGroup)
+                            } else {
+                                dupes
+                            }
                         }
-                    }
-                    .let { dupes ->
-                        // Prune groups with < 2 members
-                        val validGroups = dupes.groupBy { it.duplicateGroup }
-                            .filter { it.value.size >= 2 }.keys
-                        dupes.filter { it.duplicateGroup in validGroups }
-                    }
+                )
 
-                val large = JunkFinder.findLargeFiles(files)
+                val large = JunkFinder.findLargeFiles(files, UserPreferences.largeFileThresholdMb * 1024L * 1024L, UserPreferences.maxLargeFiles)
                 val junk = JunkFinder.findJunk(files)
                 _duplicates.postValue(updatedDupes)
                 _largeFiles.postValue(large)
@@ -650,12 +729,15 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
      *  D5: Debounced — rapid successive file operations (rename, move, delete)
      *  coalesce into a single write after 3 seconds of inactivity.
      *  Uses NonCancellable so the write finishes even if the scope is cancelled. */
+    // F-016: Removed unnecessary synchronized(cacheLock) — viewModelScope.launch is
+    // main-thread-safe and saveCacheJob cancel is already thread-safe via coroutines.
     private fun saveCache() {
-        val files = latestFiles.ifEmpty { return }
-        val tree = latestTree ?: return
         saveCacheJob?.cancel()
         saveCacheJob = viewModelScope.launch {
             delay(SAVE_CACHE_DEBOUNCE_MS)
+            // Capture state after delay so the cache reflects the latest data
+            val files = latestFiles.ifEmpty { return@launch }
+            val tree = latestTree ?: return@launch
             withContext(NonCancellable + Dispatchers.IO) {
                 try {
                     ScanCache.save(getApplication(), files, tree)
@@ -678,6 +760,37 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 } catch (_: Exception) { }
             }
         }
+    }
+
+    /** Reconstruct per-directory file lists in the tree from the flat file list.
+     *  D2: Iterative BFS to avoid stack overflow on deep directory trees. */
+    private fun enrichTreeWithFiles(
+        root: DirectoryNode,
+        filesByDir: Map<String, List<FileItem>>
+    ): DirectoryNode {
+        // First pass: collect all nodes in BFS order
+        val enriched = mutableMapOf<String, DirectoryNode>()
+        val queue = ArrayDeque<DirectoryNode>()
+        val order = mutableListOf<DirectoryNode>()
+        queue.add(root)
+        while (queue.isNotEmpty()) {
+            val node = queue.removeFirst()
+            order.add(node)
+            for (child in node.children) {
+                queue.add(child)
+            }
+        }
+
+        // Second pass: build enriched nodes bottom-up so children are ready
+        // before their parent is constructed
+        for (node in order.asReversed()) {
+            val enrichedChildren = node.children.map { enriched[it.path] ?: it }
+            enriched[node.path] = node.copy(
+                files = filesByDir[node.path] ?: emptyList(),
+                children = enrichedChildren
+            )
+        }
+        return enriched[root.path] ?: root
     }
 
     private fun recalcStats(

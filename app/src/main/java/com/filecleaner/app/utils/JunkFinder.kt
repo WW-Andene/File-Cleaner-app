@@ -21,6 +21,12 @@ object JunkFinder {
         ".cache", "cache", "temp", "tmp", "thumbnail", ".thumbnails", "lost+found"
     )
 
+    // F-039: Pre-compiled regex avoids per-file lowercase() + per-keyword contains()
+    private val JUNK_DIR_REGEX = Regex(
+        "/(?:${JUNK_DIR_KEYWORDS.joinToString("|") { Regex.escape(it) }})/",
+        RegexOption.IGNORE_CASE
+    )
+
     /**
      * Returns files that are considered "junk":
      * - Known junk extensions (.tmp, .log, .bak, etc.)
@@ -40,14 +46,13 @@ object JunkFinder {
         for ((index, item) in files.withIndex()) {
             if (index % 100 == 0) ensureActive()
             val ext = item.extension
-            val path = item.path.lowercase()
 
             val isJunk = when {
                 // Known junk extension
                 ext in JUNK_EXTENSIONS -> true
 
-                // In a cache/temp directory
-                JUNK_DIR_KEYWORDS.any { path.contains("/$it/") } -> true
+                // F-039: Single regex match instead of per-file lowercase() + per-keyword contains()
+                JUNK_DIR_REGEX.containsMatchIn(item.path) -> true
 
                 // Old download (> 90 days old, only truly disposable types)
                 // Excludes documents, media, archives, APKs — only flags

@@ -42,6 +42,8 @@
     <dimen name="bottom_nav_height">57dp</dimen>
     <dimen name="spacing_above_nav">80dp</dimen>
     <dimen name="spacing_fab_clearance">80dp</dimen>
+    <!-- F-056: Default phone horizontal content inset (overridden to 48dp on sw600dp tablets) -->
+    <dimen name="screen_horizontal_padding">@dimen/spacing_lg</dimen>
 
     <!-- Elevation scale — 0 / 1 / 2 / 4 / 8 / 16 -->
     <dimen name="elevation_none">0dp</dimen>

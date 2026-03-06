@@ -10,6 +10,11 @@
     <dimen name="spacing_xl">28dp</dimen>
     <dimen name="spacing_3xl">48dp</dimen>
 
+    <!-- F-056: Tablet horizontal content inset — prevents cards/lists from
+         stretching uncomfortably across wide viewports (600dp+).
+         Phone uses spacing_lg (16dp), tablet uses 48dp for narrower content column. -->
+    <dimen name="screen_horizontal_padding">48dp</dimen>
+
     <!-- Empty/loading state: wider measure for tablet column width -->
     <dimen name="empty_state_title_max_width">400dp</dimen>
     <dimen name="empty_state_subtitle_max_width">440dp</dimen>

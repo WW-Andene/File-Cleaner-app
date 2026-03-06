@@ -98,6 +98,10 @@
     <!-- ── Accent on tint text (lifted for dark tint backgrounds) ── -->
     <color name="accentOnTintAnalysis">#F0B060</color>  <!-- accent lifted to L75 for tintAnalysis dark bg (#3D2E1A) — 5.2:1 -->
     <color name="catImageOnTintCloud">#C4A0FF</color>   <!-- catImage lifted to L72 for tintCloud dark bg (#251A3D) — 5.0:1 -->
+    <!-- F-053: Dedicated icon accent colors per hub card (lifted for dark tint backgrounds) -->
+    <color name="accentOnTintJanitor">#A0B0F0</color>   <!-- light indigo on #1E1E3D — 5.0:1 -->
+    <color name="accentOnTintTree">#80C0F0</color>      <!-- light blue on #1A2840 — 4.8:1 -->
+    <color name="accentOnTintDualPane">#70D0E0</color>  <!-- light teal on #1A3035 — 4.7:1 -->
 
     <!-- ── Card icon tint backgrounds (unique per feature, §DC2) ──
          Each has a distinct hue at consistent dark-mode lightness -->

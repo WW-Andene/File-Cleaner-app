@@ -651,7 +651,7 @@
     <string name="cloud_default_name">Cloud</string>
     <string name="cloud_default_server_name">My Server</string>
     <string name="cloud_error_host_required">Ricky needs a hostname to connect to!</string>
-    <string name="cloud_error_port_range">Port must be between 1 and 65535.</string>
+    <string name="cloud_error_port_range">That port number doesn\'t look right — try a number between 1 and 65,535.</string>
     <string name="cloud_error_username_required">Ricky needs a username to log in!</string>
     <string name="cloud_error_password_required">Password is required for this connection.</string>
     <string name="cloud_error_token_required">Ricky needs an access token to connect!</string>
@@ -659,11 +659,11 @@
     <string name="cloud_error_field_empty">Field cannot be empty</string>
     <string name="cloud_error_invalid_hostname">Invalid hostname</string>
     <string name="cloud_sftp_host_hint">Hostname or IP (e.g. 192.168.1.10)</string>
-    <string name="cloud_webdav_host_hint">Server URL (e.g. https://cloud.example.com/remote.php/webdav)</string>
-    <string name="cloud_gdrive_token_hint">OAuth2 Access Token</string>
+    <string name="cloud_webdav_host_hint">Your cloud server address (e.g. https://cloud.example.com/remote.php/webdav)</string>
+    <string name="cloud_gdrive_token_hint">Your Google access key</string>
     <string name="cloud_sftp_help">Connect to any SSH/SFTP server. Use your server\'s IP address or hostname.</string>
     <string name="cloud_webdav_help">Works with Nextcloud, ownCloud, and other WebDAV servers. Enter the full WebDAV URL.</string>
-    <string name="cloud_gdrive_help">Paste your Google Drive OAuth2 token. You can generate one from the Google API Console.</string>
+    <string name="cloud_gdrive_help">Paste your Google Drive access key here — Ricky needs it to connect. You can get one from your Google account settings.</string>
 
     <!-- Cloud provider picker -->
     <string name="cloud_choose_service">Choose a service</string>
@@ -840,8 +840,8 @@
     <string name="threat_desc_apk_unusual_location">APK file found in %1$s. APKs outside standard install locations may be side-loaded malware.</string>
     <string name="threat_desc_known_malware_md5">File \"%1$s\" matches known malware signature (MD5: %2$s).</string>
     <string name="threat_desc_known_malware_sha256">File \"%1$s\" matches known malware signature (SHA-256).</string>
-    <string name="threat_desc_elf_binary">Linux executable binary \"%1$s\" found in user storage. This could be a hacking tool, exploit, or backdoor.</string>
-    <string name="threat_desc_loose_dex">Android bytecode file \"%1$s\" found outside app directories. This may be a dynamically loaded malware payload.</string>
+    <string name="threat_desc_elf_binary">Ricky found a program file \"%1$s\" in your storage that doesn\'t belong here — it could be a risky tool or backdoor.</string>
+    <string name="threat_desc_loose_dex">Ricky spotted \"%1$s\" — an app code file sitting outside its usual home. This could be malware trying to sneak in.</string>
     <string name="threat_desc_dangerous_script">Script \"%1$s\" contains suspicious commands that could compromise device security (pattern: %2$s).</string>
     <string name="threat_desc_hidden_executable">Hidden file \"%1$s\" (.%2$s) found at %3$s. Malware often uses hidden files to evade detection.</string>
     <string name="threat_desc_large_apk">APK \"%1$s\" is %2$dMB. Unusually large APKs may contain packed malware or stolen data.</string>
@@ -860,8 +860,8 @@
     <string name="threat_net_network_attack_desc">\"%1$s\" (%2$s) is a network penetration/scanning tool. Its presence may indicate unauthorized network activity.</string>
     <string name="threat_net_suspicious_port">Suspicious Listening Port</string>
     <string name="threat_net_suspicious_port_desc">Port %1$d (%2$s) is listening on this device. This is unusual for a mobile device and may indicate a backdoor or misconfigured service.</string>
-    <string name="threat_net_adb_network">ADB Over Network Enabled</string>
-    <string name="threat_net_adb_network_desc">Android Debug Bridge is accessible over the network on port %1$s. Anyone on the same network can gain full device control.</string>
+    <string name="threat_net_adb_network">Remote Debugging Is Open</string>
+    <string name="threat_net_adb_network_desc">Your device\'s debug connection is open on port %1$s — anyone on the same Wi-Fi could take full control. Ricky recommends turning this off!</string>
 
     <!-- PrivacyAuditor permission category names (N1 audit) -->
     <string name="threat_privacy_cat_sms_access">SMS Access</string>

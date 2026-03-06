@@ -14,16 +14,16 @@
         <item quantity="one">Ricky is done! %1$d file found (%2$s)</item>
         <item quantity="other">Ricky is done! %1$d files found (%2$s)</item>
     </plurals>
-    <string name="scan_complete_simple">Raccoon finished scanning!</string>
+    <string name="scan_complete_simple">Ricky finished scanning!</string>
     <string name="scanning_in_progress">Ricky is rummaging through your files\u2026</string>
     <string name="scan_cancel">Cancel scan</string>
-    <string name="scan_cancelled">Scan cancelled \u2014 Raccoon stopped mid-rummage.</string>
+    <string name="scan_cancelled">Scan cancelled \u2014 Ricky stopped mid-rummage.</string>
     <string name="scanning_phase_indexing">Ricky is indexing\u2026 %d files found</string>
     <string name="scanning_phase_duplicates">Ricky is sniffing out duplicates\u2026 %d files</string>
     <string name="scanning_phase_analyzing">Ricky is weighing file sizes\u2026 %d files</string>
     <string name="scanning_phase_junk">Ricky is hunting for junk\u2026 %d files</string>
     <string name="error_prefix">Oops! %s \u2014 check permissions and give it another go.</string>
-    <string name="error_scan_failed">Raccoon hit a snag! Check storage permissions and try scanning again.</string>
+    <string name="error_scan_failed">Ricky hit a snag! Check storage permissions and try scanning again.</string>
 
     <!-- Scan progress indicators -->
     <string name="scan_percent">%d%%</string>
@@ -548,9 +548,9 @@
 
     <!-- F6: Engagement & reward moments -->
     <string name="scan_complete_celebration">Ricky is done rummaging! Found %1$d files using %2$s.</string>
-    <string name="clean_success">Raccoon swept away %s \u2014 nice and tidy!</string>
+    <string name="clean_success">Ricky swept away %s \u2014 nice and tidy!</string>
     <string name="raccoon_greeting_pre_scan">Ricky is ready to tidy up! Tap Scan to get started.</string>
-    <string name="raccoon_greeting_post_scan">Looking good! %s free \u2014 Raccoon approves.</string>
+    <string name="raccoon_greeting_post_scan">Looking good! %s free \u2014 Ricky approves.</string>
 
     <!-- Context-aware empty states (Dual Pane) -->
     <string name="dual_pane_empty_title">No files here</string>

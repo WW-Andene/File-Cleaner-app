@@ -2005,6 +2005,669 @@ Confidence: MEDIUM — Source: [CODE]
 | LOW | 11 | 6 | 5 | 5 | 6 | 33 |
 | **Total** | **18** | **8** | **12** | **8** | **6** | **52** |
 
-**Next: Phase 6 — Deep Aesthetic Analysis (Category E continued)**
+---
 
-Awaiting confirmation to proceed with Phase 6, or to fix findings from Phase 1/2/3/4/5.
+## PHASE 6 — DEEP AESTHETIC ANALYSIS (Category E continued)
+
+> **Calibration reminder:** This phase builds on the Character Brief confirmed in Step 6.2.
+> Character Statement: *"A friendly, competent woodland helper — Ricky the raccoon is casual
+> and encouraging, but quietly professional underneath. The app feels warm and alive without
+> being childish."*
+
+### Step 6.1 — §DS1-DS2: Style Classification
+
+```
+[POSITIVE VERIFICATION] — Coherent Material Design 2 with Chromatic Warm Overlay
+Design School: Material Components 1.12.0 (structural framework) with a distinctive
+chromatic warm character overlay. The app commits to Material's component library
+(MaterialCardView, ChipGroup, TextInputLayout, BottomNavigationView, MaterialButton)
+while overlaying a custom surface system that replaces Material's neutral grays with
+green-tinted warm surfaces.
+
+Style Coherence Score: 9/10
+- All components are Material Components — no mixing of incompatible design systems
+- The custom overlay (colors, motion, typography) is additive, not contradictory
+- Only deviation: F-048 (dashboard buttons using un-branded Material parent style)
+```
+
+### Step 6.2 — §DP0-DP2: Character Brief
+
+```
+[POSITIVE VERIFICATION] — Character Brief (confirmed by user)
+
+| Dimension    | Score | Evidence |
+|-------------|-------|----------|
+| Warmth      | 8/10  | Chromatic green-tinted surfaces, raccoon mascot, encouraging copy |
+| Energy      | 6/10  | Brisk but restrained motion (120-280ms), utility-first |
+| Formality   | 3/10  | "Ricky sniffed out", "space hogs", "copycats", contractions |
+| Complexity  | 5/10  | Hub layout with clear hierarchy, progressive disclosure |
+| Playfulness | 7/10  | Animal metaphors, emoji usage, celebration moments |
+| Trust       | 7/10  | Forest green = reliability, shield icon, professional underneath |
+
+Character Statement: "A friendly, competent woodland helper — Ricky the raccoon is
+casual and encouraging, but quietly professional underneath. The app feels warm and
+alive without being childish. It knows its job (file management) and does it efficiently,
+but makes the experience feel personal rather than clinical."
+```
+
+### Step 6.3 — §DBI1 + §DBI3: Brand Archetype + Anti-Genericness
+
+```
+[POSITIVE VERIFICATION] — Strong brand archetype with high anti-genericness
+
+Brand Archetype: **Caregiver / Everyman hybrid**
+- Caregiver: "Ricky" takes care of your storage, cleans up, protects (antivirus shield)
+- Everyman: Approachable, informal, "your buddy" rather than an authority figure
+- NOT Hero (doesn't boast), NOT Sage (doesn't lecture), NOT Creator (doesn't inspire)
+
+12-Signal Anti-Genericness Audit:
+ 1. ✅ Custom color palette (forest green + warm amber — unusual combination)
+ 2. ✅ Named mascot with personality ("Ricky" the raccoon)
+ 3. ✅ Chromatic warm surfaces (green-tinted, not default Material gray)
+ 4. ✅ Distinctive copy voice (raccoon metaphors throughout 800+ strings)
+ 5. ✅ Custom motion character ("considerate utility" with pathInterpolator)
+ 6. ✅ Hero card gradient (branded primary action card)
+ 7. ✅ Tabular numerals system (tnum for data displays)
+ 8. ✅ Hub icon tint system (unique tint per feature card)
+ 9. ✅ Category color system (8 distinct file type colors)
+10. ⚠️ System font (sans-serif) — no custom typeface
+11. ✅ Branded snackbar/dialog/chip styles
+12. ✅ Success celebration with overshoot (400ms emphasis moment)
+
+Anti-Genericness Score: 11/12 — Only system font usage prevents a perfect score.
+Could this be any file manager? No — the forest green palette, raccoon persona,
+chromatic surfaces, and copy voice are distinctive. This app has visual DNA.
+```
+
+### Step 6.4 — §DC1-DC5: Color Science
+
+```
+[POSITIVE VERIFICATION] — Professional-grade color architecture
+Audited in depth during Phase 5 §E3. Key additional observations:
+
+**Three-layer color architecture:**
+- Primitive: Raw hex values with OKLCH documentation
+- Semantic: Role-based tokens (surfaceBase, textPrimary, colorError)
+- Component: Usage-specific tokens (heroCardStart, chip_bg_color, card_stroke_color)
+All three layers present and complete.
+
+**Perceptual color science:**
+- OKLCH model used for lightness steps — perceptually uniform progression
+- Surface ladder: L=0.98 → 0.96 → 0.94 — ~2% steps, very refined
+- Dark mode: L=0.12 base — not inverted, genuinely designed dark palette
+
+**Accent color narrative:**
+- Forest green (#247A58) = nature, growth, reliability → matches Caregiver archetype
+- Warm amber (#E8861F) = energy, warmth, friendliness → matches Everyman personality
+- Complementary hue relationship (green/amber) creates visual tension without clash
+
+**Gradient logic:**
+- Hero card: heroCardStart → heroCardEnd at 135° — single gradient, reserved for
+  primary action only. Not overused elsewhere.
+```
+
+```
+[LOW] — F-053: Hub card icon tints reuse catDocument color across multiple cards
+Section: §DC5 — Color Narrative
+Finding: fragment_raccoon_manager.xml — Three hub cards (Janitor line 337, Tree line 510,
+  Dual Pane line 571) all use `app:tint="@color/catDocument"` (teal) for their icons,
+  despite having different background tints (tintJanitor, tintTree, tintDualPane).
+  This creates a visual same-ness between cards that could otherwise be more distinctive.
+Why it matters: The icon-on-tint color should ideally be unique per card to reinforce
+  each feature's identity. Using catDocument as a generic "teal accent" weakens the
+  color narrative.
+Recommendation: Define dedicated icon accent colors per hub card (e.g., accentOnTintTree,
+  accentOnTintJanitor) following the pattern already used for accentOnTintAnalysis.
+Effort: LOW
+Confidence: MEDIUM — Source: [CODE]
+```
+
+### Step 6.5 — §DT1-DT4: Typography Deep Audit
+
+```
+[POSITIVE VERIFICATION] — Typography system carries character effectively
+Audited in depth during Phase 5 §E4. Additional deep observations:
+
+**Type personality:**
+- sans-serif (Roboto on Android) — clean, trustworthy, legible. Appropriate for a
+  utility app. Roboto's openness aligns with the Caregiver warmth.
+- sans-serif-medium used for emphasis (Subtitle, Label, BodyMedium) — adds weight
+  without heavy bold. Matches "quietly professional" character.
+
+**Scale audit (5 clear levels):**
+1. Display (32sp bold) — hero stats numbers
+2. Headline (26sp bold) — page titles
+3. Title (20sp medium) — section headings
+4. Subtitle (16sp medium) / Body (14sp regular) — content
+5. Caption (10sp) / Label (11sp) — metadata, labels
+Clear hierarchy with no ambiguous middle layers.
+
+**Craft:**
+- Optical sizing via tracking: -0.02 at 32sp → +0.03 at 10sp (correct)
+- Line height scaling: 1.2× for headings → 1.5× for small text (correct)
+- Max-width constraints on text blocks (280dp, 300dp) — line length control
+
+**Expressiveness:**
+- Tabular numeral variants at every scale level (NumericDisplay through NumericMedium)
+- Monospace variant for code/paths (FileViewer.Content)
+- Label with ALL CAPS + wide tracking for section markers
+- Type contributes to identity through precision, not through custom fonts
+```
+
+### Step 6.6 — §DCO1-DCO6: Component Character
+
+```
+[POSITIVE VERIFICATION] — Components carry brand character consistently
+
+1. **Buttons** — 6 variants forming clear priority hierarchy:
+   Filled (primary) → Outlined (secondary) → Text (tertiary) → Ghost (quaternary)
+   + Destructive (error-colored) + Icon (circular). All share 12dp corners, no all-caps,
+   48dp touch targets. Communicate brand without shouting.
+
+2. **Inputs** — TextInputLayout with rounded 12dp corners, branded hint color,
+   branded stroke. Feels modern and safe. The Dense variant keeps compact feel.
+
+3. **Cards** — 4 variants (Default, Selected, Elevated, Flat) with consistent 16dp
+   corners. StateListAnimator provides physical-feeling press/focus/drag feedback.
+   Elevation scale is intentional: Flat(0dp) → Subtle(2dp) → Raised(4dp) → Floating(8dp).
+   Cards feel like real surfaces, not flat rectangles.
+
+4. **Navigation** — Bottom nav with labeled items, primary-colored active state,
+   tertiary inactive. Doesn't dominate — stays at elevation_nav (8dp) with
+   background divider. Orients without competing with content.
+
+5. **Modals** — Bottom sheets with 24dp top corners, branded surfaceColor background,
+   custom enter/exit animations. Dialogs with 24dp corners, branded background drawable,
+   scale+fade animation. Feel focused and intentional.
+
+6. **Snackbar** — Branded with primaryDark background, 12dp corners, amber accent action
+   text. Carries character — not default Material gray.
+```
+
+### Step 6.7 — §DH1-DH4: Hierarchy & Gestalt
+
+```
+[POSITIVE VERIFICATION] — Strong visual hierarchy with effective Gestalt application
+
+**Visual weight map (Hub screen):**
+- Primary: Hero gradient card (scan) — gradient background, white text, elevation_raised
+- Secondary: Full-width feature cards — standard surface, Subtitle text
+- Tertiary: 2-column advanced tool cards — smaller footprint, Caption descriptions
+- Quaternary: Section header label — primary-colored, SectionHeader style
+
+The hierarchy reads clearly: primary action → secondary features → advanced tools.
+
+**Gestalt principles in use:**
+- Proximity: Cards grouped by function (primary, secondary, advanced 2-column grid)
+- Similarity: All hub cards share consistent structure (icon circle + title + description)
+- Continuation: Vertical scroll with consistent card width creates reading flow
+- Figure/ground: surfaceBase background vs surfaceColor cards — clear separation
+
+**Contrast as composition:**
+- Hero card gradient creates strong focal point against neutral cards
+- Category colors create navigable landmarks in file lists
+- Severity colors (Critical/High/Medium/Low) in antivirus create urgency hierarchy
+- Accent stripe on file cards (optional 4dp color edge) adds dimensional interest
+
+**Reading flow:**
+- Hub: top-to-bottom with widening complexity (hero → cards → 2-column grid)
+- Browse: toolbar → search → filters → count → list — correct inverted pyramid
+- File cards: icon → name → meta → checkbox — left-to-right reading order
+```
+
+### Step 6.8 — §DSA1-DSA5: Surface & Atmosphere
+
+```
+[POSITIVE VERIFICATION] — Distinctive surface system with clear material character
+
+**Background system:**
+- 5-step elevation ladder: surfaceBase (L=0.98) → surfaceColor (0.96) →
+  surfaceElevated (0.94) → surfaceDim (0.92) → surfaceContainerHighest (0.81)
+- Each step is ~2-3% OKLCH lightness — perceptually uniform
+- Dark mode mirrors with chromatic near-blacks (L=0.12 → 0.15 → 0.18)
+
+**Material character:**
+- The app feels like it's made of **warm paper** — surfaces have warmth (green tint)
+  but not gloss or glass effects. No blur, no transparency, no glassmorphism.
+- Cards have subtle elevation (2dp) with a 1dp stroke — feels tangible without
+  being skeuomorphic. The stroke provides edge definition even in flat contexts.
+
+**Light source:**
+- Consistent top-down implied light (Material standard)
+- elevation_raised (4dp) on hero card creates visible shadow below
+- stateListAnimator moves translationZ on press (0dp = pressed in) — physical feel
+
+**Atmosphere coherence:**
+- The app has a **warm woodland study** mood — green-tinted surfaces + amber accents
+  create a sense of natural warmth. Not clinical, not playful, not dark — just warm.
+- This mood aligns perfectly with the raccoon character (forest creature, tidy helper)
+```
+
+### Step 6.9 — §DM1-DM5: Motion Vocabulary
+
+```
+[POSITIVE VERIFICATION] — Distinctive motion system with documented character
+
+**Motion inventory:**
+- nav_enter: 5% slide-right + fade (280ms) — page transitions
+- nav_exit: -5% slide-left + fade (160ms) — faster exit
+- item_enter: 12% slide-up + fade (220ms enter, 120ms fade) — list items
+- dialog_enter: 90% scale-up + fade (220ms) — subtle appearance
+- sheet_enter/exit: slide-up/down — bottom sheets
+- success_check_enter: 30% scale-up with overshoot (400ms) — celebration
+- card_state_list_anim: translationZ changes (120ms) — press/focus/drag
+- layout_item_stagger: cascading item entrance — list reveal
+
+**Duration and easing:**
+- All animations use custom pathInterpolator (M 0,0 C 0.35,0 0.1,1 1,1) —
+  snappier than Material default, consistent "considerate utility" feel
+- 5-tier vocabulary used consistently: micro(120), enter(220), exit(160),
+  page(280), emphasis(400)
+- Exit < Enter — correct asymmetry (things leave faster than they arrive)
+
+**Motion signature:**
+- The 30% → 100% scale-up with gentle overshoot on success (success_check_enter)
+  is the app's distinctive motion moment. Reserved for completion celebrations.
+- The snappier-than-Material interpolator creates a feeling of efficiency.
+
+**Reduced motion:**
+- Confirmed in Phase 4: MotionUtil.isReducedMotion() disables RecyclerView
+  layout animations. [CODE verified]
+```
+
+### Step 6.10 — §DI1-DI4: Iconography System
+
+```
+[POSITIVE VERIFICATION] — Consistent Material icon system with appropriate usage
+
+**Style coherence:**
+- All icons are Material Design filled style — 24dp viewport, single path, filled shapes
+- Consistent across 58+ vector drawables (ic_*.xml)
+- No mixing of outlined/rounded/sharp styles — all filled
+
+**Stroke weight consistency:**
+- N/A — filled icons don't have stroke weight variance. All use solid fills.
+- Fill colors use semantic tokens: @color/textSecondary (default), @color/textPrimary
+  (nav icons), @color/catOther (file icon)
+
+**Expressiveness:**
+- Icons are standard Material set (search, folder, delete, shield, etc.) — functional
+  rather than expressive. This is appropriate for utility context.
+- Hub cards add personality through colored circle backgrounds (bg_hub_icon_circle)
+  rather than custom icon shapes.
+
+**Custom icon opportunity:**
+- The app uses ic_raccoon_logo for branding (empty states, hub header) — this is the
+  primary custom icon. However, it's a PNG/vector asset I couldn't locate as an XML
+  vector drawable (no ic_raccoon_logo.xml found). This may be a raster asset.
+```
+
+```
+[LOW] — F-054: Icon fill colors baked into drawable XML instead of using runtime tint
+Section: §DI1 — Iconography
+Finding: Several icons have fill colors hardcoded in the drawable XML:
+  - ic_file.xml: fillColor="@color/catOther" (semantic token, but still baked in)
+  - ic_folder.xml: fillColor="@color/textSecondary"
+  - ic_scan.xml: fillColor="@color/textSecondary"
+  - ic_shield.xml: fillColor="@color/textSecondary"
+  However, layouts that use these icons often apply runtime tints via `app:tint=`,
+  which correctly override the baked-in fillColor.
+Why it matters: The baked-in fillColor is technically overridden by runtime tint, so
+  there's no visual bug. But having two color sources (drawable XML + layout tint) can
+  confuse developers editing icons.
+Recommendation: Set all icon fillColors to a neutral value (e.g., #000000 or @color/textPrimary)
+  and rely exclusively on runtime tinting for context-specific colors.
+Effort: LOW
+Confidence: LOW — Source: [CODE]
+```
+
+### Step 6.11 — §DST1-DST4: State Design
+
+```
+[POSITIVE VERIFICATION] — All four non-default states are thoughtfully designed
+
+1. **Empty states** — On-brand with raccoon personality:
+   - include_empty_state.xml: mascot icon (0.85 alpha) + Title + Body text, max-width
+     constrained, centered composition. 14 context-specific empty messages with
+     raccoon metaphors ("Ricky hasn't sniffed out any files yet", "Ricky is eager to
+     catch copycats!"). Pre-scan vs post-scan variants for each screen.
+   - Clear next action: "Scan your storage" button appears when appropriate.
+   Score: 10/10 — best-in-class empty state design with personality.
+
+2. **Loading states** — Branded skeleton + progress:
+   - include_loading_state.xml: CircularProgressIndicator (branded style) + Subtitle +
+     BodySmall detail text. accessibilityLiveRegion="assertive" for screen readers.
+   - item_skeleton_card.xml: Structural skeleton matching item_file.xml layout — same
+     icon size, text block proportions, card styling. Uses bg_shimmer_placeholder
+     (surfaceDim, rounded corners). Not raw spinners.
+   Score: 9/10 — skeleton cards are excellent; could add shimmer animation for polish.
+
+3. **Error states** — Human, specific, actionable:
+   - 30+ error strings with raccoon personality ("Ricky hit a snag!", "Oops!")
+   - Specific causes stated ("check permissions", "try a different name")
+   - Actionable next steps ("give it another go", "check if the destination is accessible")
+   - NOT generic "Something went wrong" — every error has context.
+   Score: 9/10 — excellent error copy, though no dedicated error state layout.
+
+4. **Success states** — Celebration with branded animation:
+   - include_success_state.xml: ic_check_circle tinted colorSuccess + Title + Body,
+     centered composition. success_check_enter.xml: 30%→100% scale with gentle
+     overshoot (400ms emphasis) — a real celebration moment.
+   - Success strings: "Raccoon swept away %s — nice and tidy!", "Ricky is done rummaging!"
+   Score: 9/10 — genuine delight moments appropriate for utility app.
+```
+
+### Step 6.12 — §DCVW1-DCVW3: Copy × Visual Alignment
+
+```
+[POSITIVE VERIFICATION] — Copy voice and visual personality are strongly aligned
+
+**Voice-Character Coherence Score: 9/10**
+
+Evidence:
+- Visual warmth (chromatic green surfaces) matches copy warmth ("give it another go")
+- Visual playfulness (raccoon mascot, amber accent) matches copy playfulness
+  ("space hogs", "copycats", "rummaging")
+- Visual professionalism (Material components, token system) matches copy professionalism
+  (clear error messages with specific causes)
+- Success animation (overshoot celebration) matches success copy ("nice and tidy!", "Ricky approves!")
+- The informal formality level (3/10) is consistent between visual and verbal — no
+  formal-looking UI with casual copy, or vice versa
+
+The -1 point: Cloud setup and security scanner sections use technical jargon
+("OAuth2 Access Token", "ADB accessible over network", "ELF binary", "DEX bytecode")
+that breaks the casual Ricky persona. These screens read like developer documentation
+rather than a raccoon speaking.
+```
+
+```
+[MEDIUM] — F-055: Cloud/security copy breaks Ricky persona with technical jargon
+Section: §DCVW2 — Copy-Voice Coherence
+Finding: Cloud setup strings use developer terminology:
+  - "OAuth2 Access Token" (cloud_gdrive_token_hint)
+  - "You can generate one from the Google API Console" (cloud_gdrive_help)
+  - "Server URL (e.g. https://cloud.example.com/remote.php/webdav)" (cloud_webdav_host_hint)
+  - "Port must be between 1 and 65535" (cloud_error_port_range)
+  Security scanner threats use technical terms:
+  - "Linux executable binary (ELF)" (threat_desc_elf_binary)
+  - "Android bytecode file (DEX)" (threat_desc_loose_dex)
+  - "Android Debug Bridge accessible over network" (threat_net_adb_network)
+  These strings break the established casual Ricky persona.
+Why it matters: Users encountering these screens after the warm hub/browse experience
+  will feel a jarring tone shift. Non-technical users may feel excluded.
+Recommendation: Rewrite technical strings in Ricky's voice:
+  - "OAuth2 Access Token" → "Your Google access key (Ricky needs this to connect)"
+  - "ELF binary" → "A program file that could be risky"
+  - "Port must be between 1 and 65535" → "That port number doesn't look right — try a number between 1 and 65535"
+Effort: MEDIUM
+Confidence: HIGH — Source: [CODE]
+```
+
+### Step 6.13 — §DIL1-DIL3: Illustration Audit
+
+```
+[POSITIVE VERIFICATION] — Minimal illustration system, consistent usage
+The app uses a single illustrative element: the raccoon mascot (ic_raccoon_logo).
+This appears in:
+- Hub header (56dp, full opacity)
+- Empty states (96dp, 0.85 alpha — slightly faded to avoid competing with text)
+- App icon (launcher_foreground)
+
+No additional illustrations, custom artwork, or imported graphic elements found.
+This is appropriate — a utility app doesn't need elaborate illustration. The raccoon
+mascot carries all personality requirements without cluttering the interface.
+
+The single illustrative element is consistent: same asset at different sizes/opacities.
+No style clash between illustration and UI components.
+```
+
+### Step 6.14 — §DDV1-DDV3: Data Visualization Character
+
+```
+[POSITIVE VERIFICATION] — Data visualizations use app's design system
+Data visualization elements use the app's color palette and tokens:
+
+- **Storage bar**: Uses colorPrimary for fill, borderDefault for track background,
+  category colors for segmented breakdown. Tokens: category_bar_height(6dp),
+  category_bar_radius(3dp).
+- **Top files bar**: size-proportional bars with rank numbers. Tokens:
+  top_file_bar_height(3dp), rank_width(20dp), bar_min_width(4dp).
+- **Severity cards**: colorPrimary/amber/error/success with light tint backgrounds.
+  Consistent with the app's color system.
+- **ArborescenceView**: Custom Canvas tree using the full color token system
+  (tree_* dimensions, surfaceDim backgrounds, textPrimary labels).
+
+All data displays use tabular numerals (tnum fontFeatureSettings) for aligned columns.
+Chart types match data: bars for relative comparison, tree for hierarchy, severity
+cards for categorical counts. No mismatched chart types.
+```
+
+### Step 6.15 — §DTA1-DTA2: Design Token Architecture
+
+```
+[POSITIVE VERIFICATION] — Complete three-layer token architecture
+
+**Layer 1 — Primitive (raw values):**
+Present in colors.xml as hex values with OKLCH documentation.
+Examples: #247A58, #E8861F, #FBFAF8. All primitives documented with perceptual model.
+
+**Layer 2 — Semantic (role-based):**
+Present as named color resources: colorPrimary, surfaceBase, textPrimary, colorError.
+Spacing: spacing_sm, spacing_lg. Typography: text_body, text_title.
+Motion: motion_enter, motion_micro.
+
+**Layer 3 — Component (usage-specific):**
+Present as color selectors: chip_bg_color, card_stroke_color, bottom_nav_color,
+switch_thumb_color. Component styles: Widget.FileCleaner.Card, Widget.FileCleaner.Button.
+
+All three layers are present and well-separated. Semantic tokens reference primitives,
+component tokens reference semantic tokens. Migration path: not needed — architecture
+is complete.
+
+**Character-carrying token gaps:**
+- Accent color: ✅ tokenized (colorAccent, colorPrimary)
+- Border radius: ✅ tokenized (radius_btn, radius_card, radius_modal, radius_pill)
+- Transition durations: ✅ tokenized (motion_micro, motion_enter, motion_exit, motion_page, motion_emphasis)
+- No gaps found in character-carrying tokens.
+```
+
+### Step 6.16 — §DRC1-DRC3: Responsive Character
+
+```
+[LOW] — F-056: No tablet-specific layout resources
+Section: §DRC1-DRC3 — Responsive Character
+Finding: The app provides only `res/layout/` resources — no `res/layout-sw600dp/`,
+  `res/layout-w600dp/`, or `res/layout-land/` directories found. On tablets, the hub
+  screen's full-width cards and the file list will stretch to fill the wider viewport,
+  creating uncomfortably long line lengths and wasted space.
+  The 2-column grid in the hub (advanced tools) is already responsive in concept, but
+  it uses LinearLayout weight-based splitting which works identically at any width.
+Why it matters: The app targets broad Android — tablets are ~15% of the market. The
+  current single-column layout will feel like "stretched phone" on 10" tablets.
+Recommendation: Consider adding sw600dp layouts for key screens:
+  - Hub: 2-column primary cards, 3-column advanced tools
+  - Browse: wider file cards or multi-column grid
+  - Dashboard: side-by-side cards
+Effort: MEDIUM
+Confidence: MEDIUM — Source: [CODE]
+```
+
+### Step 6.17 — §DDT1-DDT2: Trend Calibration
+
+```
+[POSITIVE VERIFICATION] — Intentional trend usage with low dating risk
+
+**Trend inventory:**
+1. ✅ Rounded corners everywhere (12-24dp) — current trend, low risk of dating
+2. ✅ Chromatic warm surfaces — emerging trend replacing neutral gray, low risk
+3. ✅ Bottom navigation — established pattern, not trend-dependent
+4. ✅ Skeleton loading — established best practice, not a trend
+5. ✅ OKLCH color model — forward-looking (CSS Color Level 4), low risk
+6. ⚠️ Card-heavy layout — current but showing signs of fatigue in 2025-2026 design
+7. ✅ System font (Roboto) — timeless, never dates
+
+**Strategic posture:** Intentional. The app uses current patterns (rounded corners,
+warm surfaces) because they serve utility, not because they're fashionable.
+
+**Trend risk (12-18 months):**
+- Card fatigue: The hub screen uses 8+ cards in a vertical list. Industry is moving
+  toward more compact information-dense layouts. LOW risk — cards work well for
+  touch targets on mobile.
+- No high-risk trends detected. The app avoids glassmorphism, neomorphism, micro-gradients,
+  and other trend-of-the-year patterns that would date quickly.
+```
+
+### Step 6.18 — §DP3: Character Deepening
+
+```
+[POSITIVE VERIFICATION] — Character deepening analysis (no action required, analysis only)
+
+Applying 7 deepening techniques to the confirmed Character Brief:
+
+1. **Concentrate what already works:** The chromatic warm surface system is the strongest
+   visual differentiator — it could be pushed further by adding very subtle warm-tinted
+   shadows (currently shadows are default neutral).
+
+2. **Remove what contradicts:** The technical jargon in cloud/security copy (F-055)
+   contradicts the casual persona. This is the primary character contradiction.
+
+3. **Add one signature detail per component:** Cards already have stateListAnimator
+   (physical press feel). Chips have pill shape. Missing: search bar could have a
+   branded empty state (raccoon magnifying glass?).
+
+4. **Deepen color narrative:** The green-to-amber journey (nature → warmth → energy)
+   could be more explicit — consider using amber in success states instead of generic
+   green (colorSuccess).
+
+5. **Intensify the motion signature:** The overshoot celebration (success_check_enter)
+   is reserved for completion. Consider adding a subtle raccoon "tail wag" animation
+   on the hub mascot when scan completes.
+
+6. **Unify the type voice:** Typography is already unified. The only gap is that
+   technical screens (cloud, security) don't use the same friendly formatting as
+   file management screens.
+
+7. **Make one element undeniably this app:** The hero gradient card on the hub screen
+   is the most distinctive visual element. Its 135° gradient with rounded 20dp corners
+   is recognizable in screenshots.
+```
+
+### Step 6.19 — §DBI2: Design Signature Specification
+
+```
+[POSITIVE VERIFICATION] — Design signature identified
+
+**The one visual element that identifies this app on a white page:**
+The forest green gradient card with warm amber accent and raccoon mascot.
+
+Specifically: a card with a green-to-darker-green diagonal gradient (135°),
+20dp rounded corners, white text, and the raccoon silhouette — placed on the
+warm off-white (OKLCH L=0.98) surface.
+
+**Systematic implementation:**
+- Currently used only for the hero scan card on the hub screen
+- Could be extended to: onboarding slides, app store screenshots, notification
+  large icon, widget background
+- The gradient + raccoon combination is the visual fingerprint
+```
+
+### Step 6.20 — §DCP1-DCP3: Competitive Positioning
+
+```
+[POSITIVE VERIFICATION] — Competitive analysis (observation only)
+
+**Direct visual competitors (Android file managers):**
+1. Google Files — minimal, white, blue accent, clean but impersonal
+2. Solid Explorer — dark, power-user, blue/orange, complex
+3. FX File Explorer — dated, gray, functional but generic
+4. Total Commander — retro, dense, no personality
+5. MiXplorer — Material, customizable, neutral
+
+**Positioning matrix:**
+                    Warm ←——→ Cold
+Playful  |  RACCOON  |          |
+         |           | Files    |
+Serious  |           | Solid    |
+         | MiX       | Total Cmd|
+
+**Whitespace opportunity:**
+Raccoon occupies "warm + playful" territory that NO major file manager competitor
+claims. Most competitors are cold/neutral (Google Files) or cold/serious (Solid
+Explorer). The raccoon persona + chromatic warm surfaces claim unique visual territory.
+
+This is the app's strongest competitive advantage from a design perspective.
+```
+
+### Step 6.21 — §SR0-SR6: Source Material
+
+```
+[N/A] — No named source material referenced
+The user did not reference a named source (game, brand, IP, show).
+The raccoon character appears to be original, not based on an external source.
+This step is not applicable.
+```
+
+---
+
+### Phase 6 Summary
+
+| Step | Findings | CRIT | HIGH | MED | LOW |
+|------|----------|------|------|-----|-----|
+| §6.1 Style Classification | 0 | 0 | 0 | 0 | 0 |
+| §6.2 Character Brief | 0 | 0 | 0 | 0 | 0 |
+| §6.3 Brand Archetype | 0 | 0 | 0 | 0 | 0 |
+| §6.4 Color Science | 1 | 0 | 0 | 0 | 1 |
+| §6.5 Typography Deep | 0 | 0 | 0 | 0 | 0 |
+| §6.6 Component Character | 0 | 0 | 0 | 0 | 0 |
+| §6.7 Hierarchy & Gestalt | 0 | 0 | 0 | 0 | 0 |
+| §6.8 Surface & Atmosphere | 0 | 0 | 0 | 0 | 0 |
+| §6.9 Motion Vocabulary | 0 | 0 | 0 | 0 | 0 |
+| §6.10 Iconography | 1 | 0 | 0 | 0 | 1 |
+| §6.11 State Design | 0 | 0 | 0 | 0 | 0 |
+| §6.12 Copy × Visual | 1 | 0 | 0 | 1 | 0 |
+| §6.13 Illustration | 0 | 0 | 0 | 0 | 0 |
+| §6.14 Data Viz | 0 | 0 | 0 | 0 | 0 |
+| §6.15 Token Architecture | 0 | 0 | 0 | 0 | 0 |
+| §6.16 Responsive | 1 | 0 | 0 | 0 | 1 |
+| §6.17 Trend Calibration | 0 | 0 | 0 | 0 | 0 |
+| §6.18 Character Deepening | 0 | 0 | 0 | 0 | 0 |
+| §6.19 Design Signature | 0 | 0 | 0 | 0 | 0 |
+| §6.20 Competitive Positioning | 0 | 0 | 0 | 0 | 0 |
+| §6.21 Source Material | 0 | 0 | 0 | 0 | 0 |
+| **TOTAL** | **4** | **0** | **0** | **1** | **3** |
+
+### Positive Verifications (Phase 6)
+
+1. **Material Design 2 with coherent chromatic overlay** — style coherence 9/10 [CODE]
+2. **Character Brief confirmed** — Caregiver/Everyman hybrid, warmth 8, playfulness 7, formality 3 [USER]
+3. **Anti-genericness 11/12** — forest green palette, raccoon persona, chromatic surfaces, branded copy [CODE]
+4. **Professional-grade color science** — three-layer architecture, OKLCH perceptual model, accent narrative [CODE]
+5. **Typography carries character** — 5 clear hierarchy levels, optical tracking, tabular numerals system [CODE]
+6. **Components carry brand** — 6 button variants, 4 card variants, physical stateListAnimator feedback [CODE]
+7. **Strong visual hierarchy** — hero gradient → full-width cards → 2-column grid → section labels [CODE]
+8. **Distinctive surface atmosphere** — warm paper feel, green-tinted near-blacks, chromatic elevation ladder [CODE]
+9. **Documented motion vocabulary** — 5-tier system, custom interpolator, celebration signature moment [CODE]
+10. **Consistent Material filled icon system** — 58+ icons, all filled style, runtime tinting [CODE]
+11. **Best-in-class state design** — branded empty/loading/error/success with raccoon personality [CODE]
+12. **Copy-visual coherence 9/10** — voice matches personality across core experience [CODE]
+13. **Complete three-layer token architecture** — primitive → semantic → component, no gaps [CODE]
+14. **Intentional trend usage** — low dating risk, no fad patterns [CODE]
+15. **Unique competitive position** — "warm + playful" territory unclaimed by major competitors [ANALYSIS]
+
+---
+
+**Phase 6 is complete.**
+
+**Cumulative findings: Phase 1 through Phase 6**
+
+| Severity | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Total |
+|----------|---------|---------|---------|---------|---------|---------|-------|
+| CRITICAL | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| HIGH | 1 | 0 | 2 | 0 | 0 | 0 | 3 |
+| MEDIUM | 6 | 2 | 5 | 3 | 0 | 1 | 17 |
+| LOW | 11 | 6 | 5 | 5 | 6 | 3 | 36 |
+| **Total** | **18** | **8** | **12** | **8** | **6** | **4** | **56** |
+
+**Next: Phase 7 — UX & Information Architecture (Category F)**
+
+Awaiting confirmation to proceed with Phase 7, or to fix findings from Phase 1-6.

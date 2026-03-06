@@ -98,6 +98,11 @@ class AntivirusFragment : Fragment() {
         // Show last scan time
         showLastScanTime()
 
+        // F-086: Show definitions date so users know detection lists are static
+        binding.tvDefinitionsDate.text = getString(
+            R.string.av_definitions_date, AppIntegrityScanner.DEFINITIONS_DATE
+        )
+
         // F-078: Observe ScanService status reactively via LiveData instead of
         // polling @Volatile properties every 500ms with Handler.postDelayed.
         // This is lifecycle-aware (no updates when paused) and saves CPU/battery.

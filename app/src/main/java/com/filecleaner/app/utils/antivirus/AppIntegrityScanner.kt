@@ -33,6 +33,11 @@ import java.util.concurrent.TimeUnit
  */
 object AppIntegrityScanner {
 
+    // F-086: Document that detection lists are static and bundled at build time.
+    // Update this date whenever MALICIOUS_PACKAGES, ROOT_BINARIES, or
+    // HOOKING_PACKAGES lists are modified.
+    const val DEFINITIONS_DATE = "2025-06-01"
+
     private val ROOT_BINARIES = listOf(
         "/system/bin/su", "/system/xbin/su", "/sbin/su",
         "/system/su", "/system/bin/.ext/.su",

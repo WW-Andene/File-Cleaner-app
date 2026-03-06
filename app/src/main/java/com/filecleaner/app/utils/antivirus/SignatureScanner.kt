@@ -302,22 +302,34 @@ object SignatureScanner {
         try {
             val file = File(item.path)
             if (!file.canRead()) return
-            val content = file.readText(Charsets.UTF_8)
 
-            for (pattern in DANGEROUS_SCRIPT_PATTERNS) {
-                if (pattern.containsMatchIn(content)) {
-                    results.add(
-                        ThreatResult(
-                            name = context.getString(R.string.threat_dangerous_script),
-                            description = context.getString(R.string.threat_desc_dangerous_script, item.name, pattern.pattern.take(40)),
-                            severity = ThreatResult.Severity.HIGH,
-                            source = ThreatResult.ScannerSource.FILE_SIGNATURE,
-                            filePath = item.path,
-                            category = ThreatResult.ThreatCategory.SUSPICIOUS_FILE,
-                            action = ThreatResult.ThreatAction.QUARANTINE
-                        )
-                    )
-                    break
+            // F-042: Check for binary content before reading entire file as text.
+            // Binary files with script extensions waste memory on garbled String allocations.
+            file.inputStream().use { stream ->
+                val probe = ByteArray(512)
+                val read = stream.read(probe)
+                if (read > 0 && probe.take(read).any { it == 0.toByte() }) return
+            }
+
+            // F-042: Read line-by-line with early exit instead of loading entire file
+            file.bufferedReader(Charsets.UTF_8).use { reader ->
+                reader.forEachLine { line ->
+                    for (pattern in DANGEROUS_SCRIPT_PATTERNS) {
+                        if (pattern.containsMatchIn(line)) {
+                            results.add(
+                                ThreatResult(
+                                    name = context.getString(R.string.threat_dangerous_script),
+                                    description = context.getString(R.string.threat_desc_dangerous_script, item.name, pattern.pattern.take(40)),
+                                    severity = ThreatResult.Severity.HIGH,
+                                    source = ThreatResult.ScannerSource.FILE_SIGNATURE,
+                                    filePath = item.path,
+                                    category = ThreatResult.ThreatCategory.SUSPICIOUS_FILE,
+                                    action = ThreatResult.ThreatAction.QUARANTINE
+                                )
+                            )
+                            return
+                        }
+                    }
                 }
             }
         } catch (_: Exception) {

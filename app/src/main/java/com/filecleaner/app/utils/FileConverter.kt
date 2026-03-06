@@ -229,7 +229,11 @@ object FileConverter {
 
             for (i in 0 until pageCount) {
                 val page = renderer.openPage(i)
-                val scale = 2
+                // F-043: Cap scale factor so rendered bitmap never exceeds MAX_PDF_PAGE_PX
+                // to prevent OOM on pages with unusual dimensions
+                val maxPx = 4096
+                val scale = minOf(2, maxPx / maxOf(page.width, page.height, 1))
+                    .coerceAtLeast(1)
                 val bitmap = Bitmap.createBitmap(
                     page.width * scale, page.height * scale, Bitmap.Config.ARGB_8888
                 )

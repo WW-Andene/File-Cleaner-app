@@ -17,6 +17,8 @@
 
     <!-- ── Accent: Warm amber — raccoon energy ── -->
     <color name="colorAccent">#E8861F</color>
+    <!-- F-063: WCAG-safe darkened accent for text on light surfaces (≥4.5:1 on surfaceColor) -->
+    <color name="colorAccentText">#B06A10</color>
     <color name="colorAccentLight">#FBE6CF</color>
     <color name="colorOnAccent">#FFFFFF</color>
     <color name="colorAccentContainer">#FDECD8</color>
@@ -29,7 +31,8 @@
     <color name="colorSuccess">#2E7D42</color>
     <color name="colorSuccessLight">#E6F5EA</color>
     <color name="colorOnSuccess">#FFFFFF</color>
-    <color name="colorWarning">#996D12</color>
+    <!-- F-064: Darkened from #996D12 to reach ≥4.5:1 on surfaceColor -->
+    <color name="colorWarning">#8D6410</color>
     <color name="colorWarningLight">#FFF8E6</color>
     <color name="colorOnWarning">#FFFFFF</color>
 
@@ -63,7 +66,8 @@
     <!-- ── Text hierarchy (chromatic green-tinted, not pure gray, §DC5) ── -->
     <color name="textPrimary">#161816</color>
     <color name="textSecondary">#4B524E</color>
-    <color name="textTertiary">#616966</color>
+    <!-- F-062: Darkened ~5% from #616966 to reach ≥4.5:1 on surfaceDim -->
+    <color name="textTertiary">#566059</color>
     <color name="textOnPrimary">#FFFFFF</color>
     <color name="textDisabled">#B0B5B2</color>
 

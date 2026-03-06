@@ -63,7 +63,8 @@
     <!-- ── Text (chromatic green-gray, not pure gray, §DC5) ── -->
     <color name="textPrimary">#ECE9E4</color>
     <color name="textSecondary">#A2A8A5</color>
-    <color name="textTertiary">#7E8682</color>
+    <!-- F-062: Lightened ~5% from #7E8682 to reach ≥4.5:1 on surfaceElevated -->
+    <color name="textTertiary">#8A928E</color>
     <color name="textOnPrimary">#0C110F</color>
     <color name="textDisabled">#4A514D</color>
 

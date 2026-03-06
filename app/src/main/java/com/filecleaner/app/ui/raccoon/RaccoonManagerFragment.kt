@@ -171,8 +171,8 @@ class RaccoonManagerFragment : Fragment() {
                 }
                 else -> getString(R.string.raccoon_greeting_pre_scan)
             }
-            // F5: Dim cards that require scan data when none is available; full opacity when scanning or done
-            val alpha = if (hasData || isScanning) 1.0f else 0.5f
+            // F-059: Dim cards that require scan data; raised from 0.5 to 0.6 for better readability
+            val alpha = if (hasData || isScanning) 1.0f else 0.6f
             binding.cardAnalysis.alpha = alpha
             binding.cardQuickClean.alpha = alpha
             binding.cardArborescence.alpha = alpha
@@ -221,14 +221,41 @@ class RaccoonManagerFragment : Fragment() {
             .setTitle(getString(R.string.raccoon_janitor_title))
             .setMessage(getString(R.string.raccoon_janitor_desc))
             .setPositiveButton(getString(R.string.raccoon_janitor_start)) { _, _ ->
-                // Deep clean starts a fresh scan then navigates to duplicates for review
+                // F-057: Deep clean starts a fresh scan, then shows review dialog on completion
                 (activity as? MainActivity)?.requestPermissionsAndScan()
-                // After scan completes, user can review duplicates/junk/large tabs
                 Snackbar.make(binding.root,
                     getString(R.string.raccoon_janitor_started),
                     Snackbar.LENGTH_LONG).show()
+                // Observe scan completion to show review guidance
+                vm.scanState.observe(viewLifecycleOwner) { state ->
+                    if (state is ScanState.Done) {
+                        vm.scanState.removeObservers(viewLifecycleOwner)
+                        showJanitorReviewDialog()
+                    }
+                }
             }
             .setNegativeButton(getString(R.string.cancel), null)
+            .show()
+    }
+
+    /** F-057: Post-scan dialog guiding user to review tabs */
+    private fun showJanitorReviewDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.raccoon_janitor_done_title))
+            .setMessage(getString(R.string.raccoon_janitor_done_message))
+            .setPositiveButton(getString(R.string.raccoon_janitor_review_duplicates)) { _, _ ->
+                (activity as? MainActivity)?.let {
+                    it.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_nav)
+                        ?.selectedItemId = R.id.duplicatesFragment
+                }
+            }
+            .setNeutralButton(getString(R.string.raccoon_janitor_review_junk)) { _, _ ->
+                (activity as? MainActivity)?.let {
+                    it.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_nav)
+                        ?.selectedItemId = R.id.junkFragment
+                }
+            }
+            .setNegativeButton(getString(R.string.dismiss), null)
             .show()
     }
 

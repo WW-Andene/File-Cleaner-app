@@ -161,23 +161,31 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            // Show/hide bottom nav with slide animation
+            // F-067: Show/hide bottom nav with slide animation (respects reduced motion)
             val navHostFragment = binding.navHostFragment
             if (isTabDest && bottomNavWrapper.visibility != View.VISIBLE) {
                 bottomNavWrapper.visibility = View.VISIBLE
-                bottomNavWrapper.translationY = bottomNavWrapper.height.toFloat()
-                bottomNavWrapper.animate()
-                    .translationY(0f)
-                    .setDuration(150)
-                    .start()
+                if (MotionUtil.isReducedMotion(this@MainActivity)) {
+                    bottomNavWrapper.translationY = 0f
+                } else {
+                    bottomNavWrapper.translationY = bottomNavWrapper.height.toFloat()
+                    bottomNavWrapper.animate()
+                        .translationY(0f)
+                        .setDuration(150)
+                        .start()
+                }
                 navHostFragment.setPadding(0, 0, 0,
                     resources.getDimensionPixelSize(R.dimen.bottom_nav_height))
             } else if (!isTabDest && bottomNavWrapper.visibility == View.VISIBLE) {
-                bottomNavWrapper.animate()
-                    .translationY(bottomNavWrapper.height.toFloat())
-                    .setDuration(150)
-                    .withEndAction { bottomNavWrapper.visibility = View.GONE }
-                    .start()
+                if (MotionUtil.isReducedMotion(this@MainActivity)) {
+                    bottomNavWrapper.visibility = View.GONE
+                } else {
+                    bottomNavWrapper.animate()
+                        .translationY(bottomNavWrapper.height.toFloat())
+                        .setDuration(150)
+                        .withEndAction { bottomNavWrapper.visibility = View.GONE }
+                        .start()
+                }
                 navHostFragment.setPadding(0, 0, 0, 0)
             }
         }

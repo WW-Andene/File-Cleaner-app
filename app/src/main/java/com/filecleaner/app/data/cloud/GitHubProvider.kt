@@ -1,6 +1,7 @@
 package com.filecleaner.app.data.cloud
 
 import android.content.Context
+import com.filecleaner.app.utils.retryOnNetworkError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -30,18 +31,21 @@ class GitHubProvider(
     // F-030: URL-encode individual path segments to prevent path injection
     private fun encPath(segment: String): String = URLEncoder.encode(segment, "UTF-8")
 
+    // F-071: Wrap network calls in retryOnNetworkError for transient failure resilience
     override suspend fun connect(): Boolean = withContext(Dispatchers.IO) {
         try {
-            val url = URL("https://api.github.com/user")
-            val conn = url.openConnection() as HttpURLConnection
-            conn.setRequestProperty("Authorization", "Bearer $token")
-            conn.setRequestProperty("Accept", "application/vnd.github.v3+json")
-            conn.connectTimeout = 10_000
-            conn.readTimeout = 10_000
-            val code = conn.responseCode
-            conn.disconnect()
-            isConnected = code == 200
-            isConnected
+            retryOnNetworkError {
+                val url = URL("https://api.github.com/user")
+                val conn = url.openConnection() as HttpURLConnection
+                conn.setRequestProperty("Authorization", "Bearer $token")
+                conn.setRequestProperty("Accept", "application/vnd.github.v3+json")
+                conn.connectTimeout = 10_000
+                conn.readTimeout = 10_000
+                val code = conn.responseCode
+                conn.disconnect()
+                isConnected = code == 200
+                isConnected
+            }
         } catch (e: Exception) {
             isConnected = false
             false
@@ -53,6 +57,7 @@ class GitHubProvider(
     }
 
     override suspend fun listFiles(remotePath: String): List<CloudFile> = withContext(Dispatchers.IO) {
+        retryOnNetworkError {
         val apiUrl = if (remotePath == "/" || remotePath.isEmpty()) {
             // List user's repos
             "https://api.github.com/user/repos?per_page=100&sort=updated"
@@ -117,28 +122,31 @@ class GitHubProvider(
         }
 
         files
+        }
     }
 
     override suspend fun download(remotePath: String, output: OutputStream) = withContext(Dispatchers.IO) {
-        // F-030: URL-encode path segments to prevent path injection
-        val parts = remotePath.trimStart('/').split("/", limit = 3)
-        val owner = encPath(parts.getOrElse(0) { "" })
-        val repo = encPath(parts.getOrElse(1) { "" })
-        val path = parts.getOrElse(2) { "" }
-        val encodedPath = path.split("/").joinToString("/") { encPath(it) }
+        retryOnNetworkError {
+            // F-030: URL-encode path segments to prevent path injection
+            val parts = remotePath.trimStart('/').split("/", limit = 3)
+            val owner = encPath(parts.getOrElse(0) { "" })
+            val repo = encPath(parts.getOrElse(1) { "" })
+            val path = parts.getOrElse(2) { "" }
+            val encodedPath = path.split("/").joinToString("/") { encPath(it) }
 
-        val apiUrl = "https://api.github.com/repos/$owner/$repo/contents/$encodedPath"
-        val url = URL(apiUrl)
-        val conn = url.openConnection() as HttpURLConnection
-        conn.setRequestProperty("Authorization", "Bearer $token")
-        conn.setRequestProperty("Accept", "application/vnd.github.v3.raw")
-        conn.connectTimeout = 10_000
-        conn.readTimeout = 30_000
+            val apiUrl = "https://api.github.com/repos/$owner/$repo/contents/$encodedPath"
+            val url = URL(apiUrl)
+            val conn = url.openConnection() as HttpURLConnection
+            conn.setRequestProperty("Authorization", "Bearer $token")
+            conn.setRequestProperty("Accept", "application/vnd.github.v3.raw")
+            conn.connectTimeout = 10_000
+            conn.readTimeout = 30_000
 
-        conn.inputStream.use { input ->
-            input.copyTo(output)
+            conn.inputStream.use { input ->
+                input.copyTo(output)
+            }
+            conn.disconnect()
         }
-        conn.disconnect()
     }
 
     override suspend fun upload(remotePath: String, input: InputStream, fileName: String, mimeType: String) {

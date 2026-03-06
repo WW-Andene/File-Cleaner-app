@@ -13,7 +13,11 @@ import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
+import android.os.Bundle
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
+import androidx.customview.widget.ExploreByTouchHelper
 import com.filecleaner.app.R
 import com.filecleaner.app.data.DirectoryNode
 import com.filecleaner.app.data.FileCategory
@@ -250,6 +254,84 @@ class ArborescenceView @JvmOverloads constructor(
     }
     private val layouts = mutableMapOf<String, NodeLayout>()
     private var selectedPath: String? = null
+
+    // F-065: ExploreByTouchHelper for individual tree node accessibility
+    private val a11yHelper = object : ExploreByTouchHelper(this@ArborescenceView) {
+        private val pts = FloatArray(2)
+
+        /** Transform screen coordinates to canvas coordinates via inverse matrix */
+        private fun toCanvas(x: Float, y: Float): Pair<Float, Float> {
+            viewMatrix.invert(inverseMatrix)
+            pts[0] = x; pts[1] = y
+            inverseMatrix.mapPoints(pts)
+            return pts[0] to pts[1]
+        }
+
+        /** Transform canvas coordinates to screen coordinates via view matrix */
+        private fun toScreen(x: Float, y: Float): Pair<Float, Float> {
+            pts[0] = x; pts[1] = y
+            viewMatrix.mapPoints(pts)
+            return pts[0] to pts[1]
+        }
+
+        override fun getVirtualViewAt(x: Float, y: Float): Int {
+            val (cx, cy) = toCanvas(x, y)
+            val sortedLayouts = layouts.values.toList()
+            for ((index, layout) in sortedLayouts.withIndex()) {
+                if (cx >= layout.x && cx <= layout.x + layout.w &&
+                    cy >= layout.y && cy <= layout.y + layout.h) {
+                    return index
+                }
+            }
+            return INVALID_ID
+        }
+
+        override fun getVisibleVirtualViews(virtualViewIds: MutableList<Int>) {
+            for (i in layouts.values.indices) {
+                virtualViewIds.add(i)
+            }
+        }
+
+        override fun onPopulateNodeForVirtualView(
+            virtualViewId: Int, node: AccessibilityNodeInfoCompat
+        ) {
+            val sortedLayouts = layouts.values.toList()
+            if (virtualViewId !in sortedLayouts.indices) {
+                node.contentDescription = ""
+                node.setBoundsInParent(Rect(0, 0, 1, 1))
+                return
+            }
+            val layout = sortedLayouts[virtualViewId]
+            val dirNode = layout.node
+            val fileCount = layout.cachedFiles.size
+            val desc = context.getString(R.string.a11y_tree_node,
+                dirNode.name, dirNode.children.size, fileCount, layout.cachedSizeStr)
+            node.contentDescription = desc
+            val (l, t) = toScreen(layout.x, layout.y)
+            val (r, b) = toScreen(layout.x + layout.w, layout.y + layout.h)
+            node.setBoundsInParent(Rect(l.toInt(), t.toInt(), r.toInt(), b.toInt()))
+            node.addAction(AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK)
+            node.isClickable = true
+        }
+
+        override fun onPerformActionForVirtualView(
+            virtualViewId: Int, action: Int, arguments: Bundle?
+        ): Boolean {
+            if (action == AccessibilityNodeInfoCompat.ACTION_CLICK) {
+                val sortedLayouts = layouts.values.toList()
+                if (virtualViewId in sortedLayouts.indices) {
+                    val layout = sortedLayouts[virtualViewId]
+                    toggleExpand(layout.node.path)
+                    return true
+                }
+            }
+            return false
+        }
+    }
+
+    init {
+        ViewCompat.setAccessibilityDelegate(this, a11yHelper)
+    }
 
     // ── Filter state ──
     private var filterCategory: FileCategory? = null

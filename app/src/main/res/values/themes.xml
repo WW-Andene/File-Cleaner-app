@@ -18,6 +18,8 @@
         <item name="android:windowTranslucentStatus">false</item>
         <item name="android:windowTranslucentNavigation">false</item>
         <item name="android:enforceStatusBarContrast">false</item>
+        <!-- F-070: Render into notch area on short edges for optimal screen utilization -->
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
 
         <!-- Light status bar icons on light theme -->
         <item name="android:windowLightStatusBar">true</item>

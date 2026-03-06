@@ -41,6 +41,7 @@
     <string name="select_all">Select all</string>
     <string name="deselect_all">Deselect all</string>
     <string name="cancel">Cancel</string>
+    <string name="dismiss">Dismiss</string>
     <string name="delete">Move to Trash</string>
     <string name="clean">Clean</string>
     <string name="undo">Undo</string>
@@ -197,6 +198,8 @@
     <string name="a11y_tree_view">File tree view, %1$d files, %2$s total</string>
     <string name="a11y_tree_view_default">File tree visualization</string>
 
+    <!-- F-065: Individual tree node description for ExploreByTouchHelper -->
+    <string name="a11y_tree_node">%1$s folder, %2$d sub-folders, %3$d files, %4$s</string>
     <string name="a11y_node_expanded">%1$s expanded, %2$d sub-folders</string>
     <string name="a11y_node_collapsed">%s collapsed</string>
     <string name="a11y_pdf_prev_page">Previous page</string>
@@ -518,7 +521,12 @@
     <string name="raccoon_janitor_title">Janitor</string>
     <string name="raccoon_janitor_desc">Deep clean finds duplicate files, oversized downloads, and old caches across your entire storage. Review and select what to remove.</string>
     <string name="raccoon_janitor_start">Start Deep Clean</string>
-    <string name="raccoon_janitor_started">Starting deep clean\u2026 Review results in the Duplicates, Large, and Junk tabs.</string>
+    <string name="raccoon_janitor_started">Starting deep clean\u2026 Ricky will let you know when he\'s done!</string>
+    <!-- F-057: Post-scan review guidance -->
+    <string name="raccoon_janitor_done_title">Deep Clean Complete!</string>
+    <string name="raccoon_janitor_done_message">Ricky\'s done rummaging! Where would you like to review first?</string>
+    <string name="raccoon_janitor_review_duplicates">Duplicates</string>
+    <string name="raccoon_janitor_review_junk">Junk</string>
     <string name="raccoon_scan_needed">Ricky needs a scan first \u2014 tap Scan Storage to get started!</string>
 
     <!-- F1: Section labels -->
@@ -804,6 +812,11 @@
     <!-- Clear All Data (P3 Security) -->
     <string name="settings_privacy_notice">View Privacy Notice</string>
     <string name="settings_data_section">Data Management</string>
+    <!-- F-066: Keyboard shortcuts -->
+    <string name="settings_keyboard_shortcuts">Keyboard Shortcuts</string>
+    <string name="settings_shortcut_search">Ctrl + F \u2014 Search files</string>
+    <string name="settings_shortcut_settings">Ctrl + S \u2014 Open settings</string>
+
     <string name="settings_clear_data">Clear All Data</string>
     <string name="settings_clear_data_desc">Remove scan cache, saved cloud credentials, preferences, and scan history</string>
     <string name="settings_clear_data_confirm_title">Clear All Data?</string>

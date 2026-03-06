@@ -35,7 +35,8 @@ object StorageOptimizer {
     fun analyze(files: List<FileItem>, storagePath: String): List<Suggestion> {
         val suggestions = mutableListOf<Suggestion>()
         val usedPaths = mutableSetOf<String>()
-        val dateFmt = SimpleDateFormat("yyyy-MM", Locale.getDefault())
+        // F-003: Use Locale.ROOT to ensure Gregorian calendar consistency across all devices
+        val dateFmt = SimpleDateFormat("yyyy-MM", Locale.ROOT)
 
         for (file in files) {
             val parentDir = File(file.path).parent ?: continue

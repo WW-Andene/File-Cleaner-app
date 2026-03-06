@@ -30,11 +30,19 @@ object DuplicateFinder {
         return String(result)
     }
 
+    // F-002: Duplicate group ID offset for "likely duplicates" (files >200MB that
+    // matched on partial hash but were too large for full MD5 verification).
+    // Likely duplicate groups start at LIKELY_GROUP_OFFSET so the UI can distinguish them.
+    const val LIKELY_GROUP_OFFSET = 100_000
+
     /**
      * Multi-stage duplicate detection (F-017):
      *   Stage 1 — group by file size (free, eliminates most files)
      *   Stage 2 — partial hash: first 4 KB + last 4 KB (avoids reading whole file)
      *   Stage 3 — full MD5 only for files that still collide after partial hash
+     *
+     * F-002: Files >200MB that match on partial hash are reported as "likely duplicates"
+     * with group IDs starting at [LIKELY_GROUP_OFFSET].
      *
      * @param onProgress (done, total) — covers both Stage 2 and Stage 3 combined
      */
@@ -77,10 +85,13 @@ object DuplicateFinder {
 
         val result = mutableListOf<FileItem>()
         var groupId = 0
+        var likelyGroupId = LIKELY_GROUP_OFFSET
         for ((_, partialGroup) in byPartial) {
             if (partialGroup.size < 2) continue
 
             val byFull = mutableMapOf<String, MutableList<FileItem>>()
+            // F-002: Collect files too large for full hashing separately
+            val tooLargeForHash = mutableListOf<FileItem>()
             for (item in partialGroup) {
                 ensureActive()
                 stage3Done++
@@ -88,8 +99,11 @@ object DuplicateFinder {
                 onProgress(stage2Total + stage3Done, stage2Total + stage3Total)
                 val file = File(item.path)
                 if (!file.exists() || !file.canRead()) continue
-                // Skip files too large for full hashing on mobile
-                if (file.length() > MAX_FULL_HASH_SIZE) continue
+                // F-002: Track files too large for full hashing instead of silently skipping
+                if (file.length() > MAX_FULL_HASH_SIZE) {
+                    tooLargeForHash.add(item)
+                    continue
+                }
                 val hash = fullMd5(file) ?: continue
                 byFull.getOrPut(hash) { mutableListOf() }.add(item)
             }
@@ -99,6 +113,12 @@ object DuplicateFinder {
                     result.addAll(fullGroup.map { it.copy(duplicateGroup = groupId) })
                     groupId++
                 }
+            }
+
+            // F-002: Report large files with matching partial hash as "likely duplicates"
+            if (tooLargeForHash.size >= 2) {
+                result.addAll(tooLargeForHash.map { it.copy(duplicateGroup = likelyGroupId) })
+                likelyGroupId++
             }
         }
 

@@ -54,7 +54,11 @@ class FileOperationService(private val app: Application, private val storagePath
         // Fallback: copy + delete (handles cross-filesystem moves)
         return try {
             src.copyTo(dst, overwrite = false)
-            src.delete()
+            if (!src.delete()) {
+                // F-001: Source still exists — clean up the copy and report failure
+                dst.delete()
+                return OpResult(false, str(R.string.op_move_failed))
+            }
             OpResult(true, str(R.string.op_moved, src.name))
         } catch (e: Exception) {
             dst.delete() // Clean up partial copy
@@ -94,7 +98,11 @@ class FileOperationService(private val app: Application, private val storagePath
         // Fallback: copy + delete (handles cross-filesystem renames)
         return try {
             src.copyTo(dst, overwrite = false)
-            src.delete()
+            if (!src.delete()) {
+                // F-001: Source still exists — clean up the copy and report failure
+                dst.delete()
+                return OpResult(false, str(R.string.op_rename_failed))
+            }
             OpResult(true, str(R.string.op_renamed, newName))
         } catch (e: Exception) {
             dst.delete() // Clean up partial copy

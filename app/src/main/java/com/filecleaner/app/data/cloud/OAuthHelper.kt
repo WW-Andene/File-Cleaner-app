@@ -44,9 +44,44 @@ object OAuthHelper {
     // Redirect URI scheme (deep link)
     const val REDIRECT_URI = "filecleaner://oauth/callback"
 
-    // PKCE state stored during flow
+    // F-007: PKCE state keys for SharedPreferences persistence across process death
+    private const val PKCE_PREFS = "oauth_pkce_state"
+    private const val KEY_CODE_VERIFIER = "pending_code_verifier"
+    private const val KEY_PROVIDER = "pending_provider"
+
+    // In-memory cache (loaded from SharedPreferences on access)
     private var pendingCodeVerifier: String? = null
     private var pendingProvider: ProviderType? = null
+
+    /** F-007: Persist PKCE state to SharedPreferences so it survives process death. */
+    private fun savePkceState(context: Context, verifier: String?, provider: ProviderType?) {
+        val prefs = context.getSharedPreferences(PKCE_PREFS, Context.MODE_PRIVATE)
+        prefs.edit()
+            .putString(KEY_CODE_VERIFIER, verifier)
+            .putString(KEY_PROVIDER, provider?.name)
+            .apply()
+        pendingCodeVerifier = verifier
+        pendingProvider = provider
+    }
+
+    /** F-007: Restore PKCE state from SharedPreferences after process death. */
+    private fun loadPkceState(context: Context) {
+        if (pendingCodeVerifier != null && pendingProvider != null) return
+        val prefs = context.getSharedPreferences(PKCE_PREFS, Context.MODE_PRIVATE)
+        pendingCodeVerifier = prefs.getString(KEY_CODE_VERIFIER, null)
+        val providerName = prefs.getString(KEY_PROVIDER, null)
+        pendingProvider = providerName?.let {
+            try { ProviderType.valueOf(it) } catch (_: Exception) { null }
+        }
+    }
+
+    /** F-007: Clear persisted PKCE state after token exchange completes or fails. */
+    private fun clearPkceState(context: Context) {
+        val prefs = context.getSharedPreferences(PKCE_PREFS, Context.MODE_PRIVATE)
+        prefs.edit().clear().apply()
+        pendingCodeVerifier = null
+        pendingProvider = null
+    }
 
     data class OAuthConfig(
         val clientId: String,

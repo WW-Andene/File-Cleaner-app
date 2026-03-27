@@ -305,6 +305,11 @@ class MainActivity : AppCompatActivity() {
 
         // Handle OAuth callback
         handleOAuthIntent(intent)
+
+        // Handle "Open with" file intents
+        if (savedInstanceState == null) {
+            handleFileOpenIntent(intent)
+        }
     }
 
     // ── Keyboard shortcuts ──
@@ -353,6 +358,7 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleOAuthIntent(intent)
+        handleFileOpenIntent(intent)
     }
 
     private fun buildBottomNavOptions(): NavOptions = NavOptions.Builder()
@@ -364,6 +370,64 @@ class MainActivity : AppCompatActivity() {
         .setPopEnterAnim(R.anim.nav_pop_enter)
         .setPopExitAnim(R.anim.nav_pop_exit)
         .build()
+
+    /**
+     * Handle ACTION_VIEW and ACTION_SEND intents to open files in the in-app viewer.
+     * Resolves content:// URIs to a temporary local file so the viewer can access it.
+     */
+    private fun handleFileOpenIntent(intent: Intent?) {
+        if (intent == null) return
+        val action = intent.action
+        val uri: Uri? = when (action) {
+            Intent.ACTION_VIEW -> intent.data
+            Intent.ACTION_SEND -> intent.getParcelableExtra(Intent.EXTRA_STREAM)
+            else -> null
+        }
+        if (uri == null) return
+
+        // Resolve content:// URI to a file path the viewer can read
+        val filePath = resolveUriToPath(uri) ?: return
+
+        // Navigate to the file viewer with a short delay to let the nav graph initialize
+        val navController = try { findNavController(R.id.nav_host_fragment) } catch (_: Exception) { return }
+        val bundle = Bundle().apply {
+            putString(com.filecleaner.app.ui.viewer.FileViewerFragment.ARG_FILE_PATH, filePath)
+        }
+        binding.root.post {
+            try {
+                navController.navigate(R.id.fileViewerFragment, bundle)
+            } catch (_: Exception) { }
+        }
+    }
+
+    /**
+     * Resolve a content:// or file:// URI to a local file path.
+     * For content URIs, copies the stream to a temp file in cache dir.
+     */
+    private fun resolveUriToPath(uri: Uri): String? {
+        // file:// scheme — direct path
+        if (uri.scheme == "file") return uri.path
+
+        // content:// scheme — copy to cache
+        if (uri.scheme == "content") {
+            return try {
+                val displayName = contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        val idx = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                        if (idx >= 0) cursor.getString(idx) else null
+                    } else null
+                } ?: "opened_file"
+
+                val cacheFile = java.io.File(cacheDir, "open_with/$displayName")
+                cacheFile.parentFile?.mkdirs()
+                contentResolver.openInputStream(uri)?.use { input ->
+                    cacheFile.outputStream().use { output -> input.copyTo(output) }
+                }
+                if (cacheFile.exists() && cacheFile.length() > 0) cacheFile.absolutePath else null
+            } catch (_: Exception) { null }
+        }
+        return null
+    }
 
     private fun handleOAuthIntent(intent: Intent?) {
         val uri = intent?.data ?: return

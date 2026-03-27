@@ -111,84 +111,127 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="@dimen/spacing_xs">
+                android:paddingHorizontal="@dimen/spacing_xs"
+                android:paddingVertical="@dimen/spacing_sm">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_rotate"
                     style="@style/Widget.FileCleaner.Button.Text"
                     android:layout_width="wrap_content"
-                    android:layout_height="@dimen/button_height_sm"
+                    android:layout_height="wrap_content"
                     android:text="@string/edit_rotate"
                     android:textAllCaps="false"
                     android:textColor="@color/textOnPrimary"
+                    android:textSize="11sp"
+                    android:minHeight="0dp"
                     android:insetTop="0dp"
-                    android:insetBottom="0dp" />
+                    android:insetBottom="0dp"
+                    app:icon="@drawable/ic_refresh"
+                    app:iconGravity="top"
+                    app:iconSize="20dp"
+                    app:iconTint="@color/textOnPrimary" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_flip"
                     style="@style/Widget.FileCleaner.Button.Text"
                     android:layout_width="wrap_content"
-                    android:layout_height="@dimen/button_height_sm"
+                    android:layout_height="wrap_content"
                     android:text="@string/edit_flip"
                     android:textAllCaps="false"
                     android:textColor="@color/textOnPrimary"
+                    android:textSize="11sp"
+                    android:minHeight="0dp"
                     android:insetTop="0dp"
-                    android:insetBottom="0dp" />
+                    android:insetBottom="0dp"
+                    app:icon="@drawable/ic_flip"
+                    app:iconGravity="top"
+                    app:iconSize="20dp"
+                    app:iconTint="@color/textOnPrimary" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_crop"
                     style="@style/Widget.FileCleaner.Button.Text"
                     android:layout_width="wrap_content"
-                    android:layout_height="@dimen/button_height_sm"
+                    android:layout_height="wrap_content"
                     android:text="@string/edit_crop"
                     android:textAllCaps="false"
                     android:textColor="@color/textOnPrimary"
+                    android:textSize="11sp"
+                    android:minHeight="0dp"
                     android:insetTop="0dp"
-                    android:insetBottom="0dp" />
+                    android:insetBottom="0dp"
+                    app:icon="@drawable/ic_crop"
+                    app:iconGravity="top"
+                    app:iconSize="20dp"
+                    app:iconTint="@color/textOnPrimary" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_bw"
                     style="@style/Widget.FileCleaner.Button.Text"
                     android:layout_width="wrap_content"
-                    android:layout_height="@dimen/button_height_sm"
+                    android:layout_height="wrap_content"
                     android:text="@string/edit_grayscale"
                     android:textAllCaps="false"
                     android:textColor="@color/textOnPrimary"
+                    android:textSize="11sp"
+                    android:minHeight="0dp"
                     android:insetTop="0dp"
-                    android:insetBottom="0dp" />
+                    android:insetBottom="0dp"
+                    app:icon="@drawable/ic_contrast"
+                    app:iconGravity="top"
+                    app:iconSize="20dp"
+                    app:iconTint="@color/textOnPrimary" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_invert"
                     style="@style/Widget.FileCleaner.Button.Text"
                     android:layout_width="wrap_content"
-                    android:layout_height="@dimen/button_height_sm"
+                    android:layout_height="wrap_content"
                     android:text="@string/edit_invert"
                     android:textAllCaps="false"
                     android:textColor="@color/textOnPrimary"
+                    android:textSize="11sp"
+                    android:minHeight="0dp"
                     android:insetTop="0dp"
-                    android:insetBottom="0dp" />
+                    android:insetBottom="0dp"
+                    app:icon="@drawable/ic_invert"
+                    app:iconGravity="top"
+                    app:iconSize="20dp"
+                    app:iconTint="@color/textOnPrimary" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_bright"
                     style="@style/Widget.FileCleaner.Button.Text"
                     android:layout_width="wrap_content"
-                    android:layout_height="@dimen/button_height_sm"
+                    android:layout_height="wrap_content"
                     android:text="@string/edit_brighten"
                     android:textAllCaps="false"
                     android:textColor="@color/textOnPrimary"
+                    android:textSize="11sp"
+                    android:minHeight="0dp"
                     android:insetTop="0dp"
-                    android:insetBottom="0dp" />
+                    android:insetBottom="0dp"
+                    app:icon="@drawable/ic_brightness"
+                    app:iconGravity="top"
+                    app:iconSize="20dp"
+                    app:iconTint="@color/textOnPrimary" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_dark"
                     style="@style/Widget.FileCleaner.Button.Text"
                     android:layout_width="wrap_content"
-                    android:layout_height="@dimen/button_height_sm"
+                    android:layout_height="wrap_content"
                     android:text="@string/edit_darken"
                     android:textAllCaps="false"
                     android:textColor="@color/textOnPrimary"
+                    android:textSize="11sp"
+                    android:minHeight="0dp"
                     android:insetTop="0dp"
-                    android:insetBottom="0dp" />
+                    android:insetBottom="0dp"
+                    app:icon="@drawable/ic_dark_mode"
+                    app:iconGravity="top"
+                    app:iconSize="20dp"
+                    app:iconTint="@color/textOnPrimary" />
             </LinearLayout>
         </HorizontalScrollView>
 

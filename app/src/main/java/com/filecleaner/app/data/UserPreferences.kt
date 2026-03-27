@@ -76,6 +76,11 @@ object UserPreferences {
         get() = prefs.getBoolean("show_hidden_files", false)
         set(value) = prefs.edit().putBoolean("show_hidden_files", value).apply()
 
+    /** When true, browse starts at filesystem root (/) instead of /storage/emulated/0 */
+    var showRootFiles: Boolean
+        get() = prefs.getBoolean("show_root_files", false)
+        set(value) = prefs.edit().putBoolean("show_root_files", value).apply()
+
     // ── Undo ──
 
     var undoTimeoutMs: Int

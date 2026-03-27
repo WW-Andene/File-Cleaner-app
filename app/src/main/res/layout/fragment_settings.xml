@@ -356,6 +356,32 @@
                     android:minWidth="@dimen/touch_target_min"
                     android:contentDescription="@string/a11y_switch_hidden_files" />
             </LinearLayout>
+
+            <!-- Show root filesystem -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:minHeight="@dimen/touch_target_min"
+                android:padding="@dimen/spacing_lg">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/settings_root_files"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.Body"
+                    android:labelFor="@+id/switch_root_files" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switch_root_files"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:minWidth="@dimen/touch_target_min"
+                    android:contentDescription="@string/settings_root_files" />
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <!-- Crash Reporting section -->

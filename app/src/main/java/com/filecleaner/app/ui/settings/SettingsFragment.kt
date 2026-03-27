@@ -121,6 +121,12 @@ class SettingsFragment : Fragment() {
             UserPreferences.showHiddenFiles = isChecked
         }
 
+        // Show root filesystem toggle
+        binding.switchRootFiles?.isChecked = UserPreferences.showRootFiles
+        binding.switchRootFiles?.setOnCheckedChangeListener { _, isChecked ->
+            UserPreferences.showRootFiles = isChecked
+        }
+
         // ── Crash Reporting ──
         binding.switchCrashReporting.isChecked = UserPreferences.crashReportingEnabled
         binding.switchCrashReporting.setOnCheckedChangeListener { _, isChecked ->

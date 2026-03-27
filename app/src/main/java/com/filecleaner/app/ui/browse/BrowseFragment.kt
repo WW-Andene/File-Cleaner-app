@@ -64,15 +64,18 @@ class BrowseFragment : Fragment() {
     private lateinit var selectionBackCallback: OnBackPressedCallback
     private lateinit var browseBackCallback: OnBackPressedCallback
 
-    // Direct filesystem browsing — allows instant file access without scan
+    // Direct filesystem browsing — default mode, allows instant file access without scan
     private var currentBrowsePath: String? = null
-    private var directBrowseMode = false
+    private var directBrowseMode = true
 
     // File manager needs broad storage access; MANAGE_EXTERNAL_STORAGE grants it
     @Suppress("DEPRECATION")
-    private val storagePath: String by lazy {
-        Environment.getExternalStorageDirectory().absolutePath
-    }
+    private val storagePath: String
+        get() = if (try { UserPreferences.showRootFiles } catch (_: Exception) { false }) {
+            "/"
+        } else {
+            Environment.getExternalStorageDirectory().absolutePath
+        }
 
     // Virtual categories — sentinels, handled in refresh()
     private val VIRTUAL_RECENT = "RECENT"
@@ -126,8 +129,15 @@ class BrowseFragment : Fragment() {
                 hasClipboard = vm.clipboardEntry.value != null)
         }
         adapter.onHeaderClick = { folderPath ->
-            adapter.toggleFolder(folderPath)
-            updateExpandCollapseButton()
+            if (directBrowseMode) {
+                navigateToDirectory(folderPath)
+            } else {
+                adapter.toggleFolder(folderPath)
+                updateExpandCollapseButton()
+            }
+        }
+        adapter.onFolderClick = { folderPath ->
+            navigateToDirectory(folderPath)
         }
         // Back press exits selection mode before navigating back
         selectionBackCallback = object : OnBackPressedCallback(false) {
@@ -369,20 +379,38 @@ class BrowseFragment : Fragment() {
 
     private fun applyLayoutManager() {
         dividerDecoration?.let { binding.recyclerView.removeItemDecoration(it) }
-        val isMultiColumnGrid = currentViewMode.style == ViewMode.Style.GRID
-        binding.recyclerView.layoutManager = if (isMultiColumnGrid && currentViewMode.spanCount > 1) {
-            val spanCount = currentViewMode.spanCount
-            GridLayoutManager(requireContext(), spanCount).apply {
+
+        val fileIsGrid = currentViewMode.style == ViewMode.Style.GRID
+        val folderIsGrid = adapter.folderViewMode.usesGridLayout
+
+        // Use grid layout when either files or folders need multiple columns
+        val needsGrid = fileIsGrid || folderIsGrid
+        val fileSpans = if (fileIsGrid) currentViewMode.spanCount else 1
+        val folderSpans = if (folderIsGrid) adapter.folderViewMode.spanCount else 1
+        // LCM-based approach: use the larger span count as the total
+        val totalSpans = maxOf(fileSpans, folderSpans, 1)
+
+        binding.recyclerView.layoutManager = if (needsGrid && totalSpans > 1) {
+            GridLayoutManager(requireContext(), totalSpans).apply {
                 spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                     override fun getSpanSize(position: Int): Int {
-                        return if (adapter.isHeader(position)) spanCount else 1
+                        return when {
+                            // Section headers (scan mode) always take full width
+                            adapter.isSectionHeader(position) -> totalSpans
+                            // Folder items: 1 span each in grid, full width in list
+                            adapter.isFolderItem(position) ->
+                                if (folderIsGrid) totalSpans / folderSpans else totalSpans
+                            // File items: 1 span each in grid, full width in list
+                            else ->
+                                if (fileIsGrid) totalSpans / fileSpans else totalSpans
+                        }
                     }
                 }
             }
         } else {
             LinearLayoutManager(requireContext())
         }
-        // Divider decoration only for non-grid layouts
+
         if (!currentViewMode.usesGridLayout) {
             dividerDecoration?.let { binding.recyclerView.addItemDecoration(it) }
         }
@@ -392,18 +420,26 @@ class BrowseFragment : Fragment() {
 
     private fun showViewModePopup() {
         val popup = android.widget.PopupMenu(requireContext(), binding.btnViewMode)
-        val styles = listOf(
-            getString(R.string.display_mode_list) to ViewMode.Style.LIST,
-            getString(R.string.display_mode_grid) to ViewMode.Style.GRID
-        )
-        styles.forEachIndexed { index, (label, _) ->
-            popup.menu.add(0, index, index, label)
-        }
+
+        // Group 1: Folder display mode
+        popup.menu.add(1, 10, 0, getString(R.string.view_mode_folders_list))
+        popup.menu.add(1, 11, 1, getString(R.string.view_mode_folders_grid))
+        popup.menu.setGroupCheckable(1, true, true)
+        popup.menu.findItem(if (adapter.folderViewMode.usesGridLayout) 11 else 10)?.isChecked = true
+
+        // Group 2: File display mode
+        popup.menu.add(2, 20, 2, getString(R.string.view_mode_files_list))
+        popup.menu.add(2, 21, 3, getString(R.string.view_mode_files_grid))
+        popup.menu.setGroupCheckable(2, true, true)
+        popup.menu.findItem(if (currentViewMode.usesGridLayout) 21 else 20)?.isChecked = true
+
         popup.setOnMenuItemClickListener { item ->
-            val (_, style) = styles[item.itemId]
-            currentViewMode = ViewMode.of(style, currentViewMode.size)
-            adapter.viewMode = currentViewMode
-            applyLayoutManager()
+            when (item.itemId) {
+                10 -> { adapter.folderViewMode = ViewMode.LIST_MD; applyLayoutManager() }
+                11 -> { adapter.folderViewMode = ViewMode.GRID_MD; applyLayoutManager() }
+                20 -> { currentViewMode = ViewMode.of(ViewMode.Style.LIST, currentViewMode.size); adapter.viewMode = currentViewMode; applyLayoutManager() }
+                21 -> { currentViewMode = ViewMode.of(ViewMode.Style.GRID, currentViewMode.size); adapter.viewMode = currentViewMode; applyLayoutManager() }
+            }
             true
         }
         popup.show()
@@ -554,30 +590,27 @@ class BrowseFragment : Fragment() {
 
             if (_binding == null) return@launch
 
-            // Build browse items: folders first, then files
+            // Build browse items: parent (..) + folders + files
             val items = mutableListOf<BrowseAdapter.Item>()
 
             // Add parent directory entry if not at root
             if (listing.parentPath != null) {
-                val parentItem = FileItem(
+                items.add(BrowseAdapter.Item.Folder(
                     path = listing.parentPath,
                     name = "..",
-                    size = 0,
-                    lastModified = 0,
-                    category = com.filecleaner.app.data.FileCategory.OTHER
-                )
-                items.add(BrowseAdapter.Item.File(parentItem))
+                    itemCount = 0,
+                    totalSize = 0
+                ))
             }
 
-            // Add folders as FileItems (they'll show folder icons via category)
+            // Add folders as proper Folder items (displayed as grid cards or list rows)
             for (folder in listing.folders) {
-                items.add(BrowseAdapter.Item.File(FileItem(
+                items.add(BrowseAdapter.Item.Folder(
                     path = folder.path,
                     name = folder.name,
-                    size = 0,
-                    lastModified = 0,
-                    category = com.filecleaner.app.data.FileCategory.OTHER
-                )))
+                    itemCount = folder.itemCount,
+                    totalSize = folder.totalSize
+                ))
             }
 
             // Add files

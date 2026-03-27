@@ -19,11 +19,15 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
 
     sealed class Item {
         data class Header(val folderPath: String, val displayName: String, val fileCount: Int, val totalSize: Long = 0L) : Item()
+        data class Folder(val path: String, val name: String, val itemCount: Int, val totalSize: Long) : Item()
         data class File(val fileItem: FileItem) : Item()
     }
 
     companion object {
         private const val TYPE_HEADER = 0
+        private const val TYPE_HEADER_GRID = 2
+        private const val TYPE_FOLDER_GRID = 3
+        private const val TYPE_FOLDER_LIST = 4
         private const val TYPE_FILE = 1
         private const val TYPE_FILE_GRID = 11
         private const val PAYLOAD_SELECTION = "selection"
@@ -31,6 +35,7 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         private val DIFF = object : DiffUtil.ItemCallback<Item>() {
             override fun areItemsTheSame(a: Item, b: Item): Boolean = when {
                 a is Item.Header && b is Item.Header -> a.folderPath == b.folderPath
+                a is Item.Folder && b is Item.Folder -> a.path == b.path
                 a is Item.File && b is Item.File -> a.fileItem.path == b.fileItem.path
                 else -> false
             }
@@ -42,7 +47,15 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         set(value) {
             if (field != value) {
                 field = value
-                // Must use notifyDataSetChanged when view types change (list <-> grid)
+                notifyDataSetChanged()
+            }
+        }
+
+    /** Separate view mode for folder headers — when grid, shows folder cards instead of list headers. */
+    var folderViewMode: ViewMode = ViewMode.GRID_MD
+        set(value) {
+            if (field != value) {
+                field = value
                 notifyDataSetChanged()
             }
         }
@@ -153,7 +166,21 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
      * the visible items (hiding files under collapsed folders) to the
      * RecyclerView differ.
      */
+    /** When true, new folders are collapsed by default (user can expand individually). */
+    var collapseByDefault = true
+
     fun submitFullList(items: List<Item>, commitCallback: Runnable? = null) {
+        // Auto-collapse newly-appearing folders when collapseByDefault is on
+        if (collapseByDefault) {
+            for (item in items) {
+                if (item is Item.Header && item.folderPath !in collapsedFolders) {
+                    // Only auto-collapse if we haven't seen this folder before (user may have expanded it)
+                    if (item.folderPath !in expandedByUser) {
+                        collapsedFolders.add(item.folderPath)
+                    }
+                }
+            }
+        }
         fullList = items
         val visible = computeVisibleList()
         if (commitCallback != null) {
@@ -163,12 +190,17 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         }
     }
 
+    /** Tracks folders the user has explicitly expanded (survives re-submit). */
+    private val expandedByUser = mutableSetOf<String>()
+
     /** Toggle a folder between collapsed and expanded. */
     fun toggleFolder(folderPath: String) {
         if (folderPath in collapsedFolders) {
             collapsedFolders.remove(folderPath)
+            expandedByUser.add(folderPath)
         } else {
             collapsedFolders.add(folderPath)
+            expandedByUser.remove(folderPath)
         }
         submitList(computeVisibleList())
     }
@@ -217,19 +249,28 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
     }
 
     override fun getItemViewType(position: Int): Int = when (getItem(position)) {
-        is Item.Header -> TYPE_HEADER
+        is Item.Header -> if (folderViewMode.usesGridLayout) TYPE_HEADER_GRID else TYPE_HEADER
+        is Item.Folder -> if (folderViewMode.usesGridLayout) TYPE_FOLDER_GRID else TYPE_FOLDER_LIST
         is Item.File -> when {
             viewMode.usesGridLayout -> TYPE_FILE_GRID
             else -> TYPE_FILE
         }
     }
 
-    fun isHeader(position: Int): Boolean = position in currentList.indices && getItem(position) is Item.Header
+    fun isHeader(position: Int): Boolean = position in currentList.indices &&
+        (getItem(position) is Item.Header || getItem(position) is Item.Folder)
+
+    fun isFolderItem(position: Int): Boolean = position in currentList.indices && getItem(position) is Item.Folder
+
+    fun isSectionHeader(position: Int): Boolean = position in currentList.indices && getItem(position) is Item.Header
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
             TYPE_HEADER -> HeaderViewHolder(inflater.inflate(R.layout.item_folder_header, parent, false))
+            TYPE_HEADER_GRID -> FolderGridViewHolder(inflater.inflate(R.layout.item_folder_grid, parent, false))
+            TYPE_FOLDER_GRID -> FolderGridViewHolder(inflater.inflate(R.layout.item_folder_grid, parent, false))
+            TYPE_FOLDER_LIST -> HeaderViewHolder(inflater.inflate(R.layout.item_folder_header, parent, false))
             else -> {
                 val layoutRes = when (viewType) {
                     TYPE_FILE_GRID -> R.layout.item_file_grid
@@ -281,9 +322,23 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         super.onBindViewHolder(holder, position, payloads)
     }
 
+    /** Callback for when a folder item (in direct browse mode) is clicked. */
+    var onFolderClick: ((String) -> Unit)? = null
+
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = getItem(position)) {
-            is Item.Header -> bindHeader(holder as HeaderViewHolder, item)
+            is Item.Header -> {
+                when (holder) {
+                    is FolderGridViewHolder -> bindFolderGrid(holder, item)
+                    is HeaderViewHolder -> bindHeader(holder, item)
+                }
+            }
+            is Item.Folder -> {
+                when (holder) {
+                    is FolderGridViewHolder -> bindFolderGridItem(holder, item)
+                    is HeaderViewHolder -> bindFolderListItem(holder, item)
+                }
+            }
             is Item.File -> bindFile(holder as FileViewHolder, item.fileItem)
         }
     }
@@ -313,6 +368,52 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         ViewCompat.setStateDescription(holder.itemView,
             if (isCollapsed) ctx.getString(R.string.a11y_folder_collapsed, header.displayName)
             else ctx.getString(R.string.a11y_folder_expanded, header.displayName))
+
+        holder.itemView.setOnClickListener {
+            val pos = holder.bindingAdapterPosition
+            if (pos != RecyclerView.NO_POSITION) {
+                val h = getItem(pos) as? Item.Header ?: return@setOnClickListener
+                onHeaderClick?.invoke(h.folderPath)
+            }
+        }
+    }
+
+    private fun bindFolderGridItem(holder: FolderGridViewHolder, folder: Item.Folder) {
+        holder.folderName.text = folder.name
+        val ctx = holder.itemView.context
+        val meta = buildString {
+            if (folder.totalSize > 0) append(UndoHelper.formatBytes(folder.totalSize))
+            if (folder.itemCount > 0) {
+                if (isNotEmpty()) append(" (")
+                append(ctx.resources.getQuantityString(R.plurals.n_files, folder.itemCount, folder.itemCount))
+                if (folder.totalSize > 0) append(")")
+            }
+        }
+        holder.folderMeta.text = meta
+        holder.itemView.setOnClickListener { onFolderClick?.invoke(folder.path) }
+    }
+
+    private fun bindFolderListItem(holder: HeaderViewHolder, folder: Item.Folder) {
+        holder.folderName.text = folder.name
+        holder.folderSize.text = if (folder.totalSize > 0) UndoHelper.formatBytes(folder.totalSize) else ""
+        holder.folderCount.text = holder.itemView.context.resources.getQuantityString(R.plurals.n_files, folder.itemCount, folder.itemCount)
+        holder.chevron.setImageResource(R.drawable.ic_chevron_right)
+        holder.chevron.rotation = 0f
+        holder.itemView.setOnClickListener { onFolderClick?.invoke(folder.path) }
+    }
+
+    private fun bindFolderGrid(holder: FolderGridViewHolder, header: Item.Header) {
+        holder.folderName.text = header.displayName
+        val ctx = holder.itemView.context
+        val meta = buildString {
+            if (header.totalSize > 0) append(UndoHelper.formatBytes(header.totalSize))
+            if (header.fileCount > 0) {
+                if (isNotEmpty()) append(" (")
+                append(ctx.resources.getQuantityString(R.plurals.n_files, header.fileCount, header.fileCount))
+                if (header.totalSize > 0) append(")")
+            }
+        }
+        holder.folderMeta.text = meta
 
         holder.itemView.setOnClickListener {
             val pos = holder.bindingAdapterPosition
@@ -428,6 +529,12 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         val folderSize: TextView = view.findViewById(R.id.tv_folder_size)
         val folderCount: TextView = view.findViewById(R.id.tv_folder_count)
         val chevron: ImageView = view.findViewById(R.id.iv_chevron)
+    }
+
+    class FolderGridViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val folderIcon: ImageView = view.findViewById(R.id.iv_folder_icon)
+        val folderName: TextView = view.findViewById(R.id.tv_folder_name)
+        val folderMeta: TextView = view.findViewById(R.id.tv_folder_meta)
     }
 
     class FileViewHolder(view: View) : RecyclerView.ViewHolder(view) {

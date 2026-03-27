@@ -525,6 +525,7 @@
     <string name="settings_undo_label">Undo window after trash</string>
     <string name="settings_undo_value">%d sec</string>
     <string name="settings_hidden_files">Show hidden files</string>
+    <string name="settings_root_files">Show root filesystem</string>
     <string name="settings_rescan_note">Changes apply on next scan.</string>
     <string name="settings_safety_section">Safety</string>
     <string name="settings_display_section">Display</string>
@@ -1003,6 +1004,10 @@
     <string name="display_mode_thumbnails">Thumbnail</string>
     <string name="display_mode_grid">Grid</string>
     <string name="display_mode_gallery">Gallery</string>
+    <string name="view_mode_folders_list">Folders: List</string>
+    <string name="view_mode_folders_grid">Folders: Grid</string>
+    <string name="view_mode_files_list">Files: List</string>
+    <string name="view_mode_files_grid">Files: Grid</string>
 
     <!-- Size labels -->
     <string name="size_label">Size</string>

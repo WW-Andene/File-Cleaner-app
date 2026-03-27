@@ -370,10 +370,9 @@ class BrowseFragment : Fragment() {
         } else {
             adapter.expandAll()
         }
-        // If in direct browse, re-submit the full directory listing to guarantee update
-        if (directBrowseMode) {
-            refreshDirectBrowse()
-        }
+        // Always do a full refresh to guarantee the RecyclerView updates.
+        // collapseAll/expandAll only set flags — refresh() rebuilds the list.
+        refresh()
         updateExpandCollapseButton()
     }
 

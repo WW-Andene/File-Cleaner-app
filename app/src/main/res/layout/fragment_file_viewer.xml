@@ -294,6 +294,34 @@
                     android:src="@drawable/ic_search"
                     app:tint="@color/textPrimary" />
 
+                <TextView
+                    android:id="@+id/btn_code_wrap"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:gravity="center"
+                    android:paddingHorizontal="@dimen/spacing_sm"
+                    android:text="@string/code_wrap_off"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                    android:textColor="@color/textSecondary"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:contentDescription="@string/code_wrap_toggle" />
+
+                <TextView
+                    android:id="@+id/btn_code_go_line"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:gravity="center"
+                    android:paddingHorizontal="@dimen/spacing_sm"
+                    android:text="@string/code_go_line_short"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                    android:textColor="@color/textSecondary"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:contentDescription="@string/code_go_line" />
+
                 <View
                     android:layout_width="0dp"
                     android:layout_height="0dp"

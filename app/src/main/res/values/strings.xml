@@ -1071,6 +1071,14 @@
     <string name="messaging_cleaned">Freed %1$s</string>
 
     <!-- Similar Photos -->
+    <!-- Code editor extras -->
+    <string name="code_wrap_off">Wrap</string>
+    <string name="code_wrap_on">Wrap ✓</string>
+    <string name="code_wrap_toggle">Toggle word wrap</string>
+    <string name="code_go_line">Go to Line</string>
+    <string name="code_go_line_short">Ln↓</string>
+    <string name="code_go_line_hint">Line number</string>
+
     <string name="similar_photos_title">Similar Photos</string>
     <string name="similar_photos_desc">Find visually similar photos using AI-powered analysis</string>
     <string name="similar_scanning">Analyzing photos\u2026 %1$d / %2$d</string>

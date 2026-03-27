@@ -191,6 +191,9 @@ class FileViewerFragment : Fragment() {
             return
         }
         val file = File(filePath)
+
+        // Swipe left/right to navigate between files in same directory
+        setupSwipeNavigation(file)
         if (!file.exists()) {
             Snackbar.make(binding.root,
                 getString(R.string.op_file_not_found),
@@ -549,6 +552,44 @@ class FileViewerFragment : Fragment() {
         }
         binding.btnCodeRedo.setOnClickListener {
             binding.tvTextContent.onTextContextMenuItem(android.R.id.redo)
+        }
+
+        // Word wrap toggle
+        var wordWrapEnabled = false
+        binding.btnCodeWrap?.setOnClickListener {
+            wordWrapEnabled = !wordWrapEnabled
+            binding.tvTextContent.setHorizontallyScrolling(!wordWrapEnabled)
+            binding.btnCodeWrap?.text = if (wordWrapEnabled) getString(R.string.code_wrap_on) else getString(R.string.code_wrap_off)
+        }
+
+        // Go to line
+        binding.btnCodeGoLine?.setOnClickListener {
+            val input = android.widget.EditText(requireContext()).apply {
+                hint = getString(R.string.code_go_line_hint)
+                inputType = android.text.InputType.TYPE_CLASS_NUMBER
+                val pad = resources.getDimensionPixelSize(R.dimen.spacing_xxl)
+                setPadding(pad, pad, pad, resources.getDimensionPixelSize(R.dimen.spacing_sm))
+            }
+            com.filecleaner.app.ui.common.RoundedDialogBuilder(requireContext())
+                .setTitle(getString(R.string.code_go_line))
+                .setView(input)
+                .setPositiveButton(getString(R.string.go)) { _, _ ->
+                    val lineNum = input.text.toString().toIntOrNull() ?: return@setPositiveButton
+                    val text = binding.tvTextContent.text.toString()
+                    var pos = 0
+                    var currentLine = 1
+                    for (char in text) {
+                        if (currentLine >= lineNum) break
+                        if (char == '\n') currentLine++
+                        pos++
+                    }
+                    if (pos <= text.length) {
+                        binding.tvTextContent.setSelection(pos.coerceAtMost(text.length))
+                        binding.tvTextContent.requestFocus()
+                    }
+                }
+                .setNegativeButton(getString(R.string.cancel), null)
+                .show()
         }
 
         // Find bar
@@ -1305,6 +1346,52 @@ class FileViewerFragment : Fragment() {
             }
         } catch (e: Exception) {
             "\n\nCannot read APK contents: ${e.localizedMessage}"
+        }
+    }
+
+    // ── Swipe Navigation ──────────────────────────────────────────────────
+
+    private fun setupSwipeNavigation(currentFile: File) {
+        val parentDir = currentFile.parentFile ?: return
+        val siblings = parentDir.listFiles()
+            ?.filter { it.isFile && !it.isHidden }
+            ?.sortedBy { it.name.lowercase() }
+            ?: return
+        if (siblings.size < 2) return
+
+        val currentIndex = siblings.indexOfFirst { it.absolutePath == currentFile.absolutePath }
+        if (currentIndex < 0) return
+
+        val gestureDetector = android.view.GestureDetector(requireContext(),
+            object : android.view.GestureDetector.SimpleOnGestureListener() {
+                override fun onFling(e1: android.view.MotionEvent?, e2: android.view.MotionEvent,
+                                     velocityX: Float, velocityY: Float): Boolean {
+                    if (e1 == null) return false
+                    val dx = e2.x - e1.x
+                    val dy = e2.y - e1.y
+                    if (kotlin.math.abs(dx) < kotlin.math.abs(dy)) return false // Vertical swipe
+                    if (kotlin.math.abs(dx) < 100 || kotlin.math.abs(velocityX) < 200) return false
+
+                    val nextIndex = if (dx < 0) currentIndex + 1 else currentIndex - 1
+                    if (nextIndex < 0 || nextIndex >= siblings.size) return false
+
+                    val nextFile = siblings[nextIndex]
+                    // Navigate to next file by replacing fragment arguments
+                    val bundle = android.os.Bundle().apply { putString(ARG_FILE_PATH, nextFile.absolutePath) }
+                    findNavController().navigate(R.id.fileViewerFragment, bundle,
+                        androidx.navigation.NavOptions.Builder()
+                            .setPopUpTo(R.id.fileViewerFragment, true)
+                            .setEnterAnim(if (dx < 0) R.anim.nav_enter else R.anim.nav_pop_enter)
+                            .setExitAnim(if (dx < 0) R.anim.nav_exit else R.anim.nav_pop_exit)
+                            .build()
+                    )
+                    return true
+                }
+            })
+
+        binding.contentFrame.setOnTouchListener { v, event ->
+            gestureDetector.onTouchEvent(event)
+            false // Don't consume — let child views handle too
         }
     }
 

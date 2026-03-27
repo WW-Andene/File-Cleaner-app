@@ -56,7 +56,8 @@ class FileAdapter(
         set(value) {
             if (field != value) {
                 field = value
-                notifyDataSetChanged()
+                // D5: Avoid notifyDataSetChanged — items are the same, only styling changes
+                notifyItemRangeChanged(0, itemCount)
             }
         }
 
@@ -65,7 +66,8 @@ class FileAdapter(
         set(value) {
             if (field != value) {
                 field = value
-                notifyDataSetChanged()
+                // D5: Avoid notifyDataSetChanged — items are the same, only color changes
+                notifyItemRangeChanged(0, itemCount)
             }
         }
 

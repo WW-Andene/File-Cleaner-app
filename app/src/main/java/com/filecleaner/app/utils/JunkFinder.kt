@@ -80,9 +80,13 @@ object JunkFinder {
         maxResults: Int = 200
     ): List<FileItem> = withContext(Dispatchers.IO) {
         ensureActive()
-        files.filter { it.size >= minSizeBytes }
+        // D5: Use sequence to avoid intermediate list allocation — filter first to
+        // reduce the sort input (O(k log k) where k << n instead of O(n log n))
+        files.asSequence()
+            .filter { it.size >= minSizeBytes }
             .sortedByDescending { it.size }
             .take(maxResults)
+            .toList()
     }
 
     // Derive from FileCategory — single source of truth for extension mappings

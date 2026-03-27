@@ -828,12 +828,30 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         large: List<FileItem>,
         junk: List<FileItem>
     ) {
+        // D5: Build path sets for O(1) lookup, then single-pass over remaining
+        // to compute totalSize. Avoids 4 separate O(n) iterations.
+        var totalSize = 0L
+        for (item in remaining) {
+            totalSize += item.size
+        }
+        var junkSize = 0L
+        for (item in junk) {
+            junkSize += item.size
+        }
+        var dupSize = 0L
+        for (item in dupes) {
+            dupSize += item.size
+        }
+        var largeSize = 0L
+        for (item in large) {
+            largeSize += item.size
+        }
         _storageStats.postValue(StorageStats(
             totalFiles    = remaining.size,
-            totalSize     = remaining.sumOf { it.size },
-            junkSize      = junk.sumOf { it.size },
-            duplicateSize = dupes.sumOf { it.size },
-            largeSize     = large.sumOf { it.size }
+            totalSize     = totalSize,
+            junkSize      = junkSize,
+            duplicateSize = dupSize,
+            largeSize     = largeSize
         ))
     }
 }

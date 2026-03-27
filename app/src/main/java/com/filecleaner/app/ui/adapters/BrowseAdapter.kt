@@ -114,8 +114,9 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
 
     fun selectAllFiles() {
         enterSelectionMode()
+        // D5: Cache File objects to avoid repeated filesystem stat calls per item
         currentList.filterIsInstance<Item.File>()
-            .filter { !java.io.File(it.fileItem.path).isDirectory }
+            .filter { !it.fileItem.file.isDirectory }
             .forEach { selectedPaths.add(it.fileItem.path) }
         notifyItemRangeChanged(0, itemCount, PAYLOAD_SELECTION)
         notifySelectionChanged()
@@ -124,7 +125,7 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
     fun selectAllFolders() {
         enterSelectionMode()
         currentList.filterIsInstance<Item.File>()
-            .filter { java.io.File(it.fileItem.path).isDirectory }
+            .filter { it.fileItem.file.isDirectory }
             .forEach { selectedPaths.add(it.fileItem.path) }
         notifyItemRangeChanged(0, itemCount, PAYLOAD_SELECTION)
         notifySelectionChanged()

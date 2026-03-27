@@ -160,7 +160,11 @@ object FileConverter {
                 val newW = (original.width * ratio).toInt().coerceAtLeast(1)
                 val newH = (original.height * ratio).toInt().coerceAtLeast(1)
 
-                resized = Bitmap.createScaledBitmap(original, newW, newH, true)
+                resized = try {
+                    Bitmap.createScaledBitmap(original, newW, newH, true)
+                } catch (_: OutOfMemoryError) {
+                    return ConvertResult(false, "", "Image too large to resize")
+                }
 
                 val ext = if (outputFormat == ImageFormat.WEBP_LOSSLESS) "webp" else outputFormat.extension
                 val outputFile = File(src.parent, "${src.nameWithoutExtension}_${newW}x${newH}.$ext")
@@ -303,7 +307,7 @@ object FileConverter {
             val margin = 40f
             val lineHeight = fontSize * 1.4f
             val usableHeight = pageHeight - margin * 2
-            val linesPerPage = (usableHeight / lineHeight).toInt()
+            val linesPerPage = (usableHeight / lineHeight).toInt().coerceAtLeast(1)
 
             var pageNum = 1
             var lineIndex = 0

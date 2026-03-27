@@ -119,7 +119,7 @@ class ScanService : Service() {
                         this,
                         NOTIFICATION_ID,
                         buildNotification(0, getString(R.string.av_scanning)),
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                             ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
                         else 0
                     )

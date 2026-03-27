@@ -259,17 +259,17 @@ class FileViewerFragment : Fragment() {
             com.filecleaner.app.utils.DateFormatUtils.formatDateTime(file.lastModified())
         )
 
-        // Display content based on type
-        when {
-            category == FileCategory.AUDIO || ext in AUDIO_EXTENSIONS -> showAudio(file)
-            ext in HTML_EXTENSIONS -> showHtml(file)
-            ext in MARKDOWN_EXTENSIONS -> showMarkdown(file)
-            category == FileCategory.IMAGE -> showImage(file)
-            ext == "pdf" -> showPdf(file, savedInstanceState)
-            category == FileCategory.VIDEO || ext in VIDEO_EXTENSIONS -> showVideo(file)
-            ext in TEXT_EXTENSIONS -> showText(file, ext)
-            ext == "apk" -> showApkInfo(file)
-            else -> showUnsupported(file)
+        // Display content based on type — routed via ViewerRegistry
+        when (com.filecleaner.app.ui.viewer.strategy.ViewerRegistry.getViewerType(ext, category)) {
+            com.filecleaner.app.ui.viewer.strategy.ViewerRegistry.ViewerType.AUDIO -> showAudio(file)
+            com.filecleaner.app.ui.viewer.strategy.ViewerRegistry.ViewerType.HTML -> showHtml(file)
+            com.filecleaner.app.ui.viewer.strategy.ViewerRegistry.ViewerType.MARKDOWN -> showMarkdown(file)
+            com.filecleaner.app.ui.viewer.strategy.ViewerRegistry.ViewerType.IMAGE -> showImage(file)
+            com.filecleaner.app.ui.viewer.strategy.ViewerRegistry.ViewerType.PDF -> showPdf(file, savedInstanceState)
+            com.filecleaner.app.ui.viewer.strategy.ViewerRegistry.ViewerType.VIDEO -> showVideo(file)
+            com.filecleaner.app.ui.viewer.strategy.ViewerRegistry.ViewerType.TEXT -> showText(file, ext)
+            com.filecleaner.app.ui.viewer.strategy.ViewerRegistry.ViewerType.APK -> showApkInfo(file)
+            com.filecleaner.app.ui.viewer.strategy.ViewerRegistry.ViewerType.UNSUPPORTED -> showUnsupported(file)
         }
     }
 

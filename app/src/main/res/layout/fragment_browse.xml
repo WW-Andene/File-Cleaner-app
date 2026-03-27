@@ -42,7 +42,7 @@
                 android:text="@string/browse_header_subtitle"
                 android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
                 android:textColor="@color/colorOnPrimaryContainer"
-                android:alpha="0.75"
+                android:alpha="@dimen/alpha_subtitle_secondary"
                 android:layout_marginTop="@dimen/spacing_xs" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>

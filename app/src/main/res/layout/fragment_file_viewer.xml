@@ -15,7 +15,7 @@
         android:paddingHorizontal="@dimen/spacing_lg"
         android:paddingVertical="@dimen/spacing_sm"
         android:background="@color/surfaceColor"
-        android:elevation="0dp"
+        android:elevation="@dimen/elevation_none"
         android:minHeight="?attr/actionBarSize">
 
         <ImageButton
@@ -174,7 +174,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 app:tint="@color/textOnPrimary"
-                android:alpha="0.9" />
+                android:alpha="@dimen/alpha_video_overlay" />
 
             <!-- Video controls bar -->
             <LinearLayout

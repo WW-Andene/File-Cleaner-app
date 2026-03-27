@@ -19,7 +19,7 @@
             android:paddingHorizontal="@dimen/spacing_lg"
             android:paddingVertical="@dimen/spacing_sm"
             android:background="@color/surfaceColor"
-            android:elevation="0dp"
+            android:elevation="@dimen/elevation_none"
             android:minHeight="?attr/actionBarSize">
 
             <ImageButton

@@ -47,6 +47,10 @@
     <!-- F-056: Default phone horizontal content inset (overridden to 48dp on sw600dp tablets) -->
     <dimen name="screen_horizontal_padding">@dimen/spacing_lg</dimen>
 
+    <!-- Alpha tokens for UI emphasis and overlays -->
+    <item name="alpha_subtitle_secondary" format="float" type="dimen">0.75</item>
+    <item name="alpha_video_overlay" format="float" type="dimen">0.9</item>
+
     <!-- Elevation scale — 0 / 1 / 2 / 4 / 8 / 16 -->
     <dimen name="elevation_none">0dp</dimen>
     <dimen name="elevation_border">1dp</dimen>

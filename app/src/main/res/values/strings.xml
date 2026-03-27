@@ -1251,6 +1251,16 @@
     <string name="network_log_title">Network Activity</string>
     <string name="network_log_desc">See what URLs the app connected to</string>
 
+    <!-- Developer & Operations -->
+    <string name="debug_title">Debug Info</string>
+    <string name="debug_copy_support">Copy Support Info</string>
+    <string name="debug_export_log">Export Log</string>
+    <string name="debug_clear_log">Clear Log</string>
+    <string name="debug_feature_flags">Feature Flags</string>
+    <string name="debug_performance">Performance</string>
+    <string name="debug_copied">Debug info copied to clipboard</string>
+    <string name="debug_log_exported">Log exported: %1$s</string>
+
     <!-- System Integration -->
     <string name="tile_label">Raccoon Scan</string>
     <string name="shortcut_scan">Scan</string>

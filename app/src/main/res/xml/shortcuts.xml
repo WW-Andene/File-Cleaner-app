@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <shortcut
+        android:shortcutId="scan"
+        android:enabled="true"
+        android:icon="@drawable/ic_scan"
+        android:shortcutShortLabel="@string/shortcut_scan"
+        android:shortcutLongLabel="@string/shortcut_scan_long">
+        <intent
+            android:action="com.filecleaner.app.ACTION_QUICK_SCAN"
+            android:targetPackage="com.filecleaner.app"
+            android:targetClass="com.filecleaner.app.MainActivity" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="browse"
+        android:enabled="true"
+        android:icon="@drawable/ic_nav_browse"
+        android:shortcutShortLabel="@string/shortcut_browse"
+        android:shortcutLongLabel="@string/shortcut_browse_long">
+        <intent
+            android:action="com.filecleaner.app.ACTION_BROWSE"
+            android:targetPackage="com.filecleaner.app"
+            android:targetClass="com.filecleaner.app.MainActivity" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="clean"
+        android:enabled="true"
+        android:icon="@drawable/ic_delete"
+        android:shortcutShortLabel="@string/shortcut_clean"
+        android:shortcutLongLabel="@string/shortcut_clean_long">
+        <intent
+            android:action="com.filecleaner.app.ACTION_QUICK_CLEAN"
+            android:targetPackage="com.filecleaner.app"
+            android:targetClass="com.filecleaner.app.MainActivity" />
+    </shortcut>
+
+</shortcuts>

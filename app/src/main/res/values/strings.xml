@@ -1251,6 +1251,15 @@
     <string name="network_log_title">Network Activity</string>
     <string name="network_log_desc">See what URLs the app connected to</string>
 
+    <!-- System Integration -->
+    <string name="tile_label">Raccoon Scan</string>
+    <string name="shortcut_scan">Scan</string>
+    <string name="shortcut_scan_long">Scan Storage</string>
+    <string name="shortcut_browse">Browse</string>
+    <string name="shortcut_browse_long">Browse Files</string>
+    <string name="shortcut_clean">Clean</string>
+    <string name="shortcut_clean_long">Quick Clean</string>
+
     <!-- Analytics & Dashboard -->
     <string name="forecast_title">Storage Forecast</string>
     <string name="forecast_full_in">At current growth, storage full in ~%1$d days</string>

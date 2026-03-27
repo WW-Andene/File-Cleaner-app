@@ -13,7 +13,6 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.AdapterView
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.core.view.doOnLayout
 import androidx.core.view.updatePadding
 import com.filecleaner.app.ui.common.RoundedDialogBuilder
@@ -59,7 +58,7 @@ import java.net.UnknownHostException
 class CloudBrowserFragment : Fragment() {
 
     private var _binding: FragmentCloudBrowserBinding? = null
-    private var activeDialog: AlertDialog? = null
+    private var activeDialog: android.app.Dialog? = null
     private val binding get() = _binding!!
 
     private var connections = mutableListOf<CloudConnection>()

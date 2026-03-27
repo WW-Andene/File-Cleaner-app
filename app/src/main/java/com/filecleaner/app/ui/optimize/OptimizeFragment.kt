@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import androidx.core.view.doOnLayout
 import androidx.core.view.updatePadding
@@ -33,7 +32,7 @@ import java.io.File
 class OptimizeFragment : Fragment() {
 
     private var _binding: FragmentOptimizeBinding? = null
-    private var activeDialog: AlertDialog? = null
+    private var activeDialog: android.app.Dialog? = null
     private val binding get() = _binding!!
     private val vm: MainViewModel by activityViewModels()
 

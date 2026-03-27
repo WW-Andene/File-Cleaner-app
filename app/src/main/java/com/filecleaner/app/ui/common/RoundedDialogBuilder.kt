@@ -38,6 +38,7 @@ class RoundedDialogBuilder(private val context: Context) {
     private var message: CharSequence? = null
     private var customView: View? = null
     private var cancelable = true
+    private var dismissListener: DialogInterface.OnDismissListener? = null
 
     private var positiveText: CharSequence? = null
     private var positiveListener: DialogInterface.OnClickListener? = null
@@ -55,6 +56,7 @@ class RoundedDialogBuilder(private val context: Context) {
     fun setMessage(resId: Int): RoundedDialogBuilder { this.message = context.getString(resId); return this }
     fun setView(view: View): RoundedDialogBuilder { this.customView = view; return this }
     fun setCancelable(cancelable: Boolean): RoundedDialogBuilder { this.cancelable = cancelable; return this }
+    fun setOnDismissListener(listener: DialogInterface.OnDismissListener): RoundedDialogBuilder { this.dismissListener = listener; return this }
 
     fun setPositiveButton(text: CharSequence, listener: DialogInterface.OnClickListener?): RoundedDialogBuilder {
         positiveText = text; positiveListener = listener; return this
@@ -87,6 +89,9 @@ class RoundedDialogBuilder(private val context: Context) {
 
         val card = buildCard(dialog)
         dialog.setContentView(card)
+        if (dismissListener != null) {
+            dialog.setOnDismissListener(dismissListener)
+        }
 
         return dialog
     }
@@ -151,7 +156,7 @@ class RoundedDialogBuilder(private val context: Context) {
                 )
                 lp.topMargin = spacingMd
                 layoutParams = lp
-                lineSpacingMultiplier = 1.4f
+                setLineSpacing(0f, 1.4f)
             })
         }
 

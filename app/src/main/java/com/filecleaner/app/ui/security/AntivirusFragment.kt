@@ -14,7 +14,6 @@ import android.view.animation.Animation
 import android.view.animation.ScaleAnimation
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AlertDialog
 import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -49,7 +48,7 @@ import java.io.File
 class AntivirusFragment : Fragment() {
 
     private var _binding: FragmentAntivirusBinding? = null
-    private var activeDialog: AlertDialog? = null
+    private var activeDialog: android.app.Dialog? = null
     private val binding get() = _binding!!
     private val vm: MainViewModel by activityViewModels()
     private var isScanning = false

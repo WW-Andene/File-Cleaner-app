@@ -16,7 +16,6 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnLayout
@@ -56,7 +55,7 @@ class DualPaneFragment : Fragment() {
 
     private var _binding: FragmentDualPaneBinding? = null
     private val binding get() = _binding!!
-    private var activeDialog: AlertDialog? = null
+    private var activeDialog: android.app.Dialog? = null
     private val vm: MainViewModel by activityViewModels()
 
     @Suppress("DEPRECATION")

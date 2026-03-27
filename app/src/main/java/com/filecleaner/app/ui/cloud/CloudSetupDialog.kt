@@ -19,7 +19,7 @@ import com.filecleaner.app.data.cloud.ProviderType
 import com.filecleaner.app.data.cloud.SftpProvider
 import com.filecleaner.app.data.cloud.WebDavProvider
 import com.google.android.material.button.MaterialButton
-import com.filecleaner.app.ui.common.RoundedDialogBuilder
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import androidx.core.widget.doOnTextChanged
@@ -371,7 +371,7 @@ object CloudSetupDialog {
             oauthConfigSection?.visibility = View.GONE
         }
 
-        val dialog = RoundedDialogBuilder(context)
+        val dialog = MaterialAlertDialogBuilder(context)
             .setTitle(title)
             .setView(dialogView)
             .setPositiveButton(context.getString(R.string.cloud_connect), null)

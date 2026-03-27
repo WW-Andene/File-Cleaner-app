@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import androidx.appcompat.app.AlertDialog
 import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.widget.doAfterTextChanged
@@ -24,7 +23,7 @@ import java.io.File
 class SettingsFragment : Fragment() {
 
     private var _binding: FragmentSettingsBinding? = null
-    private var activeDialog: AlertDialog? = null
+    private var activeDialog: android.app.Dialog? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(i: LayoutInflater, c: ViewGroup?, s: Bundle?): View {

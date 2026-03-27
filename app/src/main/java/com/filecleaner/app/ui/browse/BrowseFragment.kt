@@ -26,7 +26,6 @@ import com.filecleaner.app.databinding.FragmentBrowseBinding
 import com.filecleaner.app.data.UserPreferences
 import com.filecleaner.app.ui.adapters.BrowseAdapter
 import com.filecleaner.app.ui.adapters.ViewMode
-import androidx.appcompat.app.AlertDialog
 import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import com.filecleaner.app.ui.common.BaseFileListFragment
 import com.filecleaner.app.ui.common.FileContextMenu
@@ -55,7 +54,7 @@ class BrowseFragment : Fragment() {
     private val vm: MainViewModel by activityViewModels()
     private lateinit var adapter: BrowseAdapter
 
-    private var activeDialog: AlertDialog? = null
+    private var activeDialog: android.app.Dialog? = null
     private var currentViewMode = ViewMode.LIST_MD
     private val selectedExtensions = mutableSetOf<String>()
     private var searchQuery = ""

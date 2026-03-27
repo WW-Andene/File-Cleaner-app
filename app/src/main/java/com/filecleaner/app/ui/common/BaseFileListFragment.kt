@@ -10,7 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import androidx.appcompat.app.AlertDialog
 import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
@@ -58,7 +57,7 @@ abstract class BaseFileListFragment : Fragment() {
     private var _binding: FragmentListActionBinding? = null
     protected val binding get() = _binding!!
     protected val vm: MainViewModel by activityViewModels()
-    private var activeDialog: AlertDialog? = null
+    private var activeDialog: android.app.Dialog? = null
     protected lateinit var adapter: FileAdapter
     private var selected = listOf<FileItem>()
     private var pendingSelectionRestore: Set<String>? = null

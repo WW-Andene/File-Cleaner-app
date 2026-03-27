@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -27,7 +26,7 @@ import com.google.android.material.snackbar.Snackbar
 class RaccoonManagerFragment : Fragment() {
 
     private var _binding: FragmentRaccoonManagerBinding? = null
-    private var activeDialog: AlertDialog? = null
+    private var activeDialog: android.app.Dialog? = null
     private val binding get() = _binding!!
     private val vm: MainViewModel by activityViewModels()
     /** Tracks whether a scan was in progress so we only celebrate on Scanning -> Done transitions. */

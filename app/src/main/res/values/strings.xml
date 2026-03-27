@@ -1019,6 +1019,32 @@
     <string name="recommend_junk">\uD83D\uDCA1 Tip: Remove %1$s of junk files</string>
     <string name="recommend_large">\uD83D\uDCA1 Tip: Review %1$s of large files</string>
     <string name="recommend_cleanup">\uD83D\uDCA1 Tip: Free up %1$s by cleaning duplicates and junk</string>
+
+    <!-- Widget -->
+    <string name="widget_description">Shows storage usage with quick clean action</string>
+    <string name="widget_storage_used">Used: %1$s</string>
+    <string name="widget_storage_total">of %1$s</string>
+    <string name="widget_storage_free">%1$s free</string>
+    <string name="widget_clean_now">Clean Now</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_storage">Storage Alerts</string>
+    <string name="notif_channel_storage_desc">Alerts when device storage is running low</string>
+    <string name="notif_low_storage_title">Storage Running Low</string>
+    <string name="notif_low_storage_body">Only %1$s free (%2$d%% used). Tap to clean up space.</string>
+
+    <!-- Messaging Media Cleaner -->
+    <string name="messaging_media_title">Messaging Media</string>
+    <string name="messaging_media_desc">Clean media from WhatsApp, Telegram, and other messaging apps</string>
+    <string name="messaging_media_empty">No messaging app media found</string>
+    <string name="messaging_media_group">%1$s \u2014 %2$s</string>
+
+    <!-- App Manager -->
+    <string name="app_manager_title">App Manager</string>
+    <string name="app_manager_desc">View installed apps sorted by size</string>
+    <string name="app_manager_summary">%1$d apps using %2$s</string>
+    <string name="app_manager_uninstall">Uninstall</string>
+    <string name="app_manager_info">App Info</string>
     <!-- F-089: DualPaneFragment analysis summary (previously hardcoded) -->
     <string name="dual_pane_analysis_summary">Duplicates: %1$d \u2022 Large: %2$d \u2022 Junk: %3$d</string>
     <string name="optimize_analysis_failed">Ricky hit a snag while analyzing \u2014 try again later.</string>

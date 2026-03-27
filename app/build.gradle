@@ -72,6 +72,9 @@ dependencies {
     // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
 
+    // WorkManager — scheduled background scans and storage alerts
+    implementation 'androidx.work:work-runtime-ktx:2.9.1'
+
     // Glide for image thumbnails
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     ksp 'com.github.bumptech.glide:ksp:4.16.0'

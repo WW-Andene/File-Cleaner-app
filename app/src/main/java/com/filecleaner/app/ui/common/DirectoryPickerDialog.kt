@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import android.os.Environment
@@ -31,7 +30,7 @@ object DirectoryPickerDialog {
     ) {
         var currentNode = rootNode
 
-        var currentDialog: AlertDialog? = null
+        var currentDialog: android.app.Dialog? = null
 
         fun buildDialog() {
             currentDialog?.dismiss()

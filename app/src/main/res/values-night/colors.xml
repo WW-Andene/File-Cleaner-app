@@ -113,6 +113,7 @@
     <color name="tintDualPane">#1A303A</color>
     <color name="tintCloud">#251A3D</color>
     <color name="tintAntivirus">#1A3D1F</color>
+    <color name="accentOnTintAntivirus">#81C784</color>
     <color name="tintJanitor">#1E2240</color>
 
     <!-- ── Settings card tint (warm amber, matching accentOnTintAnalysis hue) ── -->

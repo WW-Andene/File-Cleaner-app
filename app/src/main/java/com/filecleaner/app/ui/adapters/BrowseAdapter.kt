@@ -238,6 +238,9 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
                     currentFolderCollapsed = item.folderPath in collapsedFolders
                     result.add(item)
                 }
+                is Item.Folder -> {
+                    result.add(item)
+                }
                 is Item.File -> {
                     if (!currentFolderCollapsed) {
                         result.add(item)

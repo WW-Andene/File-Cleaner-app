@@ -16,7 +16,7 @@ import com.bumptech.glide.Glide
 import com.filecleaner.app.R
 import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.databinding.FragmentSimilarPhotosBinding
-import com.filecleaner.app.utils.SimilarPhotoDetector
+import com.filecleaner.app.utils.cleanup.SimilarPhotoDetector
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.ui.common.RoundedDialogBuilder

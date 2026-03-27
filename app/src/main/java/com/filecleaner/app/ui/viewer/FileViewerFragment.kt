@@ -31,7 +31,7 @@ import com.filecleaner.app.databinding.FragmentFileViewerBinding
 import com.filecleaner.app.utils.FileOpener
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.utils.applyBottomInset
-import com.filecleaner.app.utils.FileConverter
+import com.filecleaner.app.utils.file.FileConverter
 import androidx.lifecycle.lifecycleScope
 import java.io.File
 import java.text.SimpleDateFormat

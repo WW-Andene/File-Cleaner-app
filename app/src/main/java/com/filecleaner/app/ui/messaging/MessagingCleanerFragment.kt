@@ -13,7 +13,7 @@ import com.filecleaner.app.R
 import com.filecleaner.app.databinding.FragmentMessagingCleanerBinding
 import com.filecleaner.app.databinding.ItemMessagingGroupBinding
 import com.filecleaner.app.ui.common.SimpleListAdapter
-import com.filecleaner.app.utils.MessagingMediaCleaner
+import com.filecleaner.app.utils.cleanup.MessagingMediaCleaner
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.ui.common.RoundedDialogBuilder

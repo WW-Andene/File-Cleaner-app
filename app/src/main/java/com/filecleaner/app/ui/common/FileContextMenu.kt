@@ -17,7 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.filecleaner.app.R
 import com.filecleaner.app.data.FileCategory
-import com.filecleaner.app.utils.FileShredder
+import com.filecleaner.app.utils.security.FileShredder
 import com.filecleaner.app.data.FileItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -474,9 +474,9 @@ object FileContextMenu {
                 if (password.isEmpty()) return@setPositiveButton
                 CoroutineScope(Dispatchers.Main).launch {
                     val result = if (decrypt)
-                        com.filecleaner.app.utils.FileEncryptor.decrypt(item.path, password)
+                        com.filecleaner.app.utils.security.FileEncryptor.decrypt(item.path, password)
                     else
-                        com.filecleaner.app.utils.FileEncryptor.encrypt(item.path, password)
+                        com.filecleaner.app.utils.security.FileEncryptor.encrypt(item.path, password)
                     android.widget.Toast.makeText(context, result.message, android.widget.Toast.LENGTH_LONG).show()
                 }
             }
@@ -509,9 +509,9 @@ object FileContextMenu {
             .show()
 
         CoroutineScope(Dispatchers.Main).launch {
-            val results = mutableListOf<com.filecleaner.app.utils.FileHasher.HashResult>()
-            for (algo in com.filecleaner.app.utils.FileHasher.Algorithm.entries) {
-                val result = com.filecleaner.app.utils.FileHasher.computeHash(item.path, algo)
+            val results = mutableListOf<com.filecleaner.app.utils.security.FileHasher.HashResult>()
+            for (algo in com.filecleaner.app.utils.security.FileHasher.Algorithm.entries) {
+                val result = com.filecleaner.app.utils.security.FileHasher.computeHash(item.path, algo)
                 results.add(result)
             }
             val text = results.joinToString("\n\n") { r ->

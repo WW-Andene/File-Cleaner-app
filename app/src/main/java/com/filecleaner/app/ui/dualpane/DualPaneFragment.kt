@@ -33,7 +33,7 @@ import com.filecleaner.app.ui.common.DirectoryPickerDialog
 import com.filecleaner.app.ui.common.FileContextMenu
 import com.filecleaner.app.utils.applyBottomInset
 import com.filecleaner.app.utils.FileOpener
-import com.filecleaner.app.utils.FileScanner
+import com.filecleaner.app.utils.file.FileScanner
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialog

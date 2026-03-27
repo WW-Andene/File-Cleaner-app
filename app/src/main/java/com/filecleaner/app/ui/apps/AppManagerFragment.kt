@@ -12,7 +12,7 @@ import com.filecleaner.app.R
 import com.filecleaner.app.databinding.FragmentAppManagerBinding
 import com.filecleaner.app.databinding.ItemInstalledAppBinding
 import com.filecleaner.app.ui.common.SimpleListAdapter
-import com.filecleaner.app.utils.AppManager
+import com.filecleaner.app.utils.system.AppManager
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import kotlinx.coroutines.Dispatchers

@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.filecleaner.app.R
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.databinding.FragmentOptimizeBinding
-import com.filecleaner.app.utils.StorageOptimizer
+import com.filecleaner.app.utils.cleanup.StorageOptimizer
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.google.android.material.snackbar.Snackbar

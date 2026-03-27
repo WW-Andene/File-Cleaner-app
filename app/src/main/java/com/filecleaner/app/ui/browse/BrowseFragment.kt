@@ -550,7 +550,7 @@ class BrowseFragment : Fragment() {
         val path = currentBrowsePath ?: storagePath
         viewLifecycleOwner.lifecycleScope.launch {
             val showHidden = try { UserPreferences.showHiddenFiles } catch (_: Exception) { false }
-            val listing = com.filecleaner.app.utils.DirectoryBrowser.listDirectory(path, showHidden)
+            val listing = com.filecleaner.app.utils.file.DirectoryBrowser.listDirectory(path, showHidden)
 
             if (_binding == null) return@launch
 
@@ -604,7 +604,7 @@ class BrowseFragment : Fragment() {
             binding.tvCount.text = resources.getQuantityString(R.plurals.n_files, fileCount, fileCount)
 
             // Update breadcrumb bar
-            val breadcrumbs = com.filecleaner.app.utils.DirectoryBrowser.getBreadcrumbs(path)
+            val breadcrumbs = com.filecleaner.app.utils.file.DirectoryBrowser.getBreadcrumbs(path)
             binding.tvBrowseSubtitle?.text = breadcrumbs.joinToString(" › ") { it.first }
             binding.breadcrumbBar?.visibility = View.VISIBLE
             binding.breadcrumbBar?.setPath(breadcrumbs)

@@ -19,7 +19,7 @@ import com.filecleaner.app.R
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.databinding.FragmentDashboardBinding
-import com.filecleaner.app.utils.StorageHistoryManager
+import com.filecleaner.app.utils.analytics.StorageHistoryManager
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.viewmodel.ScanState

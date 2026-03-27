@@ -21,7 +21,7 @@ import androidx.work.WorkerParameters
 import com.filecleaner.app.MainActivity
 import com.filecleaner.app.R
 import com.filecleaner.app.data.UserPreferences
-import com.filecleaner.app.utils.StorageHistoryManager
+import com.filecleaner.app.utils.analytics.StorageHistoryManager
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.widget.StorageWidget
 import java.util.concurrent.TimeUnit

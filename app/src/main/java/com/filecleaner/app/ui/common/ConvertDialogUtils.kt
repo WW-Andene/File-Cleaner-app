@@ -10,7 +10,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.filecleaner.app.R
-import com.filecleaner.app.utils.FileConverter
+import com.filecleaner.app.utils.file.FileConverter
 import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

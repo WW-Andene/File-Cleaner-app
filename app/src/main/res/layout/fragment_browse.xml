@@ -223,8 +223,6 @@
             app:iconGravity="textStart" />
     </LinearLayout>
 
-    <!-- Expandable filter panel -->
-    <LinearLayout
     <!-- Clickable breadcrumb bar for direct browse navigation -->
     <com.filecleaner.app.ui.common.BreadcrumbBar
         android:id="@+id/breadcrumb_bar"

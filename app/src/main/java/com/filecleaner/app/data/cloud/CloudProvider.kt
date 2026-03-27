@@ -73,6 +73,11 @@ data class CloudConnection(
     val path: String = "/",
     val authToken: String = ""
 ) {
+    /** Redact sensitive fields to prevent accidental credential leakage in logs/debugger. */
+    override fun toString(): String =
+        "CloudConnection(id=$id, type=$type, displayName=$displayName, host=$host, " +
+            "port=$port, username=$username, path=$path, authToken=<redacted>)"
+
     companion object {
         fun googleDrive(displayName: String, authToken: String) = CloudConnection(
             id = "gdrive_${java.util.UUID.randomUUID()}",

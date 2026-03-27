@@ -2,8 +2,11 @@ package com.filecleaner.app.data.cloud
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -104,12 +107,40 @@ object OAuthHelper {
         val isSuccess: Boolean get() = accessToken.isNotEmpty() && error.isEmpty()
     }
 
+    /** Get encrypted SharedPreferences for OAuth config, with plaintext fallback. */
+    private fun oauthPrefs(context: Context): SharedPreferences {
+        return try {
+            val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+            val encPrefs = EncryptedSharedPreferences.create(
+                "oauth_config_enc",
+                masterKeyAlias,
+                context.applicationContext,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+            // Migrate from old plaintext prefs if needed
+            val oldPrefs = context.getSharedPreferences("oauth_config", Context.MODE_PRIVATE)
+            if (oldPrefs.all.isNotEmpty() && encPrefs.all.isEmpty()) {
+                val editor = encPrefs.edit()
+                for ((key, value) in oldPrefs.all) {
+                    if (value is String) editor.putString(key, value)
+                }
+                editor.apply()
+                oldPrefs.edit().clear().apply()
+            }
+            encPrefs
+        } catch (_: Exception) {
+            // Fallback to regular prefs if encryption fails (e.g., device lacks secure hardware)
+            context.getSharedPreferences("oauth_config", Context.MODE_PRIVATE)
+        }
+    }
+
     /**
-     * Get stored OAuth credentials from SharedPreferences.
+     * Get stored OAuth credentials from EncryptedSharedPreferences.
      * Users configure their own OAuth app credentials in the setup dialog.
      */
     fun getConfig(context: Context, provider: ProviderType): OAuthConfig? {
-        val prefs = context.getSharedPreferences("oauth_config", Context.MODE_PRIVATE)
+        val prefs = oauthPrefs(context)
         val prefix = provider.name.lowercase()
         val clientId = prefs.getString("${prefix}_client_id", null)
         val clientSecret = prefs.getString("${prefix}_client_secret", null)
@@ -118,7 +149,7 @@ object OAuthHelper {
     }
 
     fun saveConfig(context: Context, provider: ProviderType, config: OAuthConfig) {
-        val prefs = context.getSharedPreferences("oauth_config", Context.MODE_PRIVATE)
+        val prefs = oauthPrefs(context)
         val prefix = provider.name.lowercase()
         prefs.edit()
             .putString("${prefix}_client_id", config.clientId)

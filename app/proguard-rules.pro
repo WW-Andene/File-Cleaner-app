@@ -28,3 +28,10 @@
 # JSch (SFTP library)
 -keep class com.jcraft.jsch.** { *; }
 -dontwarn com.jcraft.jsch.**
+
+# Strip verbose/debug/info logging in release builds for security
+-assumenosideeffects class android.util.Log {
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+}

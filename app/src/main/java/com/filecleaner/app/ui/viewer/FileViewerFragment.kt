@@ -721,8 +721,15 @@ class FileViewerFragment : Fragment() {
             displayZoomControls = false
             layoutAlgorithm = WebSettings.LayoutAlgorithm.TEXT_AUTOSIZING
         }
-        // Load file content as data URL to avoid granting file:// access
-        val htmlContent = file.readText()
+        // Load file content as data URL to avoid granting file:// access.
+        // Wrap in a CSP meta tag to block scripts, forms, and external resources.
+        val rawHtml = file.readText()
+        val cspMeta = "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; img-src data:;\">"
+        val htmlContent = if (rawHtml.contains("<head", ignoreCase = true)) {
+            rawHtml.replaceFirst(Regex("<head[^>]*>", RegexOption.IGNORE_CASE)) { "${it.value}$cspMeta" }
+        } else {
+            "$cspMeta$rawHtml"
+        }
         binding.webView.loadDataWithBaseURL(null, htmlContent, "text/html", "UTF-8", null)
         binding.webView.contentDescription = getString(R.string.a11y_webview_content, file.name)
     }
@@ -751,6 +758,7 @@ class FileViewerFragment : Fragment() {
         val html = buildString {
             append("<!DOCTYPE html><html><head>")
             append("<meta charset='utf-8'>")
+            append("<meta http-equiv='Content-Security-Policy' content=\"default-src 'none'; style-src 'unsafe-inline'; img-src data:;\">")
             append("<meta name='viewport' content='width=device-width, initial-scale=1'>")
             append("<style>")
             // Light mode defaults

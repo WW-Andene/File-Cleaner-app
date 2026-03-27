@@ -1,6 +1,7 @@
 package com.filecleaner.app.data.cloud
 
 import android.util.Log
+import com.filecleaner.app.BuildConfig
 import com.filecleaner.app.utils.retryOnNetworkError
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.JSch
@@ -73,10 +74,10 @@ class SftpProvider(private var connection: CloudConnection, private val context:
                             // (not available in the provider layer) and is tracked as a future enhancement.
                             val isChanged = message?.contains("has changed", ignoreCase = true) == true
                             if (isChanged) {
-                                Log.w("SftpProvider", "Host key CHANGED for ${connection.host} — rejecting (potential MITM)")
+                                if (BuildConfig.DEBUG) Log.w("SftpProvider", "Host key CHANGED for ${connection.host} — rejecting (potential MITM)")
                                 return false
                             }
-                            Log.i("SftpProvider", "Accepting new host key for ${connection.host} (TOFU)")
+                            if (BuildConfig.DEBUG) Log.i("SftpProvider", "Accepting new host key for ${connection.host} (TOFU)")
                             return true
                         }
                         override fun showMessage(message: String?) {}

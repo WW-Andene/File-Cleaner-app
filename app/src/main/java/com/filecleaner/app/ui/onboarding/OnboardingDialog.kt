@@ -1,16 +1,22 @@
 package com.filecleaner.app.ui.onboarding
 
+import android.app.Dialog
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
+import android.view.View
+import android.view.Window
 import android.widget.ImageView
 import android.widget.TextView
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.filecleaner.app.R
 import com.filecleaner.app.data.UserPreferences
+import com.google.android.material.button.MaterialButton
 
 /**
- * 3-step onboarding dialog shown on first launch (P13).
- * F-060: Inflates dialog_onboarding_step.xml instead of programmatic construction.
+ * 3-step onboarding dialog shown on first launch.
+ * Uses a transparent Dialog with MaterialCardView layout for
+ * proper rounded corners matching the app's card radius.
  */
 object OnboardingDialog {
 
@@ -40,22 +46,29 @@ object OnboardingDialog {
         val current = steps[step]
         val isLast = step == steps.lastIndex
 
-        // F-060: Inflate XML layout instead of building views programmatically
+        val dialog = Dialog(context)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.setCancelable(false)
+
         val container = LayoutInflater.from(context)
             .inflate(R.layout.dialog_onboarding_step, null)
 
+        // Title
+        container.findViewById<TextView>(R.id.tv_step_title).text = current.title
+
+        // Step indicator
         val stepIndicator = container.findViewById<TextView>(R.id.tv_step_indicator)
         stepIndicator.text = context.getString(R.string.onboarding_step, step + 1, steps.size)
-        // §G1: Announce step changes to TalkBack
         stepIndicator.contentDescription = context.getString(R.string.a11y_onboarding_step, step + 1, steps.size)
 
+        // Icon
         val iconRes = when (step) {
             0 -> R.drawable.ic_raccoon_logo
             1 -> R.drawable.ic_nav_browse
             2 -> R.drawable.ic_scan
             else -> R.drawable.ic_raccoon_logo
         }
-        // §G1: Descriptive contentDescription for each onboarding icon
         val iconDesc = when (step) {
             0 -> context.getString(R.string.a11y_onboarding_icon_welcome)
             1 -> context.getString(R.string.a11y_onboarding_icon_browse)
@@ -66,34 +79,48 @@ object OnboardingDialog {
         iconView.setImageResource(iconRes)
         iconView.contentDescription = iconDesc
 
-        val bodyView = container.findViewById<TextView>(R.id.tv_step_body)
-        bodyView.text = current.body
+        // Body
+        container.findViewById<TextView>(R.id.tv_step_body).text = current.body
 
-        val builder = MaterialAlertDialogBuilder(context)
-            .setTitle(current.title)
-            .setView(container)
-            .setCancelable(false)
+        // Buttons
+        val btnBack = container.findViewById<MaterialButton>(R.id.btn_back)
+        val btnSkip = container.findViewById<MaterialButton>(R.id.btn_skip)
+        val btnNext = container.findViewById<MaterialButton>(R.id.btn_next)
 
+        // Back button
+        if (step > 0) {
+            btnBack.text = context.getString(R.string.onboarding_back)
+            btnBack.visibility = View.VISIBLE
+            btnBack.setOnClickListener {
+                dialog.dismiss()
+                show(context, step - 1)
+            }
+        }
+
+        // Skip / Next / Done
         if (isLast) {
-            builder.setPositiveButton(context.getString(R.string.onboarding_done)) { _, _ ->
+            btnSkip.visibility = View.GONE
+            btnNext.text = context.getString(R.string.onboarding_done)
+            btnNext.setOnClickListener {
+                dialog.dismiss()
                 UserPreferences.hasSeenOnboarding = true
                 (context as? com.filecleaner.app.MainActivity)?.requestPermissionsAndScan()
             }
         } else {
-            builder.setPositiveButton(context.getString(R.string.onboarding_next)) { _, _ ->
-                show(context, step + 1)
-            }
-            if (step > 0) {
-                builder.setNeutralButton(context.getString(R.string.onboarding_back)) { _, _ ->
-                    show(context, step - 1)
-                }
-            }
-            builder.setNegativeButton(context.getString(R.string.onboarding_skip)) { _, _ ->
+            btnSkip.text = context.getString(R.string.onboarding_skip)
+            btnSkip.setOnClickListener {
+                dialog.dismiss()
                 UserPreferences.hasSeenOnboarding = true
                 (context as? com.filecleaner.app.MainActivity)?.requestPermissionsAndScan()
             }
+            btnNext.text = context.getString(R.string.onboarding_next)
+            btnNext.setOnClickListener {
+                dialog.dismiss()
+                show(context, step + 1)
+            }
         }
 
-        builder.show()
+        dialog.setContentView(container)
+        dialog.show()
     }
 }

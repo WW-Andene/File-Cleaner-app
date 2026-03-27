@@ -163,7 +163,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val deleteMutex = Mutex()
 
     // D5: Debounce cache writes — at most once per 3 seconds
-    private var saveCacheJob: Job? = null
+    @Volatile private var saveCacheJob: Job? = null
 
     @Volatile
     private var _isScanning = false
@@ -408,7 +408,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
      * (since the undo snackbar for it would be replaced by the new one).
      */
     fun deleteFiles(toDelete: List<FileItem>) {
-        if (isScanning) return
+        if (toDelete.isEmpty() || isScanning) return
         viewModelScope.launch {
             // B4: Prevent concurrent delete operations from rapid double-taps
             if (!deleteMutex.tryLock()) return@launch

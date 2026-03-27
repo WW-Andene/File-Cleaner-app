@@ -65,6 +65,7 @@ object CloudConnectionStore {
         migrationPrefs.edit().putBoolean("done", true).apply()
     }
 
+    @Synchronized
     fun getConnections(): List<CloudConnection> {
         val json = prefs.getString(KEY_CONNECTIONS, "[]") ?: "[]"
         return try {

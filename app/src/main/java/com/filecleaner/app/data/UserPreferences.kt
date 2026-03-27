@@ -139,7 +139,7 @@ object UserPreferences {
 
     // F-027: Store GitHub token in EncryptedSharedPreferences (has repo scope)
     var crashReportGithubToken: String
-        get() {
+        @Synchronized get() {
             // Migrate from plaintext prefs if present
             val plain = prefs.getString("crash_report_github_token", null)
             if (plain != null && plain.isNotEmpty()) {

@@ -36,6 +36,7 @@ import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.ui.common.BatchRenameDialog
 import com.filecleaner.app.ui.common.CompressDialog
 import com.filecleaner.app.utils.MotionUtil
+import com.filecleaner.app.utils.SavedSearchManager
 import com.filecleaner.app.utils.SearchQueryParser
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.viewmodel.ScanState
@@ -206,6 +207,10 @@ class BrowseFragment : Fragment() {
         binding.btnScanNow.setOnClickListener {
             (activity as? MainActivity)?.requestPermissionsAndScan()
         }
+
+        // Long-press search icon to open saved searches
+        (binding.etSearch.parent?.parent as? com.google.android.material.textfield.TextInputLayout)
+            ?.setStartIconOnClickListener { showSavedSearchesDialog() }
 
         // Search with 300ms debounce
         binding.etSearch.addTextChangedListener(object : TextWatcher {
@@ -662,6 +667,62 @@ class BrowseFragment : Fragment() {
         if (::adapter.isInitialized) {
             outState.putStringArrayList(KEY_COLLAPSED_FOLDERS, ArrayList(adapter.collapsedFolders))
         }
+    }
+
+    // ── Saved Search Filters ──────────────────────────────────────────────
+
+    private fun showSavedSearchesDialog() {
+        val ctx = context ?: return
+        val searches = SavedSearchManager.getSavedSearches(ctx)
+        if (searches.isEmpty() && searchQuery.isBlank()) {
+            Snackbar.make(binding.root, getString(R.string.saved_search_empty), Snackbar.LENGTH_SHORT).show()
+            return
+        }
+
+        val items = mutableListOf<String>()
+        if (searchQuery.isNotBlank()) {
+            items.add(getString(R.string.saved_search_save_current))
+        }
+        for (s in searches) {
+            items.add(s.name)
+        }
+
+        MaterialAlertDialogBuilder(ctx)
+            .setTitle(R.string.saved_search_title)
+            .setItems(items.toTypedArray()) { _, which ->
+                if (searchQuery.isNotBlank() && which == 0) {
+                    showSaveSearchNameDialog()
+                } else {
+                    val index = if (searchQuery.isNotBlank()) which - 1 else which
+                    val search = searches[index]
+                    binding.etSearch.setText(search.query)
+                    binding.etSearch.setSelection(search.query.length)
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showSaveSearchNameDialog() {
+        val ctx = context ?: return
+        val input = android.widget.EditText(ctx).apply {
+            hint = getString(R.string.saved_search_name_hint)
+            inputType = android.text.InputType.TYPE_CLASS_TEXT
+            val pad = resources.getDimensionPixelSize(R.dimen.spacing_xxl)
+            setPadding(pad, pad, pad, resources.getDimensionPixelSize(R.dimen.spacing_sm))
+        }
+        MaterialAlertDialogBuilder(ctx)
+            .setTitle(R.string.saved_search_save_title)
+            .setView(input)
+            .setPositiveButton(R.string.saved_search_save) { _, _ ->
+                val name = input.text.toString().trim()
+                if (name.isNotBlank()) {
+                    SavedSearchManager.saveSearch(ctx, name, searchQuery)
+                    Snackbar.make(binding.root, getString(R.string.saved_search_saved, name), Snackbar.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     override fun onDestroyView() {

@@ -18,6 +18,7 @@ import com.filecleaner.app.utils.FileScanner
 import com.filecleaner.app.utils.JunkFinder
 import com.filecleaner.app.utils.ScanCache
 import com.filecleaner.app.utils.SingleLiveEvent
+import com.filecleaner.app.utils.StorageHistoryManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
@@ -371,6 +372,16 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 ensureActive() // P2-A4-01: Check cancellation before transitioning to Done
                 // F-020: Use setValue on Main thread for deterministic ordering vs cancelScan()
                 _scanState.value = ScanState.Done
+
+                // Record storage snapshot for trend tracking
+                StorageHistoryManager.recordSnapshot(
+                    getApplication(),
+                    totalFiles = files.size,
+                    totalSize = files.sumOf { it.size },
+                    junkSize = junk.sumOf { it.size },
+                    duplicateSize = dupes.sumOf { it.size },
+                    largeSize = large.sumOf { it.size }
+                )
             }.onFailure { e ->
                 if (e is kotlinx.coroutines.CancellationException) throw e
                 // F-020: Use setValue on Main thread for deterministic ordering

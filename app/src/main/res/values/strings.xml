@@ -162,6 +162,11 @@
     <string name="dashboard_no_scan">Run a scan to see category breakdown.</string>
     <string name="dashboard_scanning">Scanning\u2026 Results will appear when complete.</string>
     <string name="dashboard_scan_stats_empty">Scan your storage to see a summary here.</string>
+    <string name="dashboard_trend_title">Storage Trend</string>
+    <string name="dashboard_trend_growing">Storage grew by %1$s over the past %2$d days (%3$d new files)</string>
+    <string name="dashboard_trend_shrinking">Storage freed %1$s over the past %2$d days (%3$d fewer files)</string>
+    <string name="dashboard_trend_stable">Storage usage has been stable over the past %1$d days</string>
+    <string name="dashboard_trend_junk_growing">Junk files grew by %1$s \u2014 consider running a cleanup</string>
     <plurals name="n_files_with_size">
         <item quantity="one">%1$d file (%2$s)</item>
         <item quantity="other">%1$d files (%2$s)</item>
@@ -242,6 +247,13 @@
 
     <!-- Search -->
     <string name="search_files_hint">Search\u2026 (try &gt;50mb or ext:pdf)</string>
+    <string name="saved_search_title">Saved Searches</string>
+    <string name="saved_search_save_current">Save current search\u2026</string>
+    <string name="saved_search_empty">No saved searches yet \u2014 type a search query first</string>
+    <string name="saved_search_name_hint">Name for this search</string>
+    <string name="saved_search_save_title">Save Search</string>
+    <string name="saved_search_save">Save</string>
+    <string name="saved_search_saved">Search \u201C%1$s\u201D saved</string>
     <string name="search_tree_hint">Search in tree\u2026</string>
     <string name="search_not_found">Ricky rummaged everywhere \u2014 no matching files found.</string>
 

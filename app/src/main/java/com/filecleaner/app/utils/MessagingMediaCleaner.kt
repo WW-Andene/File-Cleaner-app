@@ -110,10 +110,13 @@ object MessagingMediaCleaner {
         }
     }
 
+    private const val MAX_FILES_PER_GROUP = 10_000
+
     private fun scanDirectory(dir: File): List<FileItem> {
         val files = mutableListOf<FileItem>()
         val children = dir.listFiles() ?: return files
         for (child in children) {
+            if (files.size >= MAX_FILES_PER_GROUP) break // Cap to prevent OOM on huge folders
             if (child.isFile && !child.isHidden) {
                 val ext = child.extension.lowercase()
                 val category = FileCategory.fromExtension(ext)

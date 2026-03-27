@@ -8,9 +8,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.filecleaner.app.R
 import com.filecleaner.app.databinding.FragmentAppManagerBinding
+import com.filecleaner.app.databinding.ItemInstalledAppBinding
+import com.filecleaner.app.ui.common.SimpleListAdapter
 import com.filecleaner.app.databinding.ItemInstalledAppBinding
 import com.filecleaner.app.utils.AppManager
 import com.filecleaner.app.utils.UndoHelper
@@ -80,9 +81,22 @@ class AppManagerFragment : Fragment() {
 
             // List
             binding.recyclerApps.visibility = View.VISIBLE
-            binding.recyclerApps.adapter = AppAdapter(apps) { app ->
-                showAppActions(app)
-            }
+            binding.recyclerApps.adapter = SimpleListAdapter<AppManager.InstalledApp, ItemInstalledAppBinding>(
+                inflate = { inflater, parent -> ItemInstalledAppBinding.inflate(inflater, parent, false) },
+                bind = { b, app ->
+                    val ctx = b.root.context
+                    b.tvAppName.text = app.name
+                    b.tvAppPackage.text = app.packageName
+                    b.tvAppSize.text = UndoHelper.formatBytes(app.sizeBytes)
+                    try {
+                        b.ivAppIcon.setImageDrawable(ctx.packageManager.getApplicationIcon(app.packageName))
+                    } catch (_: Exception) {
+                        b.ivAppIcon.setImageResource(R.drawable.ic_apk)
+                    }
+                    b.root.contentDescription = "${app.name}, ${UndoHelper.formatBytes(app.sizeBytes)}"
+                },
+                onClick = { app -> showAppActions(app) }
+            ).also { it.submitList(apps) }
         }
     }
 
@@ -114,41 +128,4 @@ class AppManagerFragment : Fragment() {
         _binding = null
     }
 
-    // ── Adapter ──
-
-    private class AppAdapter(
-        private val apps: List<AppManager.InstalledApp>,
-        private val onClick: (AppManager.InstalledApp) -> Unit
-    ) : RecyclerView.Adapter<AppAdapter.VH>() {
-
-        class VH(val binding: ItemInstalledAppBinding) : RecyclerView.ViewHolder(binding.root)
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-            val binding = ItemInstalledAppBinding.inflate(
-                LayoutInflater.from(parent.context), parent, false)
-            return VH(binding)
-        }
-
-        override fun onBindViewHolder(holder: VH, position: Int) {
-            val app = apps[position]
-            val ctx = holder.itemView.context
-            holder.binding.tvAppName.text = app.name
-            holder.binding.tvAppPackage.text = app.packageName
-            holder.binding.tvAppSize.text = UndoHelper.formatBytes(app.sizeBytes)
-
-            // Load app icon
-            try {
-                val pm = ctx.packageManager
-                holder.binding.ivAppIcon.setImageDrawable(pm.getApplicationIcon(app.packageName))
-            } catch (_: Exception) {
-                holder.binding.ivAppIcon.setImageResource(R.drawable.ic_apk)
-            }
-
-            holder.itemView.contentDescription = "${app.name}, ${UndoHelper.formatBytes(app.sizeBytes)}"
-
-            holder.itemView.setOnClickListener { onClick(app) }
-        }
-
-        override fun getItemCount() = apps.size
-    }
 }

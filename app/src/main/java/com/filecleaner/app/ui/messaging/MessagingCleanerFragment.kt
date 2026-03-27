@@ -9,9 +9,10 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.filecleaner.app.R
 import com.filecleaner.app.databinding.FragmentMessagingCleanerBinding
+import com.filecleaner.app.databinding.ItemMessagingGroupBinding
+import com.filecleaner.app.ui.common.SimpleListAdapter
 import com.filecleaner.app.databinding.ItemMessagingGroupBinding
 import com.filecleaner.app.utils.MessagingMediaCleaner
 import com.filecleaner.app.utils.UndoHelper
@@ -80,9 +81,18 @@ class MessagingCleanerFragment : Fragment() {
 
             // List
             binding.recyclerGroups.visibility = View.VISIBLE
-            binding.recyclerGroups.adapter = GroupAdapter(groups) { group ->
-                showCleanConfirmDialog(group)
-            }
+            binding.recyclerGroups.adapter = SimpleListAdapter<MessagingMediaCleaner.MessagingMediaGroup, ItemMessagingGroupBinding>(
+                inflate = { inflater, parent -> ItemMessagingGroupBinding.inflate(inflater, parent, false) },
+                bind = { b, group ->
+                    val ctx = b.root.context
+                    b.tvGroupTitle.text = ctx.getString(R.string.messaging_media_group, group.appName, group.category)
+                    b.tvGroupDetail.text = ctx.resources.getQuantityString(R.plurals.n_files, group.files.size, group.files.size)
+                    b.tvGroupSize.text = UndoHelper.formatBytes(group.totalSize)
+                    b.ivAppIcon.setImageResource(R.drawable.ic_messaging)
+                    b.root.contentDescription = "${group.appName} ${group.category}, ${group.files.size} files, ${UndoHelper.formatBytes(group.totalSize)}"
+                },
+                onClick = { group -> showCleanConfirmDialog(group) }
+            ).also { it.submitList(groups) }
         }
     }
 
@@ -109,37 +119,4 @@ class MessagingCleanerFragment : Fragment() {
         _binding = null
     }
 
-    // ── Adapter ──
-
-    private class GroupAdapter(
-        private val groups: List<MessagingMediaCleaner.MessagingMediaGroup>,
-        private val onClick: (MessagingMediaCleaner.MessagingMediaGroup) -> Unit
-    ) : RecyclerView.Adapter<GroupAdapter.VH>() {
-
-        class VH(val binding: ItemMessagingGroupBinding) : RecyclerView.ViewHolder(binding.root)
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-            val binding = ItemMessagingGroupBinding.inflate(
-                LayoutInflater.from(parent.context), parent, false)
-            return VH(binding)
-        }
-
-        override fun onBindViewHolder(holder: VH, position: Int) {
-            val group = groups[position]
-            val ctx = holder.itemView.context
-            holder.binding.tvGroupTitle.text = ctx.getString(
-                R.string.messaging_media_group, group.appName, group.category)
-            holder.binding.tvGroupDetail.text = ctx.resources.getQuantityString(
-                R.plurals.n_files, group.files.size, group.files.size)
-            holder.binding.tvGroupSize.text = UndoHelper.formatBytes(group.totalSize)
-
-            holder.binding.ivAppIcon.setImageResource(R.drawable.ic_messaging)
-            holder.itemView.contentDescription = "${group.appName} ${group.category}, " +
-                "${group.files.size} files, ${UndoHelper.formatBytes(group.totalSize)}"
-
-            holder.itemView.setOnClickListener { onClick(group) }
-        }
-
-        override fun getItemCount() = groups.size
-    }
 }

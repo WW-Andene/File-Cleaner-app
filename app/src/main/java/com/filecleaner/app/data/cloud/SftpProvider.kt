@@ -75,8 +75,10 @@ class SftpProvider(private var connection: CloudConnection, private val context:
                     if (authToken.isNotEmpty() && !authToken.startsWith("/")) {
                         s.setPassword(authToken)
                     }
-                    // TOFU (Trust On First Use): persist host keys, reject changed keys
-                    val knownHostsFile = File(context.filesDir, "sftp_known_hosts")
+                    // TOFU (Trust On First Use): persist host keys, reject changed keys.
+                    // Use noBackupFilesDir — encrypted at filesystem level on Android 10+
+                    // and excluded from cloud backups to prevent credential leakage.
+                    val knownHostsFile = File(context.noBackupFilesDir, "sftp_known_hosts")
                     if (!knownHostsFile.exists()) knownHostsFile.createNewFile()
                     jsch.setKnownHosts(knownHostsFile.absolutePath)
                     s.setConfig("StrictHostKeyChecking", "ask")

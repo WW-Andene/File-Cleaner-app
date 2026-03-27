@@ -92,29 +92,37 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     // I4: File operations delegated to dedicated service
     internal val fileOps by lazy { FileOperationService(app, storagePath) }
 
-    private val _scanState = MutableLiveData<ScanState>(ScanState.Idle)
-    val scanState: LiveData<ScanState> = _scanState
+    // Phase 4: Scan state delegated to ScanOrchestrator
+    internal val scan = ScanOrchestrator(app, storagePath)
 
-    private var scanJob: Job? = null
-    private val stateMutex = Mutex()
+    // Aliases — MainViewModel keeps the same public API, but delegates storage
+    // to ScanOrchestrator. Internal _xxx aliases let existing code in this file
+    // continue working without changes.
+    private val _scanState get() = scan._scanState
+    val scanState: LiveData<ScanState> get() = scan.scanState
 
-    private val _filesByCategory = MutableLiveData<Map<FileCategory, List<FileItem>>>(emptyMap())
-    val filesByCategory: LiveData<Map<FileCategory, List<FileItem>>> = _filesByCategory
+    private var scanJob: Job?
+        get() = scan.scanJob
+        set(value) { scan.scanJob = value }
+    private val stateMutex get() = scan.stateMutex
 
-    private val _duplicates = MutableLiveData<List<FileItem>>(emptyList())
-    val duplicates: LiveData<List<FileItem>> = _duplicates
+    private val _filesByCategory get() = scan._filesByCategory
+    val filesByCategory: LiveData<Map<FileCategory, List<FileItem>>> get() = scan.filesByCategory
 
-    private val _largeFiles = MutableLiveData<List<FileItem>>(emptyList())
-    val largeFiles: LiveData<List<FileItem>> = _largeFiles
+    private val _duplicates get() = scan._duplicates
+    val duplicates: LiveData<List<FileItem>> get() = scan.duplicates
 
-    private val _junkFiles = MutableLiveData<List<FileItem>>(emptyList())
-    val junkFiles: LiveData<List<FileItem>> = _junkFiles
+    private val _largeFiles get() = scan._largeFiles
+    val largeFiles: LiveData<List<FileItem>> get() = scan.largeFiles
 
-    private val _storageStats = MutableLiveData<StorageStats>()
-    val storageStats: LiveData<StorageStats> = _storageStats
+    private val _junkFiles get() = scan._junkFiles
+    val junkFiles: LiveData<List<FileItem>> get() = scan.junkFiles
 
-    private val _directoryTree = MutableLiveData<DirectoryNode?>(null)
-    val directoryTree: LiveData<DirectoryNode?> = _directoryTree
+    private val _storageStats get() = scan._storageStats
+    val storageStats: LiveData<StorageStats> get() = scan.storageStats
+
+    private val _directoryTree get() = scan._directoryTree
+    val directoryTree: LiveData<DirectoryNode?> get() = scan.directoryTree
 
     private val _moveResult = SingleLiveEvent<MoveResult>()
     val moveResult: LiveData<MoveResult> = _moveResult
@@ -158,8 +166,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     // In-memory copies for reliable cache saving (postValue is async,
     // so LiveData .value may be stale when saveCache reads it)
-    private var latestFiles: List<FileItem> = emptyList()
-    private var latestTree: DirectoryNode? = null
+    private var latestFiles: List<FileItem>
+        get() = scan.latestFiles
+        set(value) { scan.latestFiles = value }
+    private var latestTree: DirectoryNode?
+        get() = scan.latestTree
+        set(value) { scan.latestTree = value }
 
     // B4: Guard against concurrent delete operations (rapid double-taps)
     private val deleteMutex = Mutex()
@@ -168,8 +180,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     @Volatile private var saveCacheJob: Job? = null
 
     @Volatile
-    private var _isScanning = false
-    val isScanning: Boolean get() = _isScanning
+    private var _isScanning: Boolean
+        get() = scan.isScanning
+        set(value) { scan.setIsScanning(value) }
+    val isScanning: Boolean get() = scan.isScanning
 
     private fun str(@StringRes id: Int): String = getApplication<Application>().getString(id)
     private fun str(@StringRes id: Int, vararg args: Any): String =

@@ -41,25 +41,25 @@ class ScanOrchestrator(private val app: Application, private val storagePath: St
         }
     }
 
-    private val _scanState = MutableLiveData<ScanState>(ScanState.Idle)
+    internal val _scanState = MutableLiveData<ScanState>(ScanState.Idle)
     val scanState: LiveData<ScanState> = _scanState
 
-    private val _filesByCategory = MutableLiveData<Map<FileCategory, List<FileItem>>>(emptyMap())
+    internal val _filesByCategory = MutableLiveData<Map<FileCategory, List<FileItem>>>(emptyMap())
     val filesByCategory: LiveData<Map<FileCategory, List<FileItem>>> = _filesByCategory
 
-    private val _duplicates = MutableLiveData<List<FileItem>>(emptyList())
+    internal val _duplicates = MutableLiveData<List<FileItem>>(emptyList())
     val duplicates: LiveData<List<FileItem>> = _duplicates
 
-    private val _largeFiles = MutableLiveData<List<FileItem>>(emptyList())
+    internal val _largeFiles = MutableLiveData<List<FileItem>>(emptyList())
     val largeFiles: LiveData<List<FileItem>> = _largeFiles
 
-    private val _junkFiles = MutableLiveData<List<FileItem>>(emptyList())
+    internal val _junkFiles = MutableLiveData<List<FileItem>>(emptyList())
     val junkFiles: LiveData<List<FileItem>> = _junkFiles
 
-    private val _storageStats = MutableLiveData<MainViewModel.StorageStats>()
+    internal val _storageStats = MutableLiveData<MainViewModel.StorageStats>()
     val storageStats: LiveData<MainViewModel.StorageStats> = _storageStats
 
-    private val _directoryTree = MutableLiveData<DirectoryNode?>()
+    internal val _directoryTree = MutableLiveData<DirectoryNode?>()
     val directoryTree: LiveData<DirectoryNode?> = _directoryTree
 
     var scanJob: Job? = null
@@ -67,7 +67,7 @@ class ScanOrchestrator(private val app: Application, private val storagePath: St
 
     @Volatile
     var isScanning = false
-        private set
+        internal set
 
     // In-memory state for cache persistence
     var latestFiles: List<FileItem> = emptyList()

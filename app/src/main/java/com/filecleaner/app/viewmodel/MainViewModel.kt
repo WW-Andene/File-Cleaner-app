@@ -317,10 +317,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         scanJob = viewModelScope.launch {
             _scanState.value = ScanState.Scanning(0)
             _isScanning = true
-            // B1: Reset derived state so stale data from previous scan isn't visible
-            _duplicates.value = emptyList()
-            _largeFiles.value = emptyList()
-            _junkFiles.value = emptyList()
+            // B1/#8: Reset derived state under mutex so cache loading in init{} can't race
+            stateMutex.withLock {
+                _duplicates.value = emptyList()
+                _largeFiles.value = emptyList()
+                _junkFiles.value = emptyList()
+                latestFiles = emptyList()
+                latestTree = null
+            }
             val scanStartMs = System.currentTimeMillis()
             try {
             runCatching {
@@ -346,6 +350,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 // operations, so separate progress updates only cause UI flicker.
                 _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.ANALYZING, progressPercent = ScanPhase.ANALYZING.baseProgress()))
                 val large = JunkFinder.findLargeFiles(files, minLargeFileMb * 1024L * 1024L, UserPreferences.maxLargeFiles)
+
+                // #11: Emit JUNK phase so the UI shows correct progress label
+                _scanState.postValue(ScanState.Scanning(files.size, ScanPhase.JUNK, progressPercent = ScanPhase.JUNK.baseProgress()))
                 val junk = JunkFinder.findJunk(files)
                     .filter { it.path !in protectedPaths }
 
@@ -516,15 +523,15 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             }
 
             if (restored.isNotEmpty()) {
-                // F-025: Restore pre-delete duplicate snapshot instead of re-hashing (O(1) vs O(n))
-                val savedDupes = pendingDupeSnapshot
-                pendingDupeSnapshot = null
-
-                val updated = stateMutex.withLock {
-                    val files = latestFiles + restored
+                val (updated, savedDupes) = stateMutex.withLock {
+                    // #6: Read and clear pendingDupeSnapshot under mutex to prevent race
+                    val dupeSnap = pendingDupeSnapshot
+                    pendingDupeSnapshot = null
+                    val files = latestFiles.toMutableList()
+                    files.addAll(restored)
                     latestFiles = files
                     _filesByCategory.postValue(files.groupBy { it.category })
-                    files
+                    files to dupeSnap
                 }
 
                 // F-025: Use saved snapshot if available; fall back to re-hashing only if needed

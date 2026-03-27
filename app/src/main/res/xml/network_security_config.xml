@@ -6,4 +6,29 @@
             <certificates src="system" />
         </trust-anchors>
     </base-config>
+
+    <!-- #1: Certificate pinning for critical API endpoints -->
+    <domain-config>
+        <!-- GitHub API — used for crash reporting and cloud file access -->
+        <domain includeSubdomains="true">api.github.com</domain>
+        <domain includeSubdomains="true">uploads.github.com</domain>
+        <pin-set expiration="2027-01-01">
+            <!-- DigiCert Global Root G2 (GitHub's root CA) -->
+            <pin digest="SHA-256">i7WTqTvh0OioIruIfFR4kMPnBqrS2rdiVPl/s2uC/CY=</pin>
+            <!-- DigiCert Global Root CA (backup) -->
+            <pin digest="SHA-256">r/mIkG3eEpVdm+u/ko/cwxzOMo1bk4TyHIlByibiA5E=</pin>
+        </pin-set>
+    </domain-config>
+
+    <domain-config>
+        <!-- Google APIs — used for Google Drive OAuth and file access -->
+        <domain includeSubdomains="true">googleapis.com</domain>
+        <domain includeSubdomains="true">accounts.google.com</domain>
+        <pin-set expiration="2027-01-01">
+            <!-- GTS Root R1 (Google Trust Services) -->
+            <pin digest="SHA-256">hxqRlPTu1bMS/0DITB1SSu0vd4u/8l8TjPgfaAp63Gc=</pin>
+            <!-- GlobalSign Root CA (Google backup) -->
+            <pin digest="SHA-256">iie1VXtL7HzAMF+/PVEZ9l5WV1RZK6p2ssgcL8eXm5g=</pin>
+        </pin-set>
+    </domain-config>
 </network-security-config>

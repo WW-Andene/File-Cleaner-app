@@ -8,8 +8,8 @@
     app:cardCornerRadius="@dimen/radius_card"
     app:cardElevation="0dp"
     app:strokeWidth="1dp"
-    app:strokeColor="@color/cardBorder"
-    app:cardBackgroundColor="@color/cardSurface"
+    app:strokeColor="@color/borderSubtle"
+    app:cardBackgroundColor="@color/surfaceColor"
     android:clickable="true"
     android:focusable="true"
     android:foreground="@drawable/ripple_card">

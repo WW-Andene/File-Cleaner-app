@@ -23,6 +23,7 @@ import android.widget.SeekBar
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import com.bumptech.glide.Glide
 import com.filecleaner.app.R
 import com.filecleaner.app.data.FileCategory
@@ -189,6 +190,10 @@ class FileViewerFragment : Fragment() {
         }
         val file = File(filePath)
         if (!file.exists()) {
+            Snackbar.make(binding.root,
+                getString(R.string.op_file_not_found),
+                Snackbar.LENGTH_SHORT
+            ).show()
             findNavController().popBackStack()
             return
         }

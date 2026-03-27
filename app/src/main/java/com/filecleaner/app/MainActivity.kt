@@ -256,6 +256,7 @@ class MainActivity : AppCompatActivity() {
                     hideScanProgress()
                     binding.scanBarCard.visibility = View.GONE
                     Snackbar.make(binding.root, getString(R.string.error_scan_failed), Snackbar.LENGTH_LONG)
+                        .setAction(R.string.retry) { viewModel.startScan() }
                         .setAnchorView(binding.bottomNav).styleAsError().show()
                 }
             }

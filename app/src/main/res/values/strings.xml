@@ -7,6 +7,9 @@
     <string name="emoji_folder">\uD83D\uDCC2</string>
     <string name="emoji_refresh">\uD83D\uDD04</string>
 
+    <!-- Common actions -->
+    <string name="retry">Retry</string>
+
     <!-- Scan -->
     <string name="scan_storage">Scan Storage</string>
 <!-- scanning_progress removed: duplicate of scanning_phase_indexing -->

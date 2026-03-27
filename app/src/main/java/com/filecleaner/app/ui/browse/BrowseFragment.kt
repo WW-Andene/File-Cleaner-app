@@ -366,8 +366,11 @@ class BrowseFragment : Fragment() {
         } else {
             adapter.expandAll()
         }
-        // Force RecyclerView to re-layout
-        _binding?.recyclerView?.post { updateExpandCollapseButton() }
+        // If in direct browse, re-submit the full directory listing to guarantee update
+        if (directBrowseMode) {
+            refreshDirectBrowse()
+        }
+        updateExpandCollapseButton()
     }
 
     /** Updates the Expand All / Collapse All button text and icon to reflect current state. */

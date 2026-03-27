@@ -396,6 +396,10 @@ object FileContextMenu {
             .setTitle(context.getString(R.string.ctx_properties))
             .setMessage(info)
             .setPositiveButton(android.R.string.ok, null)
+            .setNeutralButton(R.string.ctx_copy_path) { _, _ ->
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                clipboard.setPrimaryClip(android.content.ClipData.newPlainText("File path", item.path))
+            }
             .show()
     }
 }

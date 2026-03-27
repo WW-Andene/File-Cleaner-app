@@ -334,8 +334,15 @@ class AntivirusFragment : Fragment() {
             .setView(dialogView)
             .setPositiveButton(R.string.av_dismiss, null)
             .setNeutralButton(R.string.av_clear_history) { _, _ ->
-                ScanHistoryManager.clearHistory(ctx)
-                _binding?.let { showLastScanTime() }
+                MaterialAlertDialogBuilder(ctx)
+                    .setTitle(R.string.av_clear_history)
+                    .setMessage(R.string.av_clear_history_confirm)
+                    .setPositiveButton(R.string.av_clear_history) { _, _ ->
+                        ScanHistoryManager.clearHistory(ctx)
+                        _binding?.let { showLastScanTime() }
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
             }
             .show()
     }

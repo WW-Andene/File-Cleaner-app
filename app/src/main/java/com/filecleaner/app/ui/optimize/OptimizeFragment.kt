@@ -160,7 +160,6 @@ class OptimizeFragment : Fragment() {
                 binding.tvEmpty.visibility = View.VISIBLE
                 binding.tvEmptyText.text = getString(R.string.optimize_analysis_failed)
                 binding.recyclerSuggestions.visibility = View.GONE
-                Snackbar.make(binding.root, getString(R.string.optimize_analysis_failed), Snackbar.LENGTH_SHORT).show()
                 return@launch
             }
 

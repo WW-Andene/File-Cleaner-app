@@ -319,6 +319,7 @@
     <string name="convert_csv_to_table">Convert to formatted table</string>
     <string name="convert_csv_to_table_desc">Convert CSV data into a neatly aligned text table with column headers.</string>
     <string name="ctx_properties">Properties</string>
+    <string name="ctx_copy_path">Copy Path</string>
     <string name="ctx_preview">Preview</string>
     <string name="preview_error">Ricky can\u0027t preview this one: %s</string>
     <string name="viewer_title">File Viewer</string>
@@ -805,6 +806,7 @@
     <string name="av_history">Scan History</string>
     <string name="av_no_history">No scan history yet \u2014 Ricky is ready for its first patrol!</string>
     <string name="av_clear_history">Clear History</string>
+    <string name="av_clear_history_confirm">This will permanently delete all scan history records. Continue?</string>
     <string name="av_scan_history_summary">%1$d findings \u2014 %2$d critical, %3$d high, %4$d medium</string>
 
     <!-- Fix all plurals -->

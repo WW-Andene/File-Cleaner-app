@@ -125,6 +125,8 @@ class SettingsFragment : Fragment() {
         }
 
         binding.etGithubToken.setText(UserPreferences.crashReportGithubToken)
+        binding.etGithubToken.inputType =
+            android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
         binding.etGithubToken.doAfterTextChanged { text ->
             UserPreferences.crashReportGithubToken = text?.toString()?.trim() ?: ""
         }

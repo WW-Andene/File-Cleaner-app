@@ -122,5 +122,11 @@ object OnboardingDialog {
 
         dialog.setContentView(container)
         dialog.show()
+
+        // Force full-width dialog
+        dialog.window?.setLayout(
+            android.view.WindowManager.LayoutParams.MATCH_PARENT,
+            android.view.WindowManager.LayoutParams.WRAP_CONTENT
+        )
     }
 }

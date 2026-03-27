@@ -398,7 +398,7 @@
     </style>
 
     <style name="ShapeAppearance.FileCleaner.Dialog" parent="">
-        <item name="cornerSize">@dimen/radius_modal</item>
+        <item name="cornerSize">@dimen/radius_card</item>
     </style>
 
     <!-- ═══ NEW: SwitchMaterial — branded thumb & track ═══ -->

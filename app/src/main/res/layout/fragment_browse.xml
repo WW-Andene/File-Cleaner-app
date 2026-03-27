@@ -151,6 +151,7 @@
             style="@style/Widget.FileCleaner.Button.Text"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/button_height"
+            android:contentDescription="@string/a11y_size_mode"
             android:text="@string/size_label"
             android:textAllCaps="false"
             android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"

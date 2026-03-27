@@ -1012,6 +1012,14 @@
     <string name="a11y_pdf_page_content">PDF page content</string>
     <string name="a11y_image_content">Image file content</string>
     <string name="a11y_play_video">Play video</string>
+    <string name="a11y_pause_video">Pause video</string>
+    <string name="a11y_play_audio">Play audio</string>
+    <string name="a11y_pause_audio">Pause audio</string>
+    <string name="a11y_size_mode">Change icon size</string>
+    <string name="a11y_filters_shown">Filters shown</string>
+    <string name="a11y_filters_hidden">Filters hidden</string>
+    <string name="a11y_folder_expanded">%1$s expanded</string>
+    <string name="a11y_folder_collapsed">%1$s collapsed</string>
     <string name="a11y_optimize_accept_suggestion">Accept optimization suggestion</string>
     <string name="a11y_optimize_select_category">Select all items in this category</string>
     <string name="a11y_severity_indicator">Severity indicator</string>

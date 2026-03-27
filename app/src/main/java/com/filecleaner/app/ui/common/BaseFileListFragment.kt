@@ -358,6 +358,10 @@ abstract class BaseFileListFragment : Fragment() {
         binding.btnToggleFilters.setIconResource(
             if (filtersExpanded) R.drawable.ic_chevron_up else R.drawable.ic_arrow_down
         )
+        // §G1: Announce filter panel state change for screen readers
+        binding.filterPanel.announceForAccessibility(
+            getString(if (filtersExpanded) R.string.a11y_filters_shown else R.string.a11y_filters_hidden)
+        )
     }
 
     private fun showViewModePopup() {

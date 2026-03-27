@@ -591,15 +591,18 @@ class FileViewerFragment : Fragment() {
         }
 
         // Play/pause button
+        binding.btnVideoPlay.contentDescription = getString(R.string.a11y_play_video)
         binding.btnVideoPlay.setOnClickListener {
             if (isVideoPlaying) {
                 videoView.pause()
                 isVideoPlaying = false
                 binding.btnVideoPlay.setImageResource(android.R.drawable.ic_media_play)
+                binding.btnVideoPlay.contentDescription = getString(R.string.a11y_play_video)
             } else {
                 videoView.start()
                 isVideoPlaying = true
                 binding.btnVideoPlay.setImageResource(android.R.drawable.ic_media_pause)
+                binding.btnVideoPlay.contentDescription = getString(R.string.a11y_pause_video)
                 updateVideoSeekBar()
             }
         }
@@ -663,15 +666,18 @@ class FileViewerFragment : Fragment() {
             binding.tvAudioDuration.text = formatTime(mp.duration)
             binding.tvAudioCurrent.text = formatTime(0)
 
+            binding.btnAudioPlay.contentDescription = getString(R.string.a11y_play_audio)
             binding.btnAudioPlay.setOnClickListener {
                 if (isAudioPlaying) {
                     mp.pause()
                     isAudioPlaying = false
                     binding.btnAudioPlay.setImageResource(android.R.drawable.ic_media_play)
+                    binding.btnAudioPlay.contentDescription = getString(R.string.a11y_play_audio)
                 } else {
                     mp.start()
                     isAudioPlaying = true
                     binding.btnAudioPlay.setImageResource(android.R.drawable.ic_media_pause)
+                    binding.btnAudioPlay.contentDescription = getString(R.string.a11y_pause_audio)
                     updateAudioSeekBar()
                 }
             }
@@ -690,6 +696,7 @@ class FileViewerFragment : Fragment() {
             mp.setOnCompletionListener {
                 isAudioPlaying = false
                 _binding?.btnAudioPlay?.setImageResource(android.R.drawable.ic_media_play)
+                _binding?.btnAudioPlay?.contentDescription = getString(R.string.a11y_play_audio)
                 _binding?.seekAudio?.progress = 0
                 _binding?.tvAudioCurrent?.text = formatTime(0)
             }

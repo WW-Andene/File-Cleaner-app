@@ -309,9 +309,10 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         } else {
             "$folderDesc, ${ctx.getString(R.string.a11y_collapse_folder, header.displayName)}"
         }
-        // §G1: State description for expand/collapse state
+        // §G1: Folder-specific state description for expand/collapse state
         ViewCompat.setStateDescription(holder.itemView,
-            if (isCollapsed) ctx.getString(R.string.collapse_all) else ctx.getString(R.string.expand_all))
+            if (isCollapsed) ctx.getString(R.string.a11y_folder_collapsed, header.displayName)
+            else ctx.getString(R.string.a11y_folder_expanded, header.displayName))
 
         holder.itemView.setOnClickListener {
             val pos = holder.bindingAdapterPosition

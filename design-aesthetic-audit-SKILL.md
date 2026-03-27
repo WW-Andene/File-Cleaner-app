@@ -5,17 +5,15 @@ description: >
   design", "make it beautiful", "visual critique", "aesthetic review", "art direction",
   "make it premium", "visual identity", "brand", "color palette", "typography review",
   "design language", "visual polish", "motion design", "design personality", "make it
-  feel like [X]", "inspired by [source]", "look like [source]", "match the aesthetic
-  of", "deepen the personality", "more distinctive", "more on-brand", "my app feels
-  generic", "make it less template-y", "design tokens", "component character",
+  feel like [X]", "inspired by [source]", "match the aesthetic of", "more distinctive",
+  "more on-brand", "my app feels generic", "design tokens", "component character",
   "state design", "empty states look bad", "my dark mode sucks", or any named
-  game / show / brand / IP (triggers mandatory 5-pass source research). Covers: style
-  classification, color science, typography, motion, hierarchy, surface & atmosphere,
-  iconography, component character, copy alignment, illustration, data visualization,
-  token architecture, state design, responsive character, trend calibration, brand
-  identity, competitive positioning, design character system, and source material
-  intelligence with 5-layer Identity Thesis. Integrates with app-audit companion
-  mode. Standalone or mid-audit.
+  game/show/brand/IP (triggers 5-pass source research). Covers: style classification,
+  color science, typography, motion, hierarchy, surface & atmosphere, iconography,
+  component character, copy alignment, illustration, data viz, token architecture,
+  state design, responsive character, trend calibration, brand identity, competitive
+  positioning, and source material intelligence. Integrates with app-audit companion
+  mode.
 ---
 
 # Design Aesthetic Audit — Deep Visual Analysis Framework

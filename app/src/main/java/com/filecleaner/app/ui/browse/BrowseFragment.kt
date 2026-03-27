@@ -527,6 +527,26 @@ class BrowseFragment : Fragment() {
     }
 
     private fun refreshDirectBrowse() {
+        // Show action row in direct browse mode
+        binding.browseActionsRow?.visibility = View.VISIBLE
+        binding.btnNew?.setOnClickListener { showCreateNewDialog() }
+        binding.btnGoToPath?.setOnClickListener { showGoToPathDialog() }
+
+        // Paste indicator — show when clipboard has content
+        val hasClipboard = vm.clipboardEntry.value != null
+        binding.btnPasteIndicator?.visibility = if (hasClipboard) View.VISIBLE else View.GONE
+        binding.btnPasteIndicator?.setOnClickListener {
+            val clip = vm.clipboardEntry.value ?: return@setOnClickListener
+            val targetDir = currentBrowsePath ?: storagePath
+            if (clip.mode == com.filecleaner.app.viewmodel.ClipboardManager.ClipboardMode.CUT) {
+                vm.moveFile(clip.item.path, targetDir)
+            } else {
+                vm.copyFile(clip.item.path, targetDir)
+            }
+            vm.clipboard.clear()
+            refreshDirectBrowse()
+        }
+
         val path = currentBrowsePath ?: storagePath
         viewLifecycleOwner.lifecycleScope.launch {
             val showHidden = try { UserPreferences.showHiddenFiles } catch (_: Exception) { false }

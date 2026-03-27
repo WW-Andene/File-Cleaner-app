@@ -1072,6 +1072,10 @@
 
     <!-- Similar Photos -->
     <!-- Code editor extras -->
+    <!-- Browse actions -->
+    <string name="browse_paste">Paste</string>
+    <string name="ctx_set_wallpaper">Set as Wallpaper</string>
+
     <string name="code_wrap_off">Wrap</string>
     <string name="code_wrap_on">Wrap ✓</string>
     <string name="code_wrap_toggle">Toggle word wrap</string>

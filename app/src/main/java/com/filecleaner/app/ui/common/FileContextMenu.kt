@@ -324,6 +324,18 @@ object FileContextMenu {
         addItem(context.getString(R.string.ctx_open_in_tree), R.drawable.ic_folder) {
             callback.onOpenInTree(item)
         }
+        // Quick copy path
+        addItem(context.getString(R.string.ctx_copy_path), R.drawable.ic_info) {
+            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("File path", item.path))
+            android.widget.Toast.makeText(context, context.getString(R.string.hash_copied), android.widget.Toast.LENGTH_SHORT).show()
+        }
+        // Set as wallpaper (images only)
+        if (item.category == FileCategory.IMAGE) {
+            addItem(context.getString(R.string.ctx_set_wallpaper), R.drawable.ic_image) {
+                setAsWallpaper(context, item)
+            }
+        }
         // Encrypt/Decrypt
         if (item.name.endsWith(".encrypted")) {
             addItem(context.getString(R.string.decrypt_title), R.drawable.ic_info) {
@@ -501,6 +513,21 @@ object FileContextMenu {
                     clip.setPrimaryClip(android.content.ClipData.newPlainText("Hash", text))
                 }
                 .show()
+        }
+    }
+
+    /** Set image as device wallpaper. */
+    private fun setAsWallpaper(context: Context, item: FileItem) {
+        try {
+            val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", item.file)
+            val intent = Intent(Intent.ACTION_ATTACH_DATA).apply {
+                setDataAndType(uri, "image/*")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                putExtra("mimeType", "image/*")
+            }
+            context.startActivity(Intent.createChooser(intent, context.getString(R.string.ctx_set_wallpaper)))
+        } catch (e: Exception) {
+            android.widget.Toast.makeText(context, "Cannot set wallpaper: ${e.localizedMessage}", android.widget.Toast.LENGTH_SHORT).show()
         }
     }
 

@@ -165,6 +165,64 @@
 
     </LinearLayout>
 
+    <!-- Quick action row for direct browse mode -->
+    <LinearLayout
+        android:id="@+id/browse_actions_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/spacing_lg"
+        android:paddingVertical="@dimen/spacing_xs"
+        android:visibility="gone">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_new"
+            style="@style/Widget.FileCleaner.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button_height_sm"
+            android:text="@string/create_new"
+            android:textAllCaps="false"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:icon="@drawable/ic_add"
+            app:iconSize="@dimen/icon_small"
+            app:iconGravity="textStart" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_go_to_path"
+            style="@style/Widget.FileCleaner.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button_height_sm"
+            android:text="@string/go_to_path"
+            android:textAllCaps="false"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:icon="@drawable/ic_folder"
+            app:iconSize="@dimen/icon_small"
+            app:iconGravity="textStart" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- Paste indicator -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_paste_indicator"
+            style="@style/Widget.FileCleaner.Button.Outlined.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button_height_sm"
+            android:text="@string/browse_paste"
+            android:textAllCaps="false"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:visibility="gone"
+            app:icon="@drawable/ic_paste"
+            app:iconSize="@dimen/icon_small"
+            app:iconGravity="textStart" />
+    </LinearLayout>
+
     <!-- Expandable filter panel -->
     <LinearLayout
         android:id="@+id/filter_panel"

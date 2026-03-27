@@ -31,6 +31,8 @@ import com.filecleaner.app.databinding.FragmentFileViewerBinding
 import com.filecleaner.app.utils.FileOpener
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.utils.applyBottomInset
+import com.filecleaner.app.utils.FileConverter
+import androidx.lifecycle.lifecycleScope
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -272,7 +274,6 @@ class FileViewerFragment : Fragment() {
 
     private fun showImage(file: File) {
         binding.ivImage.visibility = View.VISIBLE
-        // F-084: Add placeholder, error fallback, and size constraint for OOM protection
         Glide.with(this)
             .load(file)
             .placeholder(R.drawable.ic_image)
@@ -280,8 +281,32 @@ class FileViewerFragment : Fragment() {
             .into(binding.ivImage)
         binding.ivImage.contentDescription = getString(R.string.a11y_image_preview, file.name)
 
-        // Set up pinch-to-zoom and pan
         setupImageZoom()
+        setupImageEditBar(file)
+    }
+
+    private fun setupImageEditBar(file: File) {
+        binding.imageEditBar?.visibility = View.VISIBLE
+
+        fun applyAndReload(action: () -> FileConverter.ConvertResult) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                val result = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { action() }
+                if (result.success && _binding != null) {
+                    Glide.with(this@FileViewerFragment).load(java.io.File(result.outputPath)).into(binding.ivImage)
+                    com.google.android.material.snackbar.Snackbar.make(
+                        binding.root, result.message, com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+
+        binding.btnEditRotate?.setOnClickListener { applyAndReload { FileConverter.rotateImage(file.absolutePath, 90f) } }
+        binding.btnEditFlip?.setOnClickListener { applyAndReload { FileConverter.flipImage(file.absolutePath, true) } }
+        binding.btnEditCrop?.setOnClickListener { applyAndReload { FileConverter.cropToAspectRatio(file.absolutePath, 1, 1) } }
+        binding.btnEditBw?.setOnClickListener { applyAndReload { FileConverter.toGrayscale(file.absolutePath) } }
+        binding.btnEditInvert?.setOnClickListener { applyAndReload { FileConverter.invertColors(file.absolutePath) } }
+        binding.btnEditBright?.setOnClickListener { applyAndReload { FileConverter.adjustBrightness(file.absolutePath, 1.3f) } }
+        binding.btnEditDark?.setOnClickListener { applyAndReload { FileConverter.adjustBrightness(file.absolutePath, 0.7f) } }
     }
 
     private fun setupImageZoom() {

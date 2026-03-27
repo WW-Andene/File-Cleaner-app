@@ -1162,7 +1162,16 @@
     <string name="convert_vcard_to_csv">Convert to CSV</string>
     <string name="convert_vcard_desc">Extract contacts to a spreadsheet-compatible CSV file</string>
 
-    <!-- Image color operations -->
+    <!-- Image editing (viewer toolbar) -->
+    <string name="edit_rotate">Rotate</string>
+    <string name="edit_flip">Flip</string>
+    <string name="edit_crop">Crop 1:1</string>
+    <string name="edit_grayscale">B\u0026W</string>
+    <string name="edit_invert">Invert</string>
+    <string name="edit_brighten">Bright+</string>
+    <string name="edit_darken">Dark+</string>
+
+    <!-- Image color operations (kept for FileConverter API) -->
     <string name="convert_grayscale">Convert to Grayscale</string>
     <string name="convert_grayscale_desc">Remove all color (black \u0026 white)</string>
     <string name="convert_invert">Invert Colors</string>

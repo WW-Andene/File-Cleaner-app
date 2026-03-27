@@ -151,27 +151,6 @@ object ConvertDialog {
             description = context.getString(R.string.convert_watermark_desc),
             action = { FileConverter.addWatermark(item.path, "\u00A9 ${java.time.Year.now().value}") }
         ))
-        // Color operations
-        options.add(ConvertOption(
-            title = context.getString(R.string.convert_grayscale),
-            description = context.getString(R.string.convert_grayscale_desc),
-            action = { FileConverter.toGrayscale(item.path) }
-        ))
-        options.add(ConvertOption(
-            title = context.getString(R.string.convert_invert),
-            description = context.getString(R.string.convert_invert_desc),
-            action = { FileConverter.invertColors(item.path) }
-        ))
-        options.add(ConvertOption(
-            title = context.getString(R.string.convert_brighten),
-            description = context.getString(R.string.convert_brighten_desc),
-            action = { FileConverter.adjustBrightness(item.path, 1.3f) }
-        ))
-        options.add(ConvertOption(
-            title = context.getString(R.string.convert_darken),
-            description = context.getString(R.string.convert_darken_desc),
-            action = { FileConverter.adjustBrightness(item.path, 0.7f) }
-        ))
         options.add(ConvertOption(
             title = context.getString(R.string.convert_to_base64),
             description = context.getString(R.string.convert_base64_desc),

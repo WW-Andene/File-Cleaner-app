@@ -133,13 +133,7 @@ class MessagingCleanerFragment : Fragment() {
                 R.plurals.n_files, group.files.size, group.files.size)
             holder.binding.tvGroupSize.text = UndoHelper.formatBytes(group.totalSize)
 
-            // App icon
-            val iconRes = when (group.appName) {
-                "WhatsApp" -> R.drawable.ic_messaging
-                "Telegram" -> R.drawable.ic_messaging
-                else -> R.drawable.ic_messaging
-            }
-            holder.binding.ivAppIcon.setImageResource(iconRes)
+            holder.binding.ivAppIcon.setImageResource(R.drawable.ic_messaging)
 
             holder.itemView.setOnClickListener { onClick(group) }
         }

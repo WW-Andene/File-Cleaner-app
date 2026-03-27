@@ -69,8 +69,13 @@ class StorageCheckWorker(
         val ctx = applicationContext
 
         // Read storage stats
-        val statFs = StatFs(Environment.getExternalStorageDirectory().absolutePath)
+        val statFs = try {
+            StatFs(Environment.getExternalStorageDirectory().absolutePath)
+        } catch (_: Exception) {
+            return Result.success() // Storage unavailable
+        }
         val totalBytes = statFs.totalBytes
+        if (totalBytes <= 0) return Result.success() // Guard against division by zero
         val freeBytes = statFs.freeBytes
         val usedBytes = totalBytes - freeBytes
         val freeRatio = freeBytes.toDouble() / totalBytes

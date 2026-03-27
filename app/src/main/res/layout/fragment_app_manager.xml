@@ -73,6 +73,18 @@
         android:layout_gravity="center"
         android:visibility="gone" />
 
+    <!-- Empty state -->
+    <TextView
+        android:id="@+id/tv_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="@dimen/spacing_3xl"
+        android:text="@string/app_manager_empty"
+        android:textAppearance="@style/TextAppearance.FileCleaner.Body"
+        android:textColor="@color/textSecondary"
+        android:visibility="gone" />
+
     <!-- App list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_apps"

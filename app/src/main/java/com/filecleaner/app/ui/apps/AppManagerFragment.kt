@@ -65,7 +65,15 @@ class AppManagerFragment : Fragment() {
             if (_binding == null) return@launch
             binding.progress.visibility = View.GONE
 
+            if (apps.isEmpty()) {
+                binding.tvEmpty.visibility = View.VISIBLE
+                binding.recyclerApps.visibility = View.GONE
+                binding.tvSummary.text = getString(R.string.app_manager_empty)
+                return@launch
+            }
+
             // Summary
+            binding.tvEmpty.visibility = View.GONE
             val totalSize = apps.sumOf { it.sizeBytes }
             binding.tvSummary.text = getString(R.string.app_manager_summary,
                 apps.size, UndoHelper.formatBytes(totalSize))

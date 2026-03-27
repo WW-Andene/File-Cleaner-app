@@ -131,11 +131,18 @@ object MessagingMediaCleaner {
         return files
     }
 
+    /** Iterative BFS to avoid StackOverflowError on deep directory trees. */
     private fun calculateDirSize(dir: File): Long {
         var size = 0L
-        val children = dir.listFiles() ?: return 0
-        for (child in children) {
-            size += if (child.isFile) child.length() else calculateDirSize(child)
+        val queue = ArrayDeque<File>()
+        queue.add(dir)
+        while (queue.isNotEmpty()) {
+            val current = queue.removeFirst()
+            val children = current.listFiles() ?: continue
+            for (child in children) {
+                if (child.isFile) size += child.length()
+                else if (child.isDirectory) queue.add(child)
+            }
         }
         return size
     }

@@ -373,13 +373,8 @@ class BrowseFragment : Fragment() {
     private fun updateExpandCollapseButton() {
         val binding = _binding ?: return
         binding.btnToggleExpandCollapse.visibility = View.VISIBLE
-        val hasHeaders = adapter.currentList.any { it is BrowseAdapter.Item.Header }
-        if (!hasHeaders && !directBrowseMode) {
-            binding.btnToggleExpandCollapse.visibility = View.GONE
-            return
-        }
-        val allExpanded = if (hasHeaders) adapter.hasExpandedFolders() else true
-        if (allExpanded) {
+        val expanded = adapter.hasExpandedFolders()
+        if (expanded) {
             binding.btnToggleExpandCollapse.text = getString(R.string.collapse_all)
             binding.btnToggleExpandCollapse.setIconResource(R.drawable.ic_chevron_up)
         } else {

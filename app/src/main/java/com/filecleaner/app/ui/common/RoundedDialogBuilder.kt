@@ -88,7 +88,16 @@ class RoundedDialogBuilder(private val context: Context) {
         dialog.setCancelable(cancelable)
 
         val card = buildCard(dialog)
-        dialog.setContentView(card)
+
+        // Wrap card in FrameLayout with padding — Dialog.setContentView
+        // ignores margins on the root view, so padding is the only way
+        // to keep the dialog away from screen edges
+        val paddingLg = context.resources.getDimensionPixelSize(R.dimen.spacing_lg)
+        val wrapper = android.widget.FrameLayout(context).apply {
+            setPadding(paddingLg, paddingLg, paddingLg, paddingLg)
+            addView(card)
+        }
+        dialog.setContentView(wrapper)
         if (dismissListener != null) {
             dialog.setOnDismissListener(dismissListener)
         }
@@ -114,15 +123,10 @@ class RoundedDialogBuilder(private val context: Context) {
         val spacingXl = context.resources.getDimensionPixelSize(R.dimen.spacing_xl)
 
         val card = MaterialCardView(context).apply {
-            layoutParams = ViewGroup.MarginLayoutParams(
+            layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                marginStart = paddingLg
-                marginEnd = paddingLg
-                topMargin = spacingXl
-                bottomMargin = spacingXl
-            }
+            )
             radius = context.resources.getDimension(R.dimen.radius_card)
             cardElevation = context.resources.getDimension(R.dimen.elevation_raised)
             setCardBackgroundColor(ContextCompat.getColor(context, R.color.surfaceElevated))

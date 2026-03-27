@@ -120,10 +120,14 @@ object OnboardingDialog {
             }
         }
 
-        dialog.setContentView(container)
+        // Wrap in FrameLayout with padding — Dialog ignores margins on root view
+        val paddingLg = context.resources.getDimensionPixelSize(R.dimen.spacing_lg)
+        val wrapper = android.widget.FrameLayout(context).apply {
+            setPadding(paddingLg, paddingLg, paddingLg, paddingLg)
+            addView(container)
+        }
+        dialog.setContentView(wrapper)
         dialog.show()
-
-        // Force full-width dialog
         dialog.window?.setLayout(
             android.view.WindowManager.LayoutParams.MATCH_PARENT,
             android.view.WindowManager.LayoutParams.WRAP_CONTENT

@@ -7,7 +7,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import com.filecleaner.app.R
 import com.filecleaner.app.data.cloud.CloudConnection
 import com.filecleaner.app.data.cloud.CloudConnectionStore
@@ -19,7 +18,6 @@ import com.filecleaner.app.data.cloud.ProviderType
 import com.filecleaner.app.data.cloud.SftpProvider
 import com.filecleaner.app.data.cloud.WebDavProvider
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import androidx.core.widget.doOnTextChanged
@@ -371,21 +369,83 @@ object CloudSetupDialog {
             oauthConfigSection?.visibility = View.GONE
         }
 
-        val dialog = MaterialAlertDialogBuilder(context)
-            .setTitle(title)
-            .setView(dialogView)
-            .setPositiveButton(context.getString(R.string.cloud_connect), null)
-            .setNegativeButton(context.getString(R.string.cancel), null)
-            .setOnDismissListener { dialogScope.cancel() }
-            .show()
+        // Build rounded dialog manually (needs getButton-like access)
+        val btnConnect = com.google.android.material.button.MaterialButton(
+            context, null, com.google.android.material.R.attr.borderlessButtonStyle
+        ).apply {
+            text = context.getString(R.string.cloud_connect)
+            isAllCaps = false
+            setTextColor(context.getColor(R.color.colorPrimary))
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+        }
+        val btnCancel = com.google.android.material.button.MaterialButton(
+            context, null, com.google.android.material.R.attr.borderlessButtonStyle
+        ).apply {
+            text = context.getString(R.string.cancel)
+            isAllCaps = false
+            setTextColor(context.getColor(R.color.colorPrimary))
+        }
+
+        val btnRow = android.widget.LinearLayout(context).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.END
+            val lp = android.widget.LinearLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            lp.topMargin = context.resources.getDimensionPixelSize(R.dimen.spacing_lg)
+            layoutParams = lp
+            addView(btnCancel)
+            addView(btnConnect)
+        }
+        (dialogView as android.view.ViewGroup).addView(btnRow)
+
+        val titleView = android.widget.TextView(context).apply {
+            text = title
+            setTextAppearance(R.style.TextAppearance_FileCleaner_Headline)
+            setTextColor(context.getColor(R.color.textPrimary))
+            val lp = android.widget.LinearLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            lp.bottomMargin = context.resources.getDimensionPixelSize(R.dimen.spacing_md)
+            layoutParams = lp
+        }
+        (dialogView as android.view.ViewGroup).addView(titleView, 0)
+
+        val card = com.google.android.material.card.MaterialCardView(context).apply {
+            radius = context.resources.getDimension(R.dimen.radius_card)
+            cardElevation = context.resources.getDimension(R.dimen.elevation_raised)
+            setCardBackgroundColor(context.getColor(R.color.surfaceElevated))
+            strokeWidth = context.resources.getDimensionPixelSize(R.dimen.stroke_default)
+            strokeColor = context.getColor(R.color.borderSubtle)
+            addView(dialogView)
+        }
+        val wrapper = android.widget.FrameLayout(context).apply {
+            val pad = context.resources.getDimensionPixelSize(R.dimen.spacing_lg)
+            setPadding(pad, pad, pad, pad)
+            addView(card)
+        }
+
+        val dialog = android.app.Dialog(context)
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
+        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+        dialog.setCancelable(true)
+        dialog.setContentView(wrapper)
+        dialog.setOnDismissListener { dialogScope.cancel() }
+        dialog.show()
+        dialog.window?.setLayout(
+            android.view.WindowManager.LayoutParams.MATCH_PARENT,
+            android.view.WindowManager.LayoutParams.WRAP_CONTENT
+        )
+
+        btnCancel.setOnClickListener { dialog.dismiss() }
+        val positiveBtn = btnConnect
+        val negativeBtn = btnCancel
 
         // Override positive button to prevent dismiss on validation/connection failure
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+        positiveBtn.setOnClickListener {
             val connection = buildConnection() ?: return@setOnClickListener
-
-            // Disable buttons and show progress while testing connection
-            val positiveBtn = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            val negativeBtn = dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
             positiveBtn.isEnabled = false
             negativeBtn.isEnabled = false
             btnTest.isEnabled = false

@@ -64,13 +64,15 @@ object SignatureScanner {
         Regex(".*reverse.*shell.*", RegexOption.IGNORE_CASE),   // Reverse shells
     )
 
-    /** Suspicious APK locations (outside standard install paths) */
-    private val SUSPICIOUS_APK_DIRS = listOf(
-        "/Download/", "/WhatsApp/", "/Telegram/",
-        "/DCIM/", "/Pictures/", "/Music/",
-        "/Documents/", "/Bluetooth/", "/.Trash/",
-        "/Android/data/", "/tmp/"
+    /** Suspicious APK locations (outside standard install paths).
+     *  A1: Matched as exact path segments to prevent substring false positives
+     *  (e.g., "/MyDownloadManager/" should NOT match "Download"). */
+    private val SUSPICIOUS_APK_DIR_NAMES = setOf(
+        "Download", "Downloads", "WhatsApp", "Telegram",
+        "DCIM", "Pictures", "Music",
+        "Documents", "Bluetooth", ".Trash", "tmp"
     )
+    private const val SUSPICIOUS_APK_DATA_PREFIX = "/Android/data/"
 
     /** Suspicious script patterns (content-level) */
     private val DANGEROUS_SCRIPT_PATTERNS = listOf(
@@ -176,21 +178,23 @@ object SignatureScanner {
 
     private fun checkSuspiciousApkLocation(context: Context, item: FileItem, results: MutableList<ThreatResult>) {
         if (item.extension != "apk") return
-        for (dir in SUSPICIOUS_APK_DIRS) {
-            if (item.path.contains(dir)) {
-                results.add(
-                    ThreatResult(
-                        name = context.getString(R.string.threat_apk_unusual_location),
-                        description = context.getString(R.string.threat_desc_apk_unusual_location, item.path.substringBeforeLast('/')),
-                        severity = ThreatResult.Severity.LOW,
-                        source = ThreatResult.ScannerSource.FILE_SIGNATURE,
-                        filePath = item.path,
-                        category = ThreatResult.ThreatCategory.SIDELOAD,
-                        action = ThreatResult.ThreatAction.QUARANTINE
-                    )
+        // A1: Match exact path segments to avoid substring false positives
+        val parentPath = item.path.substringBeforeLast('/')
+        val pathSegments = parentPath.split('/')
+        val isSuspicious = pathSegments.any { it in SUSPICIOUS_APK_DIR_NAMES } ||
+            parentPath.contains(SUSPICIOUS_APK_DATA_PREFIX)
+        if (isSuspicious) {
+            results.add(
+                ThreatResult(
+                    name = context.getString(R.string.threat_apk_unusual_location),
+                    description = context.getString(R.string.threat_desc_apk_unusual_location, parentPath),
+                    severity = ThreatResult.Severity.LOW,
+                    source = ThreatResult.ScannerSource.FILE_SIGNATURE,
+                    filePath = item.path,
+                    category = ThreatResult.ThreatCategory.SIDELOAD,
+                    action = ThreatResult.ThreatAction.QUARANTINE
                 )
-                break
-            }
+            )
         }
     }
 
@@ -367,11 +371,11 @@ object SignatureScanner {
     private fun checkLargeApk(context: Context, item: FileItem, results: MutableList<ThreatResult>) {
         if (item.extension.lowercase() != "apk") return
         // APKs > 200MB in user storage are suspicious (packed malware / data exfil)
-        if (item.size > 209_715_200) {
+        if (item.size > 209_715_200L) {
             results.add(
                 ThreatResult(
                     name = context.getString(R.string.threat_large_apk),
-                    description = context.getString(R.string.threat_desc_large_apk, item.name, (item.size / (1024 * 1024)).toInt()),
+                    description = context.getString(R.string.threat_desc_large_apk, item.name, item.size / (1024L * 1024L)),
                     severity = ThreatResult.Severity.LOW,
                     source = ThreatResult.ScannerSource.FILE_SIGNATURE,
                     filePath = item.path,
@@ -396,11 +400,11 @@ object SignatureScanner {
             "rar" -> 20L
             else -> 20L
         }
-        if (item.size in 1 until minValidSize) {
+        if (item.size in 1L until minValidSize) {
             results.add(
                 ThreatResult(
                     name = context.getString(R.string.threat_suspicious_archive),
-                    description = context.getString(R.string.threat_desc_suspicious_archive, item.name, item.size.toInt(), ext),
+                    description = context.getString(R.string.threat_desc_suspicious_archive, item.name, item.size, ext),
                     severity = ThreatResult.Severity.LOW,
                     source = ThreatResult.ScannerSource.FILE_SIGNATURE,
                     filePath = item.path,

@@ -17,13 +17,21 @@ object JunkFinder {
 
     private const val DEFAULT_STALE_DOWNLOAD_DAYS = 90L
 
-    private val JUNK_DIR_KEYWORDS = listOf(
-        ".cache", "cache", "temp", "tmp", "thumbnail", ".thumbnails", "lost+found"
+    // A5: Use dot-prefixed names and known Android cache paths to reduce false positives.
+    // Directories like "My Cache Project" or "temp_files" won't match — only exact
+    // segment names that are conventionally disposable.
+    private val JUNK_DIR_EXACT_NAMES = setOf(
+        ".cache", ".thumbnails", "lost+found"
+    )
+    private val JUNK_DIR_CASE_INSENSITIVE = setOf(
+        "cache", "temp", "tmp", "thumbnail"
     )
 
-    // F-039: Pre-compiled regex avoids per-file lowercase() + per-keyword contains()
+    // F-039: Pre-compiled regex matches exact path segments (surrounded by /)
+    // to avoid false positives on user folders containing keywords as substrings.
     private val JUNK_DIR_REGEX = Regex(
-        "/(?:${JUNK_DIR_KEYWORDS.joinToString("|") { Regex.escape(it) }})/",
+        "/(?:${JUNK_DIR_EXACT_NAMES.joinToString("|") { Regex.escape(it) }})/|" +
+            "/Android/data/[^/]+/(?:${JUNK_DIR_CASE_INSENSITIVE.joinToString("|") { Regex.escape(it) }})/",
         RegexOption.IGNORE_CASE
     )
 

@@ -235,8 +235,9 @@ class BrowseFragment : Fragment() {
             binding.recyclerView.layoutAnimation = null
         }
 
-        // Collapsible filter panel toggle
-        binding.btnToggleFilters.setOnClickListener { toggleFilterPanel() }
+        // Category and Sort popup menus (replacing collapsible filter panel)
+        binding.btnCategoryFilter.setOnClickListener { showCategoryPopup() }
+        binding.btnSortOrder.setOnClickListener { showSortPopup() }
 
         // Expand All / Collapse All toggle button
         binding.btnToggleExpandCollapse.setOnClickListener { toggleAllFolders() }
@@ -352,7 +353,8 @@ class BrowseFragment : Fragment() {
         }
     }
 
-    private var filtersExpanded = false
+    private var selectedCategoryPos = 0
+    private var selectedSortPos = 0
     private val restoredCollapsedFolders = mutableSetOf<String>()
     private var restoredFolderViewMode = -1
     private var restoredScrollPos = -1
@@ -391,12 +393,42 @@ class BrowseFragment : Fragment() {
         }
     }
 
-    private fun toggleFilterPanel() {
-        filtersExpanded = !filtersExpanded
-        binding.filterPanel.visibility = if (filtersExpanded) View.VISIBLE else View.GONE
-        binding.btnToggleFilters.setIconResource(
-            if (filtersExpanded) R.drawable.ic_chevron_up else R.drawable.ic_arrow_down
+    private fun showCategoryPopup() {
+        val popup = android.widget.PopupMenu(requireContext(), binding.btnCategoryFilter)
+        categories.forEachIndexed { index, (label, _) ->
+            val item = popup.menu.add(0, index, index, label)
+            item.isCheckable = true
+            item.isChecked = binding.spinnerCategory.selectedItemPosition == index
+        }
+        popup.menu.setGroupCheckable(0, true, true)
+        popup.setOnMenuItemClickListener { item ->
+            binding.spinnerCategory.setSelection(item.itemId)
+            val label = categories[item.itemId].first
+            binding.btnCategoryFilter.text = if (item.itemId == 0) getString(R.string.browse_category_label) else label
+            true
+        }
+        popup.show()
+    }
+
+    private fun showSortPopup() {
+        val sortOptions = listOf(
+            getString(R.string.sort_name_asc), getString(R.string.sort_name_desc),
+            getString(R.string.sort_size_asc), getString(R.string.sort_size_desc),
+            getString(R.string.sort_date_asc), getString(R.string.sort_date_desc)
         )
+        val popup = android.widget.PopupMenu(requireContext(), binding.btnSortOrder)
+        sortOptions.forEachIndexed { index, label ->
+            val item = popup.menu.add(0, index, index, label)
+            item.isCheckable = true
+            item.isChecked = binding.spinnerSort.selectedItemPosition == index
+        }
+        popup.menu.setGroupCheckable(0, true, true)
+        popup.setOnMenuItemClickListener { item ->
+            binding.spinnerSort.setSelection(item.itemId)
+            binding.btnSortOrder.text = sortOptions[item.itemId]
+            true
+        }
+        popup.show()
     }
 
     private fun applyLayoutManager() {

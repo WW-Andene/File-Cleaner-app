@@ -39,7 +39,7 @@ object CompressDialog {
         val defaultName = if (files.size == 1) {
             "${files.first().file.nameWithoutExtension}.zip"
         } else {
-            "archive.zip"
+            context.getString(R.string.compress_default_name)
         }
         val nameInput = EditText(context).apply {
             hint = context.getString(R.string.compress_name_hint)
@@ -59,7 +59,7 @@ object CompressDialog {
                     appendLine("\u2022 ${file.name}")
                 }
                 if (files.size > 5) {
-                    appendLine("\u2026 and ${files.size - 5} more")
+                    appendLine(context.getString(R.string.and_n_more, files.size - 5))
                 }
             }
             text = preview

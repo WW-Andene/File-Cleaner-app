@@ -129,7 +129,7 @@ object FilePreviewDialog {
             val bytes = item.file.inputStream().use { it.readNBytes(MAX_TEXT_BYTES) }
             val text = String(bytes, Charsets.UTF_8)
             if (item.file.length() > MAX_TEXT_BYTES) {
-                text + "\n\n\u2026 [truncated at 10 KB]"
+                text + "\n\n" + context.getString(R.string.preview_truncated)
             } else {
                 text
             }

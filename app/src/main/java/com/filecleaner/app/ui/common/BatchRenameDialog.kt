@@ -181,15 +181,15 @@ object BatchRenameDialog {
                     val invalidChars = newName.filter { c -> c in INVALID_FS_CHARS }.toSet()
                     if (invalidChars.isNotEmpty()) {
                         val chars = invalidChars.joinToString(" ") { "'$it'" }
-                        appendLine("${file.name} \u2192 $newName  \u26A0 invalid: $chars")
+                        appendLine(context.getString(R.string.batch_rename_invalid_chars, file.name, newName, chars))
                     } else if (newName.isBlank()) {
-                        appendLine("${file.name} \u2192 (empty)  \u26A0 blank name")
+                        appendLine(context.getString(R.string.batch_rename_blank_name, file.name))
                     } else {
                         appendLine("${file.name} \u2192 $newName")
                     }
                 }
                 if (files.size > 3) {
-                    appendLine("\u2026 and ${files.size - 3} more")
+                    appendLine(context.getString(R.string.and_n_more, files.size - 3))
                 }
             }
             previewText.text = preview

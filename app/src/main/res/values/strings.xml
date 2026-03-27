@@ -466,6 +466,11 @@
     <string name="batch_rename_start_hint">Start number</string>
     <string name="batch_rename_result">Ricky renamed %1$d files \u2014 %2$d couldn\u0027t be changed.</string>
     <string name="batch_rename">Batch Rename</string>
+    <string name="batch_rename_invalid_chars">%1$s \u2192 %2$s  \u26A0 invalid: %3$s</string>
+    <string name="batch_rename_blank_name">%1$s \u2192 (empty)  \u26A0 blank name</string>
+    <string name="and_n_more">\u2026 and %1$d more</string>
+    <string name="compress_default_name">archive.zip</string>
+    <string name="preview_truncated">\u2026 [truncated at 10 KB]</string>
 
     <!-- Accessibility -->
     <string name="a11y_view_mode">Toggle view mode</string>

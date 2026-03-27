@@ -2,6 +2,7 @@ package com.filecleaner.app.utils.analytics
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.filecleaner.app.utils.UndoHelper
 import org.json.JSONArray
 import org.json.JSONObject
 import java.text.SimpleDateFormat

@@ -5,6 +5,7 @@ import android.os.Environment
 import com.filecleaner.app.R
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
+import com.filecleaner.app.utils.file.JunkFinder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

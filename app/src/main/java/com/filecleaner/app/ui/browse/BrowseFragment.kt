@@ -543,7 +543,7 @@ class BrowseFragment : Fragment() {
             } else {
                 vm.copyFile(clip.item.path, targetDir)
             }
-            vm.clipboard.clear()
+            vm.clipboard.clearClipboard()
             refreshDirectBrowse()
         }
 

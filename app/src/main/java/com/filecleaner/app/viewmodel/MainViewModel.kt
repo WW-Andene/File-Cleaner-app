@@ -179,7 +179,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     // D5: Debounce cache writes — at most once per 3 seconds
     @Volatile private var saveCacheJob: Job? = null
 
-    @Volatile
     private var _isScanning: Boolean
         get() = scan.isScanning
         set(value) { scan.setIsScanning(value) }

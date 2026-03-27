@@ -2,6 +2,7 @@ package com.filecleaner.app.utils.analytics
 
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
+import com.filecleaner.app.utils.UndoHelper
 
 /**
  * Analyzes the cost of duplicate files — how much storage they waste,

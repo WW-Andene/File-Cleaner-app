@@ -3,6 +3,7 @@ package com.filecleaner.app.utils.analytics
 import android.content.Context
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
+import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.MainViewModel
 import java.io.File
 import java.text.SimpleDateFormat

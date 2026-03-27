@@ -27,6 +27,9 @@ class FileOperationService(private val app: Application, private val storagePath
 
     data class OpResult(val success: Boolean, val message: String)
 
+    private fun hasInvalidChars(name: String): Boolean =
+        name.any { it in INVALID_FILENAME_CHARS }
+
     /** Create a new empty file. */
     fun createNewFile(dirPath: String, filename: String): OpResult {
         if (hasInvalidChars(filename)) return OpResult(false, str(R.string.op_invalid_filename))

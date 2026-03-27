@@ -1,5 +1,6 @@
 package com.filecleaner.app.ui.viewer.strategy
 
+import android.media.MediaPlayer
 import android.media.PlaybackParams
 import android.net.Uri
 import android.os.Handler
@@ -33,6 +34,7 @@ class VideoPlayerDelegate(
 
     private var isPlaying = false
     private var isInitialized = false
+    private var mediaPlayer: MediaPlayer? = null
 
     /** Show the video. [onUnsupported] is called if playback fails. */
     fun show(file: File, onUnsupported: () -> Unit) {
@@ -40,6 +42,7 @@ class VideoPlayerDelegate(
         videoView.setVideoURI(Uri.fromFile(file))
 
         videoView.setOnPreparedListener { mp ->
+            mediaPlayer = mp
             isInitialized = true
             seekVideo.max = mp.duration
             tvVideoDuration.text = formatTime(mp.duration)
@@ -112,7 +115,7 @@ class VideoPlayerDelegate(
             speedIndex = (speedIndex + 1) % speeds.size
             btnVideoSpeed.text = speedLabels[speedIndex]
             try {
-                videoView.setPlaybackParams(PlaybackParams().setSpeed(speeds[speedIndex]))
+                mediaPlayer?.playbackParams = PlaybackParams().setSpeed(speeds[speedIndex])
             } catch (_: Exception) { }
         }
     }

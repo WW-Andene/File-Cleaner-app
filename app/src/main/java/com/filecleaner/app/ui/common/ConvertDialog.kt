@@ -134,7 +134,7 @@ object ConvertDialog {
         options.add(ConvertOption(
             title = context.getString(R.string.convert_flip_v),
             description = context.getString(R.string.convert_flip_desc),
-            action = { FileConverter.flipImage(item.path, vertical = false) }
+            action = { FileConverter.flipImage(item.path, horizontal = false) }
         ))
         options.add(ConvertOption(
             title = context.getString(R.string.convert_crop_square),

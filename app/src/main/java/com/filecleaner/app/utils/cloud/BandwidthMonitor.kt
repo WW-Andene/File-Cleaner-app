@@ -2,6 +2,7 @@ package com.filecleaner.app.utils.cloud
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.filecleaner.app.utils.UndoHelper
 
 /**
  * Tracks data transferred (uploaded + downloaded) per session and

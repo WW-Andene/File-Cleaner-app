@@ -2,6 +2,7 @@ package com.filecleaner.app.utils.file
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import com.filecleaner.app.utils.UndoHelper
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
@@ -808,11 +809,16 @@ object FileConverter {
 
                 for (i in 0 until renderer.pageCount) {
                     val srcPage = renderer.openPage(i)
-                    val pageInfo = PdfDocument.PageInfo.Builder(srcPage.width, srcPage.height, pageNum++).create()
-                    val destPage = outDoc.startPage(pageInfo)
-                    srcPage.render(destPage.canvas, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
-                    outDoc.finishPage(destPage)
+                    val pw = srcPage.width; val ph = srcPage.height
+                    val bmp = Bitmap.createBitmap(pw, ph, Bitmap.Config.ARGB_8888)
+                    srcPage.render(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
                     srcPage.close()
+
+                    val pageInfo = PdfDocument.PageInfo.Builder(pw, ph, pageNum++).create()
+                    val destPage = outDoc.startPage(pageInfo)
+                    destPage.canvas.drawBitmap(bmp, 0f, 0f, null)
+                    outDoc.finishPage(destPage)
+                    bmp.recycle()
                 }
                 renderer.close()
                 fd.close()
@@ -841,12 +847,17 @@ object FileConverter {
 
             for (i in 0 until pageCount) {
                 val srcPage = renderer.openPage(i)
-                val singleDoc = PdfDocument()
-                val pageInfo = PdfDocument.PageInfo.Builder(srcPage.width, srcPage.height, 1).create()
-                val destPage = singleDoc.startPage(pageInfo)
-                srcPage.render(destPage.canvas, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
-                singleDoc.finishPage(destPage)
+                val pw = srcPage.width; val ph = srcPage.height
+                val bmp = Bitmap.createBitmap(pw, ph, Bitmap.Config.ARGB_8888)
+                srcPage.render(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
                 srcPage.close()
+
+                val singleDoc = PdfDocument()
+                val pageInfo = PdfDocument.PageInfo.Builder(pw, ph, 1).create()
+                val destPage = singleDoc.startPage(pageInfo)
+                destPage.canvas.drawBitmap(bmp, 0f, 0f, null)
+                singleDoc.finishPage(destPage)
+                bmp.recycle()
 
                 val pageFile = File(outDir, "${src.nameWithoutExtension}_page_${i + 1}.pdf")
                 pageFile.outputStream().use { singleDoc.writeTo(it) }

@@ -3,6 +3,7 @@ package com.filecleaner.app.utils.analytics
 import android.content.Context
 import android.os.Environment
 import android.os.StatFs
+import com.filecleaner.app.utils.UndoHelper
 
 /**
  * Predicts when storage will be full based on historical usage trends.

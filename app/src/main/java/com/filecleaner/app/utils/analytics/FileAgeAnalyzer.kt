@@ -1,6 +1,7 @@
 package com.filecleaner.app.utils.analytics
 
 import com.filecleaner.app.data.FileItem
+import com.filecleaner.app.utils.UndoHelper
 
 /**
  * Analyzes files by age to help users identify old data worth cleaning.

@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import com.filecleaner.app.BuildConfig
 import com.filecleaner.app.data.UserPreferences
+import com.filecleaner.app.utils.UndoHelper
 
 /**
  * Generates debug information for troubleshooting and support.

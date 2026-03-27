@@ -23,10 +23,14 @@ android {
 
     signingConfigs {
         release {
-            storeFile file('../release-keystore.jks')
-            storePassword 'raccoon2024'
-            keyAlias 'filecleaner'
-            keyPassword 'raccoon2024'
+            def props = new Properties()
+            def propsFile = rootProject.file('keystore.properties')
+            if (propsFile.exists()) props.load(propsFile.newDataInputStream())
+
+            storeFile file(props.getProperty('storeFile', '../release-keystore.jks'))
+            storePassword props.getProperty('storePassword', '')
+            keyAlias props.getProperty('keyAlias', 'filecleaner')
+            keyPassword props.getProperty('keyPassword', '')
         }
     }
 

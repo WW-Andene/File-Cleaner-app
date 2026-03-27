@@ -115,6 +115,48 @@ object ConvertDialog {
             action = null // Handled by custom click
         ))
 
+        // Image transforms
+        options.add(ConvertOption(
+            title = context.getString(R.string.convert_rotate_90),
+            description = context.getString(R.string.convert_rotate_desc),
+            action = { FileConverter.rotateImage(item.path, 90f) }
+        ))
+        options.add(ConvertOption(
+            title = context.getString(R.string.convert_rotate_180),
+            description = context.getString(R.string.convert_rotate_desc),
+            action = { FileConverter.rotateImage(item.path, 180f) }
+        ))
+        options.add(ConvertOption(
+            title = context.getString(R.string.convert_flip_h),
+            description = context.getString(R.string.convert_flip_desc),
+            action = { FileConverter.flipImage(item.path, horizontal = true) }
+        ))
+        options.add(ConvertOption(
+            title = context.getString(R.string.convert_flip_v),
+            description = context.getString(R.string.convert_flip_desc),
+            action = { FileConverter.flipImage(item.path, vertical = false) }
+        ))
+        options.add(ConvertOption(
+            title = context.getString(R.string.convert_crop_square),
+            description = context.getString(R.string.convert_crop_desc),
+            action = { FileConverter.cropToAspectRatio(item.path, 1, 1) }
+        ))
+        options.add(ConvertOption(
+            title = context.getString(R.string.convert_crop_16_9),
+            description = context.getString(R.string.convert_crop_desc),
+            action = { FileConverter.cropToAspectRatio(item.path, 16, 9) }
+        ))
+        options.add(ConvertOption(
+            title = context.getString(R.string.convert_watermark),
+            description = context.getString(R.string.convert_watermark_desc),
+            action = { FileConverter.addWatermark(item.path, "\u00A9 ${java.time.Year.now().value}") }
+        ))
+        options.add(ConvertOption(
+            title = context.getString(R.string.convert_to_base64),
+            description = context.getString(R.string.convert_base64_desc),
+            action = { FileConverter.imageToBase64(item.path) }
+        ))
+
         showOptionsListWithResize(context, item, options, onResult)
     }
 
@@ -260,7 +302,7 @@ object ConvertDialog {
         val options = mutableListOf<ConvertOption>()
         val ext = item.extension
 
-        // PDF -> Images
+        // PDF operations
         if (ext == "pdf") {
             for (fmt in FileConverter.PdfImageFormat.entries) {
                 options.add(ConvertOption(
@@ -272,6 +314,24 @@ object ConvertDialog {
                     }
                 ))
             }
+            // PDF split
+            options.add(ConvertOption(
+                title = context.getString(R.string.convert_pdf_split),
+                description = context.getString(R.string.convert_pdf_split_desc),
+                action = {
+                    val outputDir = "${item.file.parent}/${item.file.nameWithoutExtension}_split"
+                    FileConverter.splitPdf(item.path, outputDir)
+                }
+            ))
+        }
+
+        // vCard → CSV
+        if (ext == "vcf" || ext == "vcard") {
+            options.add(ConvertOption(
+                title = context.getString(R.string.convert_vcard_to_csv),
+                description = context.getString(R.string.convert_vcard_desc),
+                action = { FileConverter.vcardToCsv(item.path) }
+            ))
         }
 
         // Audio -> Album art

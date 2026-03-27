@@ -181,6 +181,24 @@ internal object VideoConvertDialog {
         gifBtnRow.addView(btnCreateGif)
         container.addView(gifBtnRow)
 
+        // ---- Divider ----
+        container.addView(View(context).apply {
+            val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, strokeDefault)
+            lp.topMargin = spacingXl
+            lp.bottomMargin = spacingLg
+            layoutParams = lp
+            setBackgroundColor(ContextCompat.getColor(context, R.color.borderDefault))
+        })
+
+        // ---- Section 4: Contact Sheet ----
+        container.addView(buildSectionTitle(context, R.string.convert_contact_sheet))
+        container.addView(buildSectionDesc(context, R.string.convert_contact_sheet_desc, spacingXs))
+
+        val btnContactSheet = ConvertDialogUtils.buildActionButton(context, context.getString(R.string.convert_create_contact_sheet))
+        val sheetRow = buildHorizontalRow(context, spacingMd)
+        sheetRow.addView(btnContactSheet)
+        container.addView(sheetRow)
+
         // Show the dialog
         val dialog = RoundedDialogBuilder(context)
             .setTitle(context.getString(R.string.convert_title))
@@ -229,6 +247,13 @@ internal object VideoConvertDialog {
                     fps = 10,
                     maxWidth = 320
                 )
+            }, onResult)
+        }
+
+        btnContactSheet.setOnClickListener {
+            dialog.dismiss()
+            ConvertDialogUtils.runConversion(context, {
+                FileConverter.videoContactSheet(item.path)
             }, onResult)
         }
 

@@ -1132,6 +1132,36 @@
     <string name="empty_folders_none">No empty folders found</string>
 
     <!-- Accessibility additions -->
+    <!-- Image transforms -->
+    <string name="convert_rotate_90">Rotate 90\u00B0</string>
+    <string name="convert_rotate_180">Rotate 180\u00B0</string>
+    <string name="convert_rotate_desc">Rotate the image clockwise</string>
+    <string name="convert_flip_h">Flip Horizontal</string>
+    <string name="convert_flip_v">Flip Vertical</string>
+    <string name="convert_flip_desc">Mirror the image</string>
+    <string name="convert_crop_square">Crop to Square (1:1)</string>
+    <string name="convert_crop_16_9">Crop to 16:9</string>
+    <string name="convert_crop_desc">Crop from center to target aspect ratio</string>
+    <string name="convert_watermark">Add Watermark</string>
+    <string name="convert_watermark_desc">Add a copyright year watermark to the image</string>
+    <string name="convert_to_base64">Convert to Base64</string>
+    <string name="convert_base64_desc">Export as a data URL text file</string>
+
+    <!-- PDF operations -->
+    <string name="convert_pdf_split">Split PDF</string>
+    <string name="convert_pdf_split_desc">Split into individual single-page PDFs</string>
+    <string name="convert_pdf_merge">Merge PDFs</string>
+    <string name="convert_pdf_merge_desc">Combine multiple PDFs into one file</string>
+
+    <!-- Video contact sheet -->
+    <string name="convert_contact_sheet">Contact Sheet</string>
+    <string name="convert_contact_sheet_desc">Create a 4\u00D74 thumbnail grid overview of the video</string>
+    <string name="convert_create_contact_sheet">Create Contact Sheet</string>
+
+    <!-- vCard -->
+    <string name="convert_vcard_to_csv">Convert to CSV</string>
+    <string name="convert_vcard_desc">Extract contacts to a spreadsheet-compatible CSV file</string>
+
     <string name="a11y_list_content">List of items</string>
     <string name="a11y_storage_progress">Storage usage progress bar</string>
 

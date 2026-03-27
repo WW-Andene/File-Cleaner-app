@@ -668,4 +668,326 @@ object FileConverter {
             try { retriever.release() } catch (_: Exception) {}
         }
     }
+
+    // =========================================================================
+    // IMAGE TRANSFORMS
+    // =========================================================================
+
+    /** Rotate an image by [degrees] (90, 180, 270). */
+    fun rotateImage(inputPath: String, degrees: Float): ConvertResult {
+        return try {
+            val src = File(inputPath)
+            val bitmap = BitmapFactory.decodeFile(inputPath) ?: return ConvertResult(false, "", "Cannot decode image")
+            val matrix = android.graphics.Matrix().apply { postRotate(degrees) }
+            val rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+            bitmap.recycle()
+
+            val ext = src.extension.ifEmpty { "jpg" }
+            val output = File(src.parent, "${src.nameWithoutExtension}_rot${degrees.toInt()}.$ext")
+            val format = when (ext.lowercase()) {
+                "png" -> Bitmap.CompressFormat.PNG
+                "webp" -> Bitmap.CompressFormat.WEBP_LOSSY
+                else -> Bitmap.CompressFormat.JPEG
+            }
+            output.outputStream().buffered().use { rotated.compress(format, 95, it) }
+            rotated.recycle()
+            ConvertResult(true, output.absolutePath, "Rotated ${degrees.toInt()}°")
+        } catch (e: Exception) {
+            ConvertResult(false, "", "Rotate failed: ${e.localizedMessage}")
+        }
+    }
+
+    /** Flip an image horizontally or vertically. */
+    fun flipImage(inputPath: String, horizontal: Boolean): ConvertResult {
+        return try {
+            val src = File(inputPath)
+            val bitmap = BitmapFactory.decodeFile(inputPath) ?: return ConvertResult(false, "", "Cannot decode image")
+            val matrix = android.graphics.Matrix().apply {
+                if (horizontal) preScale(-1f, 1f) else preScale(1f, -1f)
+            }
+            val flipped = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+            bitmap.recycle()
+
+            val dir = if (horizontal) "h" else "v"
+            val ext = src.extension.ifEmpty { "jpg" }
+            val output = File(src.parent, "${src.nameWithoutExtension}_flip${dir}.$ext")
+            val format = when (ext.lowercase()) {
+                "png" -> Bitmap.CompressFormat.PNG
+                "webp" -> Bitmap.CompressFormat.WEBP_LOSSY
+                else -> Bitmap.CompressFormat.JPEG
+            }
+            output.outputStream().buffered().use { flipped.compress(format, 95, it) }
+            flipped.recycle()
+            ConvertResult(true, output.absolutePath, "Flipped ${if (horizontal) "horizontally" else "vertically"}")
+        } catch (e: Exception) {
+            ConvertResult(false, "", "Flip failed: ${e.localizedMessage}")
+        }
+    }
+
+    /** Crop an image to a target aspect ratio (e.g., 16:9, 1:1, 4:3). */
+    fun cropToAspectRatio(inputPath: String, ratioW: Int, ratioH: Int): ConvertResult {
+        return try {
+            val src = File(inputPath)
+            val bitmap = BitmapFactory.decodeFile(inputPath) ?: return ConvertResult(false, "", "Cannot decode image")
+
+            val targetRatio = ratioW.toFloat() / ratioH
+            val currentRatio = bitmap.width.toFloat() / bitmap.height
+            val (cropW, cropH) = if (currentRatio > targetRatio) {
+                val w = (bitmap.height * targetRatio).toInt()
+                w to bitmap.height
+            } else {
+                bitmap.width to (bitmap.width / targetRatio).toInt()
+            }
+            val x = (bitmap.width - cropW) / 2
+            val y = (bitmap.height - cropH) / 2
+
+            val cropped = Bitmap.createBitmap(bitmap, x, y, cropW, cropH)
+            bitmap.recycle()
+
+            val ext = src.extension.ifEmpty { "jpg" }
+            val output = File(src.parent, "${src.nameWithoutExtension}_${ratioW}x${ratioH}.$ext")
+            val format = when (ext.lowercase()) {
+                "png" -> Bitmap.CompressFormat.PNG
+                "webp" -> Bitmap.CompressFormat.WEBP_LOSSY
+                else -> Bitmap.CompressFormat.JPEG
+            }
+            output.outputStream().buffered().use { cropped.compress(format, 95, it) }
+            cropped.recycle()
+            ConvertResult(true, output.absolutePath, "Cropped to $ratioW:$ratioH (${cropW}×${cropH})")
+        } catch (e: Exception) {
+            ConvertResult(false, "", "Crop failed: ${e.localizedMessage}")
+        }
+    }
+
+    /** Add a text watermark to an image. */
+    fun addWatermark(inputPath: String, text: String, opacity: Float = 0.5f): ConvertResult {
+        return try {
+            val src = File(inputPath)
+            val bitmap = BitmapFactory.decodeFile(inputPath)?.copy(Bitmap.Config.ARGB_8888, true)
+                ?: return ConvertResult(false, "", "Cannot decode image")
+
+            val canvas = android.graphics.Canvas(bitmap)
+            val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.WHITE
+                alpha = (opacity * 255).toInt()
+                textSize = bitmap.width * 0.05f
+                typeface = android.graphics.Typeface.DEFAULT_BOLD
+                setShadowLayer(4f, 2f, 2f, Color.BLACK)
+            }
+            val x = bitmap.width * 0.05f
+            val y = bitmap.height - bitmap.width * 0.05f
+            canvas.drawText(text, x, y, paint)
+
+            val ext = src.extension.ifEmpty { "jpg" }
+            val output = File(src.parent, "${src.nameWithoutExtension}_watermark.$ext")
+            val format = when (ext.lowercase()) {
+                "png" -> Bitmap.CompressFormat.PNG
+                else -> Bitmap.CompressFormat.JPEG
+            }
+            output.outputStream().buffered().use { bitmap.compress(format, 95, it) }
+            bitmap.recycle()
+            ConvertResult(true, output.absolutePath, "Watermark added: \"$text\"")
+        } catch (e: Exception) {
+            ConvertResult(false, "", "Watermark failed: ${e.localizedMessage}")
+        }
+    }
+
+    // =========================================================================
+    // PDF OPERATIONS
+    // =========================================================================
+
+    /** Merge multiple PDF files into one. */
+    fun mergePdfs(inputPaths: List<String>, outputPath: String): ConvertResult {
+        return try {
+            val outDoc = PdfDocument()
+            var pageNum = 1
+
+            for (path in inputPaths) {
+                val fd = ParcelFileDescriptor.open(File(path), ParcelFileDescriptor.MODE_READ_ONLY)
+                val renderer = PdfRenderer(fd)
+
+                for (i in 0 until renderer.pageCount) {
+                    val srcPage = renderer.openPage(i)
+                    val pageInfo = PdfDocument.PageInfo.Builder(srcPage.width, srcPage.height, pageNum++).create()
+                    val destPage = outDoc.startPage(pageInfo)
+                    srcPage.render(destPage.canvas, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
+                    outDoc.finishPage(destPage)
+                    srcPage.close()
+                }
+                renderer.close()
+                fd.close()
+            }
+
+            File(outputPath).outputStream().use { outDoc.writeTo(it) }
+            outDoc.close()
+            ConvertResult(true, outputPath, "Merged ${inputPaths.size} PDFs ($pageNum pages)")
+        } catch (e: Exception) {
+            ConvertResult(false, "", "PDF merge failed: ${e.localizedMessage}")
+        }
+    }
+
+    /** Split a PDF into individual single-page PDFs. */
+    fun splitPdf(inputPath: String, outputDir: String): ConvertResult {
+        return try {
+            val src = File(inputPath)
+            val outDir = File(outputDir)
+            if (!outDir.mkdirs() && !outDir.isDirectory) {
+                return ConvertResult(false, "", "Cannot create output directory")
+            }
+
+            val fd = ParcelFileDescriptor.open(src, ParcelFileDescriptor.MODE_READ_ONLY)
+            val renderer = PdfRenderer(fd)
+            val pageCount = renderer.pageCount
+
+            for (i in 0 until pageCount) {
+                val srcPage = renderer.openPage(i)
+                val singleDoc = PdfDocument()
+                val pageInfo = PdfDocument.PageInfo.Builder(srcPage.width, srcPage.height, 1).create()
+                val destPage = singleDoc.startPage(pageInfo)
+                srcPage.render(destPage.canvas, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
+                singleDoc.finishPage(destPage)
+                srcPage.close()
+
+                val pageFile = File(outDir, "${src.nameWithoutExtension}_page_${i + 1}.pdf")
+                pageFile.outputStream().use { singleDoc.writeTo(it) }
+                singleDoc.close()
+            }
+
+            renderer.close()
+            fd.close()
+            ConvertResult(true, outDir.absolutePath, "Split into $pageCount pages")
+        } catch (e: Exception) {
+            ConvertResult(false, "", "PDF split failed: ${e.localizedMessage}")
+        }
+    }
+
+    // =========================================================================
+    // VIDEO CONTACT SHEET
+    // =========================================================================
+
+    /** Creates a thumbnail grid (contact sheet) from a video. */
+    fun videoContactSheet(
+        inputPath: String,
+        columns: Int = 4,
+        rows: Int = 4,
+        thumbWidth: Int = 320
+    ): ConvertResult {
+        val retriever = MediaMetadataRetriever()
+        return try {
+            retriever.setDataSource(inputPath)
+            val durationMs = retriever.extractMetadata(
+                MediaMetadataRetriever.METADATA_KEY_DURATION
+            )?.toLongOrNull() ?: return ConvertResult(false, "", "Cannot read video duration")
+
+            val count = columns * rows
+            val interval = durationMs / count
+            val thumbs = mutableListOf<Bitmap>()
+
+            for (i in 0 until count) {
+                val timeUs = (interval * i) * 1000
+                val frame = retriever.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+                    ?: continue
+                val scale = thumbWidth.toFloat() / frame.width
+                val h = (frame.height * scale).toInt().coerceAtLeast(1)
+                val scaled = Bitmap.createScaledBitmap(frame, thumbWidth, h, true)
+                if (scaled !== frame) frame.recycle()
+                thumbs.add(scaled)
+            }
+
+            if (thumbs.isEmpty()) return ConvertResult(false, "", "No frames extracted")
+
+            val thumbH = thumbs[0].height
+            val gridW = thumbWidth * columns
+            val gridH = thumbH * rows
+            val grid = Bitmap.createBitmap(gridW, gridH, Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(grid)
+            canvas.drawColor(Color.BLACK)
+
+            for ((idx, thumb) in thumbs.withIndex()) {
+                val col = idx % columns
+                val row = idx / columns
+                if (row >= rows) break
+                canvas.drawBitmap(thumb, (col * thumbWidth).toFloat(), (row * thumbH).toFloat(), null)
+                thumb.recycle()
+            }
+
+            val src = File(inputPath)
+            val output = File(src.parent, "${src.nameWithoutExtension}_contact_sheet.jpg")
+            output.outputStream().buffered().use { grid.compress(Bitmap.CompressFormat.JPEG, 90, it) }
+            grid.recycle()
+            ConvertResult(true, output.absolutePath, "Contact sheet: ${columns}x${rows} grid")
+        } catch (e: Exception) {
+            ConvertResult(false, "", "Contact sheet failed: ${e.localizedMessage}")
+        } finally {
+            try { retriever.release() } catch (_: Exception) {}
+        }
+    }
+
+    // =========================================================================
+    // UTILITY CONVERSIONS
+    // =========================================================================
+
+    /** Convert an image to Base64 text string. */
+    fun imageToBase64(inputPath: String): ConvertResult {
+        return try {
+            val src = File(inputPath)
+            val bytes = src.readBytes()
+            val base64 = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+            val ext = src.extension.lowercase()
+            val mime = when (ext) {
+                "png" -> "image/png"
+                "webp" -> "image/webp"
+                "gif" -> "image/gif"
+                else -> "image/jpeg"
+            }
+            val dataUrl = "data:$mime;base64,$base64"
+
+            val output = File(src.parent, "${src.nameWithoutExtension}_base64.txt")
+            output.writeText(dataUrl)
+            ConvertResult(true, output.absolutePath, "Base64: ${output.length() / 1024} KB text")
+        } catch (e: Exception) {
+            ConvertResult(false, "", "Base64 failed: ${e.localizedMessage}")
+        }
+    }
+
+    /** Convert a vCard (.vcf) file to CSV. */
+    fun vcardToCsv(inputPath: String): ConvertResult {
+        return try {
+            val src = File(inputPath)
+            val lines = src.readLines()
+            val contacts = mutableListOf<MutableMap<String, String>>()
+            var current: MutableMap<String, String>? = null
+
+            for (line in lines) {
+                when {
+                    line.startsWith("BEGIN:VCARD") -> current = mutableMapOf()
+                    line.startsWith("END:VCARD") -> {
+                        current?.let { contacts.add(it) }
+                        current = null
+                    }
+                    line.startsWith("FN:") -> current?.set("Name", line.substringAfter("FN:"))
+                    line.startsWith("N:") -> current?.putIfAbsent("Name", line.substringAfter("N:").replace(";", " ").trim())
+                    line.startsWith("TEL") -> current?.set("Phone", line.substringAfter(":"))
+                    line.startsWith("EMAIL") -> current?.set("Email", line.substringAfter(":"))
+                    line.startsWith("ORG:") -> current?.set("Organization", line.substringAfter("ORG:"))
+                    line.startsWith("TITLE:") -> current?.set("Title", line.substringAfter("TITLE:"))
+                    line.startsWith("ADR") -> current?.set("Address", line.substringAfter(":").replace(";", ", ").trim())
+                }
+            }
+
+            if (contacts.isEmpty()) return ConvertResult(false, "", "No contacts found in vCard")
+
+            val headers = listOf("Name", "Phone", "Email", "Organization", "Title", "Address")
+            val output = File(src.parent, "${src.nameWithoutExtension}.csv")
+            output.bufferedWriter().use { writer ->
+                writer.appendLine(headers.joinToString(","))
+                for (contact in contacts) {
+                    writer.appendLine(headers.joinToString(",") { "\"${contact[it] ?: ""}\"" })
+                }
+            }
+            ConvertResult(true, output.absolutePath, "Converted ${contacts.size} contacts to CSV")
+        } catch (e: Exception) {
+            ConvertResult(false, "", "vCard conversion failed: ${e.localizedMessage}")
+        }
+    }
 }

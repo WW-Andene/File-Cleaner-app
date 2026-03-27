@@ -134,6 +134,8 @@ class MessagingCleanerFragment : Fragment() {
             holder.binding.tvGroupSize.text = UndoHelper.formatBytes(group.totalSize)
 
             holder.binding.ivAppIcon.setImageResource(R.drawable.ic_messaging)
+            holder.itemView.contentDescription = "${group.appName} ${group.category}, " +
+                "${group.files.size} files, ${UndoHelper.formatBytes(group.totalSize)}"
 
             holder.itemView.setOnClickListener { onClick(group) }
         }

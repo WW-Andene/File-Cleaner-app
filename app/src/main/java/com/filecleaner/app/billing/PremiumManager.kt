@@ -100,6 +100,7 @@ object PremiumManager {
     /** Check if a specific premium feature is available. */
     fun hasFeature(feature: PremiumFeature): Boolean = _isPremium.value
 
+    @Synchronized
     private fun handlePurchase(context: Context, purchase: Purchase) {
         if (!purchase.isAcknowledged) {
             val params = AcknowledgePurchaseParams.newBuilder()
@@ -113,8 +114,7 @@ object PremiumManager {
             }
         }
 
-        _isPremium.value = true
-        prefs(context).edit().putBoolean(KEY_PREMIUM, true).apply()
+        updatePremiumState(context, true)
     }
 
     private fun restorePurchases(context: Context) {
@@ -128,10 +128,16 @@ object PremiumManager {
                     it.products.contains(PRODUCT_ID) &&
                         it.purchaseState == Purchase.PurchaseState.PURCHASED
                 }
-                _isPremium.value = hasPremium
-                prefs(context).edit().putBoolean(KEY_PREMIUM, hasPremium).apply()
+                updatePremiumState(context, hasPremium)
             }
         }
+    }
+
+    /** Thread-safe premium state update from any callback thread. */
+    @Synchronized
+    private fun updatePremiumState(context: Context, isPremium: Boolean) {
+        _isPremium.value = isPremium
+        prefs(context).edit().putBoolean(KEY_PREMIUM, isPremium).apply()
     }
 
     fun destroy() {

@@ -88,21 +88,19 @@ object CloudConnectionStore {
         }
     }
 
+    @Synchronized
     fun saveConnection(connection: CloudConnection) {
-        synchronized(this) {
-            val connections = getConnections().toMutableList()
-            connections.removeAll { it.id == connection.id }
-            connections.add(connection)
-            saveAll(connections)
-        }
+        val connections = getConnections().toMutableList()
+        connections.removeAll { it.id == connection.id }
+        connections.add(connection)
+        saveAll(connections)
     }
 
+    @Synchronized
     fun removeConnection(id: String) {
-        synchronized(this) {
-            val connections = getConnections().toMutableList()
-            connections.removeAll { it.id == id }
-            saveAll(connections)
-        }
+        val connections = getConnections().toMutableList()
+        connections.removeAll { it.id == id }
+        saveAll(connections)
     }
 
     private fun saveAll(connections: List<CloudConnection>) {

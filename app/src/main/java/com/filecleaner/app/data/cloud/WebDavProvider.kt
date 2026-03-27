@@ -312,6 +312,7 @@ class WebDavProvider(private var connection: CloudConnection) : CloudProvider {
     private fun parseHttpDate(dateStr: String): Long {
         return try {
             val format = java.text.SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", java.util.Locale.US)
+            format.timeZone = java.util.TimeZone.getTimeZone("UTC")
             format.parse(dateStr)?.time ?: 0L
         } catch (_: Exception) {
             0L

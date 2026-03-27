@@ -92,7 +92,7 @@ object FileConverter {
         val imageSize = rowSize * h
         val fileSize = 54 + imageSize
 
-        if (fileSize > Int.MAX_VALUE) {
+        if (fileSize > Int.MAX_VALUE || imageSize > Int.MAX_VALUE) {
             throw IllegalArgumentException("Image too large for BMP format (${w}x${h})")
         }
 

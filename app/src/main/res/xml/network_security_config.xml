@@ -7,7 +7,10 @@
         </trust-anchors>
     </base-config>
 
-    <!-- #1: Certificate pinning for critical API endpoints -->
+    <!-- #1: Certificate pinning for critical API endpoints
+         IMPORTANT: Pin expiration is 2027-01-01. Renew before that date
+         by updating the SHA-256 pin digests below. Check current pins at:
+         https://www.ssllabs.com/ssltest/ for each domain. -->
     <domain-config>
         <!-- GitHub API — used for crash reporting and cloud file access -->
         <domain includeSubdomains="true">api.github.com</domain>

@@ -144,6 +144,8 @@ class AppManagerFragment : Fragment() {
                 holder.binding.ivAppIcon.setImageResource(R.drawable.ic_apk)
             }
 
+            holder.itemView.contentDescription = "${app.name}, ${UndoHelper.formatBytes(app.sizeBytes)}"
+
             holder.itemView.setOnClickListener { onClick(app) }
         }
 

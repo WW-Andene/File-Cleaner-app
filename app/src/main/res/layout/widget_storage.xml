@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/bg_widget"
-    android:padding="12dp"
+    android:padding="@dimen/spacing_md"
     android:gravity="center">
 
     <!-- Title row -->
@@ -25,10 +25,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="@dimen/spacing_sm"
             android:text="@string/app_name"
             android:textColor="@color/textPrimary"
-            android:textSize="13sp"
+            android:textSize="@dimen/text_body_small"
             android:textStyle="bold" />
 
         <TextView
@@ -36,7 +36,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/colorPrimary"
-            android:textSize="18sp"
+            android:textSize="@dimen/text_headline"
             android:textStyle="bold" />
     </LinearLayout>
 
@@ -45,8 +45,8 @@
         android:id="@+id/progress_widget"
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="match_parent"
-        android:layout_height="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_height="@dimen/spacing_sm"
+        android:layout_marginTop="@dimen/spacing_sm"
         android:max="100"
         android:progressDrawable="@drawable/bg_widget_progress" />
 
@@ -55,7 +55,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="4dp">
+        android:layout_marginTop="@dimen/spacing_xs">
 
         <TextView
             android:id="@+id/tv_widget_used"
@@ -63,14 +63,14 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textColor="@color/textSecondary"
-            android:textSize="11sp" />
+            android:textSize="@dimen/text_label" />
 
         <TextView
             android:id="@+id/tv_widget_total"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/textTertiary"
-            android:textSize="11sp" />
+            android:textSize="@dimen/text_label" />
     </LinearLayout>
 
     <TextView
@@ -78,18 +78,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/textSecondary"
-        android:textSize="11sp" />
+        android:textSize="@dimen/text_label" />
 
     <!-- Clean button -->
     <Button
         android:id="@+id/btn_widget_clean"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:minHeight="48dp"
-        android:layout_marginTop="8dp"
+        android:layout_height="@dimen/touch_target_min"
+        android:minHeight="@dimen/touch_target_min"
+        android:layout_marginTop="@dimen/spacing_sm"
         android:text="@string/widget_clean_now"
         android:textAllCaps="false"
-        android:textSize="12sp"
+        android:textSize="@dimen/text_body_small"
         android:contentDescription="@string/widget_clean_now"
         android:background="@drawable/bg_widget_button" />
 </LinearLayout>

@@ -1050,7 +1050,13 @@ class FileViewerFragment : Fragment() {
 
     private fun showApkInfo(file: File) {
         binding.codeEditorContainer.visibility = View.VISIBLE
-        binding.codeToolbar.visibility = View.GONE // Read-only for APKs
+        // Show toolbar with Install button instead of save
+        binding.codeToolbar.visibility = View.VISIBLE
+        binding.btnCodeSave.text = getString(R.string.apk_install)
+        binding.btnCodeSave.setOnClickListener { installApk(file) }
+        binding.btnCodeUndo.visibility = View.GONE
+        binding.btnCodeRedo.visibility = View.GONE
+        binding.btnCodeFind.visibility = View.GONE
         binding.tvTextContent.isFocusableInTouchMode = false
         binding.tvTextContent.keyListener = null
 
@@ -1154,8 +1160,9 @@ class FileViewerFragment : Fragment() {
                 }
             }
 
-            binding.tvTextContent.setText(info)
-            updateLineNumbers(info)
+            val fullInfo = info + showApkContents(file)
+            binding.tvTextContent.setText(fullInfo)
+            updateLineNumbers(fullInfo)
 
             // Try to load APK icon
             try {
@@ -1180,6 +1187,64 @@ class FileViewerFragment : Fragment() {
         34 -> "14"
         35 -> "15"
         else -> if (sdk > 0) "API $sdk" else "?"
+    }
+
+    /** Install an APK via system installer. */
+    private fun installApk(file: File) {
+        val ctx = requireContext()
+        val uri = androidx.core.content.FileProvider.getUriForFile(
+            ctx, "${ctx.packageName}.fileprovider", file)
+        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/vnd.android.package-archive")
+            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        ctx.startActivity(intent)
+    }
+
+    /** List contents of an APK (ZIP archive) and show as browsable tree. */
+    private fun showApkContents(file: File): String {
+        return try {
+            val entries = mutableListOf<Pair<String, Long>>() // name to size
+            java.util.zip.ZipInputStream(file.inputStream().buffered()).use { zis ->
+                var entry = zis.nextEntry
+                while (entry != null) {
+                    if (!entry.isDirectory) {
+                        entries.add(entry.name to entry.size)
+                    }
+                    entry = zis.nextEntry
+                }
+            }
+
+            val grouped = entries.groupBy { it.first.substringBefore('/') }
+            buildString {
+                appendLine()
+                appendLine("══════════════════════════════")
+                appendLine("  APK CONTENTS (${entries.size} files)")
+                appendLine("══════════════════════════════")
+                appendLine()
+
+                for ((folder, files) in grouped.toSortedMap()) {
+                    val folderSize = files.sumOf { it.second }
+                    appendLine("📁 $folder/ (${UndoHelper.formatBytes(folderSize)})")
+                    // Show first 10 files per folder, then "... and N more"
+                    for ((idx, f) in files.sortedBy { it.first }.withIndex()) {
+                        if (idx >= 10) {
+                            appendLine("     ... and ${files.size - 10} more files")
+                            break
+                        }
+                        val name = f.first.substringAfter('/')
+                        appendLine("   📄 $name (${UndoHelper.formatBytes(f.second)})")
+                    }
+                }
+
+                // Summary
+                appendLine()
+                appendLine("Total: ${entries.size} files, ${UndoHelper.formatBytes(entries.sumOf { it.second })}")
+            }
+        } catch (e: Exception) {
+            "\n\nCannot read APK contents: ${e.localizedMessage}"
+        }
     }
 
     // ── Unsupported Fallback ────────────────────────────────────────────────

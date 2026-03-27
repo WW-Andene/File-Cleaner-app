@@ -127,6 +127,42 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Storage trend card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_trend"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="@dimen/radius_card"
+            app:cardElevation="@dimen/elevation_none"
+            app:cardBackgroundColor="@color/surfaceColor"
+            app:strokeWidth="@dimen/stroke_default"
+            app:strokeColor="@color/borderSubtle"
+            android:layout_marginBottom="@dimen/spacing_md"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_lg">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dashboard_trend_title"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.Body"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_trend_summary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                    android:textColor="@color/textSecondary"
+                    android:layout_marginTop="@dimen/spacing_xs" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Scan stats card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"

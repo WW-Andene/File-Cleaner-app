@@ -19,6 +19,7 @@ import com.filecleaner.app.R
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.databinding.FragmentDashboardBinding
+import com.filecleaner.app.utils.StorageHistoryManager
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.filecleaner.app.viewmodel.ScanState
@@ -106,6 +107,9 @@ class StorageDashboardFragment : Fragment() {
 
                 // Show quick actions when scan data exists
                 binding.cardQuickActions.visibility = View.VISIBLE
+
+                // Show storage trend if history is available
+                updateTrendCard()
             }
         }
 
@@ -144,6 +148,39 @@ class StorageDashboardFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         refreshStorageStats()
+    }
+
+    /** Show 7-day storage trend if enough history exists. */
+    private fun updateTrendCard() {
+        val b = _binding ?: return
+        val ctx = context ?: return
+        val change = StorageHistoryManager.getStorageChange(ctx, daysAgo = 7) ?: run {
+            b.cardTrend.visibility = View.GONE
+            return
+        }
+
+        val summary = buildString {
+            val absDelta = kotlin.math.abs(change.totalSizeDelta)
+            val absFiles = kotlin.math.abs(change.totalFilesDelta)
+            when {
+                change.totalSizeDelta > 1_048_576 -> append(getString(
+                    R.string.dashboard_trend_growing,
+                    UndoHelper.formatBytes(absDelta), change.periodDays, change.totalFilesDelta))
+                change.totalSizeDelta < -1_048_576 -> append(getString(
+                    R.string.dashboard_trend_shrinking,
+                    UndoHelper.formatBytes(absDelta), change.periodDays, absFiles))
+                else -> append(getString(R.string.dashboard_trend_stable, change.periodDays))
+            }
+            // Add junk growth warning if applicable
+            if (change.junkSizeDelta > 10_485_760) { // >10 MB growth
+                append("\n")
+                append(getString(R.string.dashboard_trend_junk_growing,
+                    UndoHelper.formatBytes(change.junkSizeDelta)))
+            }
+        }
+
+        b.tvTrendSummary.text = summary
+        b.cardTrend.visibility = View.VISIBLE
     }
 
     /** Read device storage via StatFs and update the header. */

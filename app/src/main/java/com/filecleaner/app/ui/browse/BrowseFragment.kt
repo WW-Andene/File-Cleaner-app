@@ -372,18 +372,13 @@ class BrowseFragment : Fragment() {
     /** Updates the Expand All / Collapse All button text and icon to reflect current state. */
     private fun updateExpandCollapseButton() {
         val binding = _binding ?: return
-        // Hide in direct browse mode (no collapsible section headers)
-        if (directBrowseMode) {
-            binding.btnToggleExpandCollapse.visibility = View.GONE
-            return
-        }
         binding.btnToggleExpandCollapse.visibility = View.VISIBLE
         val hasHeaders = adapter.currentList.any { it is BrowseAdapter.Item.Header }
-        if (!hasHeaders) {
+        if (!hasHeaders && !directBrowseMode) {
             binding.btnToggleExpandCollapse.visibility = View.GONE
             return
         }
-        val allExpanded = adapter.hasExpandedFolders()
+        val allExpanded = if (hasHeaders) adapter.hasExpandedFolders() else true
         if (allExpanded) {
             binding.btnToggleExpandCollapse.text = getString(R.string.collapse_all)
             binding.btnToggleExpandCollapse.setIconResource(R.drawable.ic_chevron_up)

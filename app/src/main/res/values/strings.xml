@@ -1251,6 +1251,18 @@
     <string name="network_log_title">Network Activity</string>
     <string name="network_log_desc">See what URLs the app connected to</string>
 
+    <!-- Analytics & Dashboard -->
+    <string name="forecast_title">Storage Forecast</string>
+    <string name="forecast_full_in">At current growth, storage full in ~%1$d days</string>
+    <string name="forecast_stable">Storage usage is stable</string>
+    <string name="forecast_shrinking">Storage is shrinking \u2014 good job cleaning!</string>
+    <string name="file_age_title">File Age Distribution</string>
+    <string name="cleanup_history_title">Cleanup History</string>
+    <string name="cleanup_total_freed">Total freed since install: %1$s</string>
+    <string name="category_detail_title">%1$s Details</string>
+    <string name="duplicate_cost_title">Duplicate Cost Analysis</string>
+    <string name="duplicate_cost_wasted">%1$s wasted (%2$d%% of storage)</string>
+
     <!-- Cloud & Network -->
     <string name="transfer_queue_title">Transfer Queue</string>
     <string name="transfer_queue_empty">No active transfers</string>

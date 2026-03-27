@@ -3,6 +3,7 @@ package com.filecleaner.app.utils.antivirus
 import android.content.Context
 import android.content.SharedPreferences
 import com.filecleaner.app.R
+import com.filecleaner.app.utils.DateFormatUtils
 import org.json.JSONArray
 import org.json.JSONObject
 import java.text.SimpleDateFormat
@@ -145,13 +146,13 @@ object ScanHistoryManager {
 
         return when {
             // F-081: Use centralized date formatting
-            diff < 0 -> com.filecleaner.app.utils.DateFormatUtils.formatDateTime(timestampMs)
+            diff < 0 -> DateFormatUtils.formatDateTime(timestampMs)
             diff < 60_000 -> context.getString(R.string.time_just_now)
             diff < 3_600_000 -> context.getString(R.string.time_minutes_ago, (diff / 60_000).toInt())
             diff < 86_400_000 -> context.getString(R.string.time_hours_ago, (diff / 3_600_000).toInt())
             diff < 172_800_000 -> context.getString(R.string.time_yesterday)
             // F-081: Use centralized date formatting
-            else -> com.filecleaner.app.utils.DateFormatUtils.formatDate(timestampMs)
+            else -> DateFormatUtils.formatDate(timestampMs)
         }
     }
 

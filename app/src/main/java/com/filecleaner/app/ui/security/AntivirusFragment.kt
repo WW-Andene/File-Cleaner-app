@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.filecleaner.app.R
 import com.filecleaner.app.databinding.FragmentAntivirusBinding
 import com.filecleaner.app.services.ScanService
+import com.filecleaner.app.utils.MotionUtil
 import com.filecleaner.app.utils.antivirus.*
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.google.android.material.button.MaterialButton
@@ -72,7 +73,7 @@ class AntivirusFragment : Fragment() {
         binding.recyclerResults.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerResults.isNestedScrollingEnabled = false
         // §DM4: Disable stagger animation when user prefers reduced motion
-        if (com.filecleaner.app.utils.MotionUtil.isReducedMotion(requireContext())) {
+        if (MotionUtil.isReducedMotion(requireContext())) {
             binding.recyclerResults.layoutAnimation = null
         }
 
@@ -199,7 +200,7 @@ class AntivirusFragment : Fragment() {
         _binding?.ivShield?.let {
             it.setColorFilter(ContextCompat.getColor(it.context, R.color.colorAccent))
         }
-        if (com.filecleaner.app.utils.MotionUtil.isReducedMotion(requireContext())) {
+        if (MotionUtil.isReducedMotion(requireContext())) {
             return
         }
         pulseAnimation = ScaleAnimation(
@@ -318,7 +319,7 @@ class AntivirusFragment : Fragment() {
 
         recycler.layoutManager = LinearLayoutManager(ctx)
         // §DM4: Disable stagger animation when user prefers reduced motion
-        if (com.filecleaner.app.utils.MotionUtil.isReducedMotion(ctx)) {
+        if (MotionUtil.isReducedMotion(ctx)) {
             recycler.layoutAnimation = null
         }
 

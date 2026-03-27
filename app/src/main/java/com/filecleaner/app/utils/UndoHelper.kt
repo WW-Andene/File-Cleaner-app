@@ -2,6 +2,7 @@ package com.filecleaner.app.utils
 
 import android.view.View
 import com.filecleaner.app.R
+import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.data.UserPreferences
 import com.filecleaner.app.viewmodel.MainViewModel
 import com.google.android.material.snackbar.Snackbar
@@ -61,7 +62,7 @@ object UndoHelper {
         }
     }
 
-    fun totalSize(list: List<com.filecleaner.app.data.FileItem>): String {
+    fun totalSize(list: List<FileItem>): String {
         return formatBytes(list.sumOf { it.size })
     }
 }

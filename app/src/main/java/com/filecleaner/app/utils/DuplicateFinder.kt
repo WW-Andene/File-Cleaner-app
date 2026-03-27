@@ -115,10 +115,20 @@ object DuplicateFinder {
                 }
             }
 
-            // F-002: Report large files with matching partial hash as "likely duplicates"
+            // F-002: For large files, use progressive hash (head + middle + tail)
+            // for higher confidence than partial-only, without full-file I/O cost
             if (tooLargeForHash.size >= 2) {
-                result.addAll(tooLargeForHash.map { it.copy(duplicateGroup = likelyGroupId) })
-                likelyGroupId++
+                val byProgressive = mutableMapOf<String, MutableList<FileItem>>()
+                for (item in tooLargeForHash) {
+                    val hash = progressivePartialHash(File(item.path)) ?: continue
+                    byProgressive.getOrPut(hash) { mutableListOf() }.add(item)
+                }
+                for ((_, progGroup) in byProgressive) {
+                    if (progGroup.size >= 2) {
+                        result.addAll(progGroup.map { it.copy(duplicateGroup = likelyGroupId) })
+                        likelyGroupId++
+                    }
+                }
             }
         }
 
@@ -137,6 +147,28 @@ object DuplicateFinder {
         java.io.RandomAccessFile(file, "r").use { raf ->
             val buf = ByteArray(PARTIAL_HASH_BYTES.toInt())
             // Head
+            raf.readFully(buf)
+            md.update(buf)
+            // Tail
+            raf.seek(length - PARTIAL_HASH_BYTES)
+            raf.readFully(buf)
+            md.update(buf)
+        }
+        bytesToHex(md.digest())
+    }.getOrNull()
+
+    /** Hash head + middle + tail of a file for higher confidence on large files. */
+    private fun progressivePartialHash(file: File): String? = runCatching {
+        val md = MessageDigest.getInstance("MD5")
+        val length = file.length()
+        java.io.RandomAccessFile(file, "r").use { raf ->
+            val buf = ByteArray(PARTIAL_HASH_BYTES.toInt())
+            // Head
+            raf.seek(0)
+            raf.readFully(buf)
+            md.update(buf)
+            // Middle
+            raf.seek(length / 2)
             raf.readFully(buf)
             md.update(buf)
             // Tail

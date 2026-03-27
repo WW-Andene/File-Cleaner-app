@@ -47,12 +47,20 @@ object StorageOptimizer {
 
             val suggestion = when (file.category) {
                 FileCategory.IMAGE -> {
-                    val monthFolder = dateFmt.format(Date(file.lastModified))
-                    val targetDir = "$storagePath/Pictures/$monthFolder"
-                    if (parentDir != targetDir && !parentDir.startsWith("$storagePath/Pictures/")) {
-                        Suggestion(file, file.path, "$targetDir/${file.name}",
-                            context?.getString(R.string.optimize_reason_photo_by_date) ?: "Organize photo by date")
-                    } else null
+                    if (isScreenshot(file.name)) {
+                        val targetDir = "$storagePath/Pictures/Screenshots"
+                        if (!parentDir.startsWith(targetDir)) {
+                            Suggestion(file, file.path, "$targetDir/${file.name}",
+                                context?.getString(R.string.optimize_reason_screenshot) ?: "Move screenshot to Screenshots")
+                        } else null
+                    } else {
+                        val monthFolder = dateFmt.format(Date(file.lastModified))
+                        val targetDir = "$storagePath/Pictures/$monthFolder"
+                        if (parentDir != targetDir && !parentDir.startsWith("$storagePath/Pictures/")) {
+                            Suggestion(file, file.path, "$targetDir/${file.name}",
+                                context?.getString(R.string.optimize_reason_photo_by_date) ?: "Organize photo by date")
+                        } else null
+                    }
                 }
                 FileCategory.VIDEO -> {
                     val monthFolder = dateFmt.format(Date(file.lastModified))
@@ -122,5 +130,15 @@ object StorageOptimizer {
         }
 
         return suggestions
+    }
+
+    /** Detects screenshot filenames from common Android patterns. */
+    private fun isScreenshot(fileName: String): Boolean {
+        val name = fileName.lowercase()
+        return name.contains("screenshot") ||
+            name.contains("screen_shot") ||
+            name.contains("screen shot") ||
+            name.startsWith("scr_") ||
+            name.matches(Regex("img_\\d{8}_\\d{6}_\\d+\\..*")) // Samsung pattern
     }
 }

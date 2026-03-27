@@ -1012,6 +1012,13 @@
     <string name="optimize_reason_doc_to_documents">Move document to Documents</string>
     <string name="optimize_reason_apk_to_folder">Move APK to APKs folder</string>
     <string name="optimize_reason_old_download">Old download (%1$d days)</string>
+    <string name="optimize_reason_screenshot">Move screenshot to Screenshots folder</string>
+
+    <!-- Smart recommendations -->
+    <string name="recommend_duplicates">\uD83D\uDCA1 Tip: Clean %1$s of duplicate files</string>
+    <string name="recommend_junk">\uD83D\uDCA1 Tip: Remove %1$s of junk files</string>
+    <string name="recommend_large">\uD83D\uDCA1 Tip: Review %1$s of large files</string>
+    <string name="recommend_cleanup">\uD83D\uDCA1 Tip: Free up %1$s by cleaning duplicates and junk</string>
     <!-- F-089: DualPaneFragment analysis summary (previously hardcoded) -->
     <string name="dual_pane_analysis_summary">Duplicates: %1$d \u2022 Large: %2$d \u2022 Junk: %3$d</string>
     <string name="optimize_analysis_failed">Ricky hit a snag while analyzing \u2014 try again later.</string>

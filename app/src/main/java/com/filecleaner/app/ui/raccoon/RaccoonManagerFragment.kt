@@ -207,9 +207,33 @@ class RaccoonManagerFragment : Fragment() {
             }
         }
 
+        // Smart recommendation based on scan results
+        vm.storageStats.observe(viewLifecycleOwner) { stats ->
+            if (stats != null) {
+                val recommendation = buildRecommendation(stats)
+                if (recommendation != null) {
+                    binding.tvSubtitle.append("\n$recommendation")
+                }
+            }
+        }
+
         // Observe delete result for undo snackbar
         vm.deleteResult.observe(viewLifecycleOwner) { result ->
             UndoHelper.showUndoSnackbar(binding.root, result, vm)
+        }
+    }
+
+    /** Generates a contextual action recommendation based on scan results. */
+    private fun buildRecommendation(stats: MainViewModel.StorageStats): String? {
+        val dupeSize = stats.duplicateSize
+        val junkSize = stats.junkSize
+        val largeSize = stats.largeSize
+        return when {
+            dupeSize > 1_073_741_824 -> getString(R.string.recommend_duplicates, UndoHelper.formatBytes(dupeSize))
+            junkSize > 536_870_912 -> getString(R.string.recommend_junk, UndoHelper.formatBytes(junkSize))
+            largeSize > 2_147_483_648 -> getString(R.string.recommend_large, UndoHelper.formatBytes(largeSize))
+            dupeSize + junkSize > 536_870_912 -> getString(R.string.recommend_cleanup, UndoHelper.formatBytes(dupeSize + junkSize))
+            else -> null
         }
     }
 

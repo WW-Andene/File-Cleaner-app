@@ -91,7 +91,12 @@ object CloudBackupManager {
                 if (folders.isEmpty()) return Result.success()
 
                 // Create provider and connect
-                val provider = CloudProvider.create(connection, ctx)
+                val provider = when (connection.type) {
+                    com.filecleaner.app.data.cloud.ProviderType.SFTP -> com.filecleaner.app.data.cloud.SftpProvider(connection, ctx)
+                    com.filecleaner.app.data.cloud.ProviderType.WEBDAV -> com.filecleaner.app.data.cloud.WebDavProvider(connection)
+                    com.filecleaner.app.data.cloud.ProviderType.GOOGLE_DRIVE -> com.filecleaner.app.data.cloud.GoogleDriveProvider(connection, ctx)
+                    com.filecleaner.app.data.cloud.ProviderType.GITHUB -> com.filecleaner.app.data.cloud.GitHubProvider(connection, ctx)
+                }
                 if (!provider.connect()) return Result.retry()
 
                 try {

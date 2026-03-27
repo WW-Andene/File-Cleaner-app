@@ -103,18 +103,18 @@ class SimilarPhotosFragment : Fragment() {
         }
     }
 
-    private inner class PhotoGridAdapter : RecyclerView.Adapter<PhotoGridAdapter.VH>() {
-        // Flatten: group headers + photos
-        data class Item(val photo: FileItem?, val groupHeader: String?)
+    private data class GridItem(val photo: FileItem?, val groupHeader: String?)
 
-        private val items = mutableListOf<Item>()
+    private inner class PhotoGridAdapter : RecyclerView.Adapter<PhotoGridAdapter.VH>() {
+
+        private val items = mutableListOf<GridItem>()
 
         init {
             for ((idx, group) in groups.withIndex()) {
-                items.add(Item(null, getString(R.string.similar_group_header,
+                items.add(GridItem(null, getString(R.string.similar_group_header,
                     idx + 1, group.photos.size, UndoHelper.formatBytes(group.totalSize))))
                 for (photo in group.photos) {
-                    items.add(Item(photo, null))
+                    items.add(GridItem(photo, null))
                 }
             }
         }

@@ -13,7 +13,6 @@ import com.filecleaner.app.R
 import com.filecleaner.app.databinding.FragmentMessagingCleanerBinding
 import com.filecleaner.app.databinding.ItemMessagingGroupBinding
 import com.filecleaner.app.ui.common.SimpleListAdapter
-import com.filecleaner.app.databinding.ItemMessagingGroupBinding
 import com.filecleaner.app.utils.MessagingMediaCleaner
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.MainViewModel
@@ -64,7 +63,7 @@ class MessagingCleanerFragment : Fragment() {
             binding.progress.visibility = View.GONE
 
             if (groups.isEmpty()) {
-                binding.emptyState.visibility = View.VISIBLE
+                binding.emptyState.root.visibility = View.VISIBLE
                 binding.cardSummary.visibility = View.GONE
                 return@launch
             }

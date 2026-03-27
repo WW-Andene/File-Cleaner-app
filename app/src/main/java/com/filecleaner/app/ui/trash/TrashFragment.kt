@@ -73,8 +73,7 @@ class TrashFragment : Fragment() {
                     b.tvFileMeta?.text = "${UndoHelper.formatBytes(entry.item.size)} • ${
                         com.filecleaner.app.utils.DateFormatUtils.formatDateTime(entry.item.lastModified)
                     }"
-                    b.ivFileIcon.setImageResource(
-                        com.filecleaner.app.ui.adapters.FileItemUtils.iconForCategory(entry.item.category))
+                    b.ivFileIcon.setImageResource(R.drawable.ic_file)
                     b.root.contentDescription = "${entry.item.name}, ${UndoHelper.formatBytes(entry.item.size)}"
                 },
                 onClick = { entry -> showTrashActions(entry) }

@@ -3,6 +3,8 @@ package com.filecleaner.app.data.cloud
 import android.util.Log
 import com.filecleaner.app.BuildConfig
 import com.filecleaner.app.utils.retryOnNetworkError
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
@@ -43,7 +45,7 @@ class SftpProvider(private var connection: CloudConnection, private val context:
     private fun resetInactivityTimer() {
         inactivityJob?.cancel()
         inactivityJob = inactivityScope.launch {
-            kotlinx.coroutines.delay(inactivityTimeoutMs)
+            delay(inactivityTimeoutMs)
             if (isConnected) {
                 if (BuildConfig.DEBUG) Log.d("SftpProvider", "Inactivity timeout — disconnecting ${connection.host}")
                 disconnect()

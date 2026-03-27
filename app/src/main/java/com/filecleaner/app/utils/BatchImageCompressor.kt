@@ -60,7 +60,8 @@ object BatchImageCompressor {
                     options.inJustDecodeBounds = false
                 }
 
-                val bitmap = BitmapFactory.decodeFile(path, options) ?: run {
+                val bitmap = BitmapFactory.decodeFile(path, options)
+                if (bitmap == null) {
                     failed++
                     continue
                 }

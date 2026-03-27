@@ -39,7 +39,7 @@ object ExifReader {
             if (!file.exists()) return null
             val exif = ExifInterface(filePath)
 
-            val latLong = exif.latLong
+            val latLong = FloatArray(2).let { if (exif.getLatLong(it)) doubleArrayOf(it[0].toDouble(), it[1].toDouble()) else null }
 
             ExifData(
                 make = exif.getAttribute(ExifInterface.TAG_MAKE),
@@ -47,7 +47,7 @@ object ExifReader {
                 dateTime = exif.getAttribute(ExifInterface.TAG_DATETIME),
                 width = exif.getAttributeInt(ExifInterface.TAG_IMAGE_WIDTH, 0),
                 height = exif.getAttributeInt(ExifInterface.TAG_IMAGE_LENGTH, 0),
-                iso = exif.getAttribute(ExifInterface.TAG_PHOTOGRAPHIC_SENSITIVITY),
+                iso = exif.getAttribute(ExifInterface.TAG_ISO_SPEED_RATINGS),
                 focalLength = exif.getAttribute(ExifInterface.TAG_FOCAL_LENGTH),
                 aperture = exif.getAttribute(ExifInterface.TAG_F_NUMBER),
                 exposureTime = exif.getAttribute(ExifInterface.TAG_EXPOSURE_TIME),

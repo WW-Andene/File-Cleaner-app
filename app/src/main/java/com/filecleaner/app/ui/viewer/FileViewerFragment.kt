@@ -859,8 +859,9 @@ class FileViewerFragment : Fragment() {
         // Wrap in a CSP meta tag to block scripts, forms, and external resources.
         val rawHtml = file.readText()
         val cspMeta = "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; img-src data:;\">"
+        val headRegex = Regex("(<head[^>]*>)", RegexOption.IGNORE_CASE)
         val htmlContent = if (rawHtml.contains("<head", ignoreCase = true)) {
-            rawHtml.replaceFirst(Regex("<head[^>]*>", RegexOption.IGNORE_CASE)) { "${it.value}$cspMeta" }
+            headRegex.replaceFirst(rawHtml, "$1$cspMeta")
         } else {
             "$cspMeta$rawHtml"
         }

@@ -155,7 +155,7 @@ class StorageDashboardFragment : Fragment() {
         val b = _binding ?: return
         val ctx = context ?: return
         val change = StorageHistoryManager.getStorageChange(ctx, daysAgo = 7) ?: run {
-            b.cardTrend.visibility = View.GONE
+            b.cardTrend?.visibility = View.GONE
             return
         }
 
@@ -179,8 +179,8 @@ class StorageDashboardFragment : Fragment() {
             }
         }
 
-        b.tvTrendSummary.text = summary
-        b.cardTrend.visibility = View.VISIBLE
+        b.tvTrendSummary?.text = summary
+        b.cardTrend?.visibility = View.VISIBLE
     }
 
     /** Read device storage via StatFs and update the header. */

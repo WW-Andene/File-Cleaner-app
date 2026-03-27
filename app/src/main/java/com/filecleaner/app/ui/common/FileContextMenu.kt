@@ -18,6 +18,9 @@ import androidx.core.content.FileProvider
 import com.filecleaner.app.R
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import com.filecleaner.app.data.UserPreferences
 import com.filecleaner.app.utils.FileOpener
 import com.filecleaner.app.utils.UndoHelper
@@ -440,7 +443,7 @@ object FileContextMenu {
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 val password = input.text.toString()
                 if (password.isEmpty()) return@setPositiveButton
-                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                CoroutineScope(Dispatchers.Main).launch {
                     val result = if (decrypt)
                         com.filecleaner.app.utils.FileEncryptor.decrypt(item.path, password)
                     else
@@ -478,7 +481,7 @@ object FileContextMenu {
             .setPositiveButton(android.R.string.ok, null)
             .show()
 
-        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+        CoroutineScope(Dispatchers.Main).launch {
             val results = mutableListOf<com.filecleaner.app.utils.FileHasher.HashResult>()
             for (algo in com.filecleaner.app.utils.FileHasher.Algorithm.entries) {
                 val result = com.filecleaner.app.utils.FileHasher.computeHash(item.path, algo)

@@ -32,16 +32,21 @@ object DirectoryBrowser {
         val totalSize: Long
     )
 
+    enum class SortBy { NAME, SIZE, DATE, TYPE }
+
     /**
      * Lists the contents of a directory, returning folders and files separately.
-     * Folders are sorted alphabetically, files by the given comparator.
      *
      * @param dirPath Directory to list. Defaults to external storage root.
      * @param showHidden Whether to include hidden files/folders (starting with '.')
+     * @param sortBy Sort criteria for files
+     * @param ascending Sort direction
      */
     suspend fun listDirectory(
         dirPath: String = Environment.getExternalStorageDirectory().absolutePath,
-        showHidden: Boolean = false
+        showHidden: Boolean = false,
+        sortBy: SortBy = SortBy.NAME,
+        ascending: Boolean = true
     ): DirectoryListing = withContext(Dispatchers.IO) {
         val dir = File(dirPath)
         if (!dir.isDirectory) {
@@ -78,10 +83,17 @@ object DirectoryBrowser {
             }
         }
 
+        val sortedFiles = when (sortBy) {
+            SortBy.NAME -> if (ascending) files.sortedBy { it.name.lowercase() } else files.sortedByDescending { it.name.lowercase() }
+            SortBy.SIZE -> if (ascending) files.sortedBy { it.size } else files.sortedByDescending { it.size }
+            SortBy.DATE -> if (ascending) files.sortedBy { it.lastModified } else files.sortedByDescending { it.lastModified }
+            SortBy.TYPE -> if (ascending) files.sortedBy { it.extension } else files.sortedByDescending { it.extension }
+        }
+
         DirectoryListing(
             path = dirPath,
             folders = folders.sortedBy { it.name.lowercase() },
-            files = files.sortedBy { it.name.lowercase() },
+            files = sortedFiles,
             parentPath = if (dirPath == Environment.getExternalStorageDirectory().absolutePath)
                 null else dir.parent
         )

@@ -834,6 +834,99 @@ class BrowseFragment : Fragment() {
             .show()
     }
 
+    // ── Create New File/Folder ─────────────────────────────────────────
+
+    private fun showCreateNewDialog() {
+        val ctx = context ?: return
+        val dirPath = currentBrowsePath ?: storagePath
+        val items = arrayOf<CharSequence>(
+            getString(R.string.create_new_file),
+            getString(R.string.create_new_folder)
+        )
+        RoundedDialogBuilder(ctx)
+            .setTitle(getString(R.string.create_new))
+            .setItems(items) { _, which ->
+                when (which) {
+                    0 -> showCreateFileDialog(dirPath)
+                    1 -> showCreateFolderDialog(dirPath)
+                }
+            }
+            .show()
+    }
+
+    private fun showCreateFileDialog(dirPath: String) {
+        val ctx = context ?: return
+        val input = android.widget.EditText(ctx).apply {
+            hint = getString(R.string.create_file_hint)
+            inputType = android.text.InputType.TYPE_CLASS_TEXT
+            val pad = resources.getDimensionPixelSize(R.dimen.spacing_xxl)
+            setPadding(pad, pad, pad, resources.getDimensionPixelSize(R.dimen.spacing_sm))
+        }
+        RoundedDialogBuilder(ctx)
+            .setTitle(getString(R.string.create_new_file))
+            .setView(input)
+            .setPositiveButton(getString(R.string.create)) { _, _ ->
+                val name = input.text.toString().trim()
+                if (name.isNotBlank()) {
+                    val result = vm.fileOps.createNewFile(dirPath, name)
+                    Snackbar.make(binding.root, result.message, Snackbar.LENGTH_SHORT).show()
+                    if (result.success) refreshDirectBrowse()
+                }
+            }
+            .setNegativeButton(getString(R.string.cancel), null)
+            .show()
+    }
+
+    private fun showCreateFolderDialog(dirPath: String) {
+        val ctx = context ?: return
+        val input = android.widget.EditText(ctx).apply {
+            hint = getString(R.string.create_folder_hint)
+            inputType = android.text.InputType.TYPE_CLASS_TEXT
+            val pad = resources.getDimensionPixelSize(R.dimen.spacing_xxl)
+            setPadding(pad, pad, pad, resources.getDimensionPixelSize(R.dimen.spacing_sm))
+        }
+        RoundedDialogBuilder(ctx)
+            .setTitle(getString(R.string.create_new_folder))
+            .setView(input)
+            .setPositiveButton(getString(R.string.create)) { _, _ ->
+                val name = input.text.toString().trim()
+                if (name.isNotBlank()) {
+                    val result = vm.fileOps.createNewFolder(dirPath, name)
+                    Snackbar.make(binding.root, result.message, Snackbar.LENGTH_SHORT).show()
+                    if (result.success) refreshDirectBrowse()
+                }
+            }
+            .setNegativeButton(getString(R.string.cancel), null)
+            .show()
+    }
+
+    // ── Go To Path ──────────────────────────────────────────────────────
+
+    private fun showGoToPathDialog() {
+        val ctx = context ?: return
+        val input = android.widget.EditText(ctx).apply {
+            hint = storagePath
+            setText(currentBrowsePath ?: storagePath)
+            inputType = android.text.InputType.TYPE_CLASS_TEXT
+            val pad = resources.getDimensionPixelSize(R.dimen.spacing_xxl)
+            setPadding(pad, pad, pad, resources.getDimensionPixelSize(R.dimen.spacing_sm))
+            selectAll()
+        }
+        RoundedDialogBuilder(ctx)
+            .setTitle(getString(R.string.go_to_path))
+            .setView(input)
+            .setPositiveButton(getString(R.string.go)) { _, _ ->
+                val path = input.text.toString().trim()
+                if (path.isNotBlank() && java.io.File(path).isDirectory) {
+                    navigateToDirectory(path)
+                } else {
+                    Snackbar.make(binding.root, getString(R.string.go_to_path_invalid), Snackbar.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton(getString(R.string.cancel), null)
+            .show()
+    }
+
     override fun onDestroyView() {
         activeDialog?.dismiss()
         activeDialog = null

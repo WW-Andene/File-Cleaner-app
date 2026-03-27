@@ -1172,6 +1172,33 @@
     <string name="apk_parse_failed">Cannot parse this APK file. It may be corrupted or use an unsupported format.</string>
     <string name="apk_install">Install</string>
 
+    <!-- Core File Management -->
+    <string name="create_new">Create New</string>
+    <string name="create_new_file">New File</string>
+    <string name="create_new_folder">New Folder</string>
+    <string name="create_file_hint">filename.txt</string>
+    <string name="create_folder_hint">Folder name</string>
+    <string name="create">Create</string>
+    <string name="go_to_path">Go to Path</string>
+    <string name="go">Go</string>
+    <string name="go_to_path_invalid">Invalid path or directory not found</string>
+    <string name="op_file_created">Created: %1$s</string>
+    <string name="op_folder_created">Created folder: %1$s</string>
+    <string name="op_already_exists">A file or folder with that name already exists</string>
+    <string name="op_create_failed">Create failed: %1$s</string>
+    <string name="op_outside_storage">Path is outside storage</string>
+    <string name="op_invalid_filename">Filename contains invalid characters</string>
+
+    <!-- Sort -->
+    <string name="sort_by_name">Name</string>
+    <string name="sort_by_size">Size</string>
+    <string name="sort_by_date">Date</string>
+    <string name="sort_by_type">Type</string>
+
+    <!-- Storage switcher -->
+    <string name="storage_internal">Internal Storage</string>
+    <string name="storage_switch">Switch Storage</string>
+
     <string name="a11y_list_content">List of items</string>
     <string name="a11y_storage_progress">Storage usage progress bar</string>
 

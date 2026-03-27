@@ -90,7 +90,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     // I4: File operations delegated to dedicated service
-    private val fileOps by lazy { FileOperationService(app, storagePath) }
+    internal val fileOps by lazy { FileOperationService(app, storagePath) }
 
     private val _scanState = MutableLiveData<ScanState>(ScanState.Idle)
     val scanState: LiveData<ScanState> = _scanState

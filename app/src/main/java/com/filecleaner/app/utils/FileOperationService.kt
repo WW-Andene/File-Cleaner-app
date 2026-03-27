@@ -27,6 +27,53 @@ class FileOperationService(private val app: Application, private val storagePath
 
     data class OpResult(val success: Boolean, val message: String)
 
+    /** Create a new empty file. */
+    fun createNewFile(dirPath: String, filename: String): OpResult {
+        if (hasInvalidChars(filename)) return OpResult(false, str(R.string.op_invalid_filename))
+        if (!isPathWithinStorage(dirPath)) return OpResult(false, str(R.string.op_outside_storage))
+        val file = File(dirPath, filename)
+        if (file.exists()) return OpResult(false, str(R.string.op_already_exists))
+        return try {
+            file.createNewFile()
+            OpResult(true, str(R.string.op_file_created, filename))
+        } catch (e: Exception) {
+            OpResult(false, str(R.string.op_create_failed, e.localizedMessage ?: ""))
+        }
+    }
+
+    /** Create a new folder. */
+    fun createNewFolder(dirPath: String, folderName: String): OpResult {
+        if (hasInvalidChars(folderName)) return OpResult(false, str(R.string.op_invalid_filename))
+        if (!isPathWithinStorage(dirPath)) return OpResult(false, str(R.string.op_outside_storage))
+        val dir = File(dirPath, folderName)
+        if (dir.exists()) return OpResult(false, str(R.string.op_already_exists))
+        return if (dir.mkdir()) {
+            OpResult(true, str(R.string.op_folder_created, folderName))
+        } else {
+            OpResult(false, str(R.string.op_create_failed, "mkdir failed"))
+        }
+    }
+
+    /** Get file permissions as rwx string. */
+    fun getPermissions(path: String): String {
+        val file = File(path)
+        val r = if (file.canRead()) "r" else "-"
+        val w = if (file.canWrite()) "w" else "-"
+        val x = if (file.canExecute()) "x" else "-"
+        return "$r$w$x"
+    }
+
+    /** Set file read-only or writable. */
+    fun setReadOnly(path: String, readOnly: Boolean): OpResult {
+        val file = File(path)
+        return try {
+            if (readOnly) file.setReadOnly() else file.setWritable(true)
+            OpResult(true, if (readOnly) "Set to read-only" else "Set to writable")
+        } catch (e: Exception) {
+            OpResult(false, "Cannot change permissions: ${e.localizedMessage}")
+        }
+    }
+
     /** Validates that a file path is within external storage. */
     fun isPathWithinStorage(path: String): Boolean {
         return try {

@@ -72,7 +72,7 @@ class SimilarPhotosFragment : Fragment() {
     private fun scanForSimilar() {
         binding.progress.visibility = View.VISIBLE
         binding.recyclerPhotos.visibility = View.GONE
-        binding.tvEmpty.visibility = View.GONE
+        binding.emptyContainer.visibility = View.GONE
         binding.selectionBar.visibility = View.GONE
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -89,7 +89,7 @@ class SimilarPhotosFragment : Fragment() {
             binding.progress.visibility = View.GONE
 
             if (groups.isEmpty()) {
-                binding.tvEmpty.visibility = View.VISIBLE
+                binding.emptyContainer.visibility = View.VISIBLE
                 binding.tvEmpty.text = getString(R.string.similar_none_found)
                 return@launch
             }

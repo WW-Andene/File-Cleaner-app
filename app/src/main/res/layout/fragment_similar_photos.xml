@@ -65,17 +65,34 @@
         android:textStyle="bold"
         android:visibility="gone" />
 
-    <!-- Empty state -->
-    <TextView
-        android:id="@+id/tv_empty"
-        android:accessibilityLiveRegion="polite"
+    <!-- Empty state with icon -->
+    <LinearLayout
+        android:id="@+id/empty_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:gravity="center"
         android:padding="@dimen/spacing_3xl"
-        android:textAppearance="@style/TextAppearance.FileCleaner.Body"
-        android:textColor="@color/textSecondary"
-        android:visibility="gone" />
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="@dimen/onboarding_icon_size"
+            android:layout_height="@dimen/onboarding_icon_size"
+            android:src="@drawable/ic_similar_photos"
+            android:importantForAccessibility="no"
+            app:tint="@color/textTertiary"
+            android:alpha="0.5" />
+
+        <TextView
+            android:id="@+id/tv_empty"
+            android:accessibilityLiveRegion="polite"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginTop="@dimen/spacing_lg"
+            android:textAppearance="@style/TextAppearance.FileCleaner.Body"
+            android:textColor="@color/textSecondary" />
+    </LinearLayout>
 
     <!-- Photo grid -->
     <androidx.recyclerview.widget.RecyclerView

@@ -220,6 +220,9 @@ class MainActivity : AppCompatActivity() {
                 is ScanState.Done     -> {
                     hideScanProgress()
                     binding.scanBarCard.visibility = View.GONE
+                    // Haptic + TalkBack announcement
+                    com.filecleaner.app.utils.HapticHelper.success(binding.root)
+                    binding.root.announceForAccessibility(getString(R.string.a11y_scan_complete))
                     val stats = viewModel.storageStats.value
                     if (stats != null) {
                         val durationText = if (stats.scanDurationMs > 0) {
@@ -258,6 +261,7 @@ class MainActivity : AppCompatActivity() {
                 is ScanState.Error    -> {
                     hideScanProgress()
                     binding.scanBarCard.visibility = View.GONE
+                    com.filecleaner.app.utils.HapticHelper.reject(binding.root)
                     Snackbar.make(binding.root, getString(R.string.error_scan_failed), Snackbar.LENGTH_LONG)
                         .setAction(R.string.retry) { viewModel.startScan() }
                         .setAnchorView(binding.bottomNav).styleAsError().show()

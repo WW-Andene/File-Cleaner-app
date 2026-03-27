@@ -1201,6 +1201,9 @@
 
     <string name="a11y_list_content">List of items</string>
     <string name="a11y_storage_progress">Storage usage progress bar</string>
+    <string name="a11y_scan_complete">Scan complete. Results are ready.</string>
+    <string name="a11y_files_deleted">Files deleted successfully</string>
+    <string name="a11y_operation_complete">Operation complete</string>
 
     <!-- Folder Size Ranking -->
     <string name="folder_size_title">Folder Sizes</string>

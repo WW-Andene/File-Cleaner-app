@@ -190,6 +190,16 @@
         android:label="@string/av_title" />
 
     <fragment
+        android:id="@+id/trashFragment"
+        android:name="com.filecleaner.app.ui.trash.TrashFragment"
+        android:label="@string/trash_title" />
+
+    <fragment
+        android:id="@+id/folderSizeFragment"
+        android:name="com.filecleaner.app.ui.folders.FolderSizeFragment"
+        android:label="@string/folder_size_title" />
+
+    <fragment
         android:id="@+id/similarPhotosFragment"
         android:name="com.filecleaner.app.ui.similar.SimilarPhotosFragment"
         android:label="@string/similar_photos_title" />

@@ -16,6 +16,7 @@ import com.filecleaner.app.utils.DuplicateFinder
 import com.filecleaner.app.utils.FileOperationService
 import com.filecleaner.app.utils.FileScanner
 import com.filecleaner.app.utils.JunkFinder
+import com.filecleaner.app.utils.AppBadgeManager
 import com.filecleaner.app.utils.ScanCache
 import com.filecleaner.app.utils.SingleLiveEvent
 import com.filecleaner.app.utils.StorageHistoryManager
@@ -379,6 +380,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 ensureActive() // P2-A4-01: Check cancellation before transitioning to Done
                 // F-020: Use setValue on Main thread for deterministic ordering vs cancelScan()
                 _scanState.value = ScanState.Done
+
+                // Update app icon badge with actionable item count
+                AppBadgeManager.updateBadge(getApplication(),
+                    junkCount = junk.size,
+                    duplicateCount = dupes.size)
 
                 // Record storage snapshot for trend tracking
                 StorageHistoryManager.recordSnapshot(

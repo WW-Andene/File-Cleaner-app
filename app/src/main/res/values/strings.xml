@@ -1110,6 +1110,12 @@
     <string name="auto_dark_start">Dark mode starts at</string>
     <string name="auto_dark_end">Dark mode ends at</string>
 
+    <!-- App Badge -->
+    <string name="badge_title">Items to clean</string>
+    <string name="badge_message">%1$d junk and duplicate files found</string>
+    <string name="badge_channel_name">Cleanup Badge</string>
+    <string name="badge_channel_desc">Shows actionable item count on app icon</string>
+
     <!-- Privacy & Legal -->
     <string name="privacy_policy_title">Privacy Policy</string>
     <string name="terms_title">Terms of Service</string>

@@ -61,6 +61,9 @@ class BrowseFragment : Fragment() {
     private var searchDebounceJob: Job? = null
     private var shouldScrollToTop = false
     private var dividerDecoration: FileListDividerDecoration? = null
+    private var searchTextWatcher: TextWatcher? = null
+    private var dragStartListener: RecyclerView.OnItemTouchListener? = null
+    private var dragMoveListener: RecyclerView.OnItemTouchListener? = null
     private lateinit var selectionBackCallback: OnBackPressedCallback
     private lateinit var browseBackCallback: OnBackPressedCallback
 
@@ -260,7 +263,7 @@ class BrowseFragment : Fragment() {
             ?.setStartIconOnClickListener { showSavedSearchesDialog() }
 
         // Search with 300ms debounce
-        binding.etSearch.addTextChangedListener(object : TextWatcher {
+        searchTextWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
@@ -274,7 +277,8 @@ class BrowseFragment : Fragment() {
                     refresh()
                 }
             }
-        })
+        }
+        binding.etSearch.addTextChangedListener(searchTextWatcher)
 
         // Category spinner
         val labels = categories.map { it.first }
@@ -524,9 +528,8 @@ class BrowseFragment : Fragment() {
         var isDragging = false
         var lastSelectedPosition = RecyclerView.NO_POSITION
 
-        binding.recyclerView.addOnItemTouchListener(object : RecyclerView.OnItemTouchListener {
+        dragMoveListener = object : RecyclerView.OnItemTouchListener {
             override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
-                // Only intercept MOVE events when in selection mode and dragging
                 if (e.actionMasked == MotionEvent.ACTION_MOVE && adapter.selectionMode && isDragging) {
                     return true
                 }
@@ -555,11 +558,12 @@ class BrowseFragment : Fragment() {
             }
 
             override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
-        })
+        }
+        binding.recyclerView.addOnItemTouchListener(dragMoveListener!!)
 
         // Use a secondary touch listener to detect when the user starts dragging
         // while in selection mode (hold + move triggers multi-select)
-        binding.recyclerView.addOnItemTouchListener(object : RecyclerView.OnItemTouchListener {
+        dragStartListener = object : RecyclerView.OnItemTouchListener {
             private var startX = 0f
             private var startY = 0f
             private val touchSlop = android.view.ViewConfiguration.get(requireContext()).scaledTouchSlop
@@ -599,7 +603,8 @@ class BrowseFragment : Fragment() {
 
             override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {}
             override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
-        })
+        }
+        binding.recyclerView.addOnItemTouchListener(dragStartListener!!)
     }
 
     /** Navigate to a directory for direct browsing. */
@@ -1067,6 +1072,12 @@ class BrowseFragment : Fragment() {
         activeDialog?.dismiss()
         activeDialog = null
         searchDebounceJob?.cancel()
+        searchTextWatcher?.let { binding.etSearch.removeTextChangedListener(it) }
+        searchTextWatcher = null
+        dragMoveListener?.let { binding.recyclerView.removeOnItemTouchListener(it) }
+        dragStartListener?.let { binding.recyclerView.removeOnItemTouchListener(it) }
+        dragMoveListener = null
+        dragStartListener = null
         binding.spinnerCategory.onItemSelectedListener = null
         binding.spinnerSort.onItemSelectedListener = null
         super.onDestroyView()

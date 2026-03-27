@@ -67,6 +67,7 @@ abstract class BaseFileListFragment : Fragment() {
     private var searchQuery = ""
     private var rawItems = listOf<FileItem>()
     private var searchDebounceJob: Job? = null
+    private var searchTextWatcher: TextWatcher? = null
     private var dividerDecoration: FileListDividerDecoration? = null
     private lateinit var selectionBackCallback: OnBackPressedCallback
 
@@ -210,7 +211,7 @@ abstract class BaseFileListFragment : Fragment() {
         }
 
         // Search with 300ms debounce
-        binding.etSearch.addTextChangedListener(object : TextWatcher {
+        searchTextWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
@@ -223,7 +224,8 @@ abstract class BaseFileListFragment : Fragment() {
                     applySearch()
                 }
             }
-        })
+        }
+        binding.etSearch.addTextChangedListener(searchTextWatcher)
 
         // B5: Restore search query from config change
         savedInstanceState?.getString(KEY_SEARCH_QUERY)?.let { query ->
@@ -460,6 +462,8 @@ abstract class BaseFileListFragment : Fragment() {
         activeDialog?.dismiss()
         activeDialog = null
         searchDebounceJob?.cancel()
+        searchTextWatcher?.let { binding.etSearch.removeTextChangedListener(it) }
+        searchTextWatcher = null
         binding.spinnerSort.onItemSelectedListener = null
         super.onDestroyView()
         _binding = null

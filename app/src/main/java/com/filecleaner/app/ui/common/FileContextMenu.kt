@@ -193,6 +193,9 @@ object FileContextMenu {
             addItem(context.getString(R.string.ctx_open), R.drawable.ic_open) {
                 FileOpener.open(context, item.file)
             }
+            addItem(context.getString(R.string.ctx_share), R.drawable.ic_share) {
+                shareFile(context, item)
+            }
             addItem(context.getString(R.string.ctx_preview), R.drawable.ic_preview) {
                 FilePreviewDialog.show(context, item)
             }
@@ -318,6 +321,9 @@ object FileContextMenu {
         addItem(context.getString(R.string.ctx_open_in_tree), R.drawable.ic_folder) {
             callback.onOpenInTree(item)
         }
+        addItem(context.getString(R.string.hash_title), R.drawable.ic_info) {
+            showHashDialog(context, item)
+        }
         addItem(context.getString(R.string.ctx_properties), R.drawable.ic_info) {
             showProperties(context, item)
         }
@@ -401,5 +407,52 @@ object FileContextMenu {
                 clipboard.setPrimaryClip(android.content.ClipData.newPlainText("File path", item.path))
             }
             .show()
+    }
+
+    /** Show file hash (MD5, SHA-1, SHA-256) with copy button. */
+    private fun showHashDialog(context: Context, item: FileItem) {
+        val message = StringBuilder()
+        message.appendLine(context.getString(R.string.hash_computing, "SHA-256"))
+
+        val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
+            .setTitle(context.getString(R.string.hash_title))
+            .setMessage(message)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
+
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+            val results = mutableListOf<com.filecleaner.app.utils.FileHasher.HashResult>()
+            for (algo in com.filecleaner.app.utils.FileHasher.Algorithm.entries) {
+                val result = com.filecleaner.app.utils.FileHasher.computeHash(item.path, algo)
+                results.add(result)
+            }
+            val text = results.joinToString("\n\n") { r ->
+                "${r.algorithm.label}:\n${r.hash}"
+            }
+            if (dialog.isShowing) {
+                dialog.setMessage(text)
+                dialog.getButton(android.app.AlertDialog.BUTTON_NEUTRAL)?.visibility = android.view.View.VISIBLE
+            }
+        }
+
+        dialog.setButton(android.app.AlertDialog.BUTTON_NEUTRAL,
+            context.getString(R.string.hash_copy)) { _, _ ->
+            val clip = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            clip.setPrimaryClip(android.content.ClipData.newPlainText("Hash", dialog.findViewById<android.widget.TextView>(android.R.id.message)?.text))
+        }
+    }
+
+    /** Share a file via Android share sheet. */
+    private fun shareFile(context: Context, item: FileItem) {
+        val uri = FileProvider.getUriForFile(
+            context, "${context.packageName}.fileprovider", item.file)
+        val mime = android.webkit.MimeTypeMap.getSingleton()
+            .getMimeTypeFromExtension(item.extension) ?: "application/octet-stream"
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = mime
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(intent, context.getString(R.string.ctx_share)))
     }
 }

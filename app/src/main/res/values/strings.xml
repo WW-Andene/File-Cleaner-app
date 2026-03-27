@@ -1071,6 +1071,44 @@
     <!-- Similar Photos -->
     <string name="similar_photos_title">Similar Photos</string>
     <string name="similar_photos_desc">Find visually similar photos using AI-powered analysis</string>
+    <string name="similar_scanning">Analyzing photos\u2026 %1$d / %2$d</string>
+    <string name="similar_none_found">No similar photos found \u2014 your gallery is clean!</string>
+    <string name="similar_found">Found %1$d groups (%2$d photos, %3$s total)</string>
+    <string name="similar_group_header">Group %1$d \u2014 %2$d similar photos (%3$s)</string>
+    <string name="similar_selected">%1$d selected (%2$s)</string>
+    <string name="similar_delete_title">Delete Similar Photos</string>
+    <string name="similar_delete_confirm">Delete %1$d selected photos (%2$s)?</string>
+
+    <!-- Share -->
+    <string name="ctx_share">Share</string>
+
+    <!-- File Hash Checker -->
+    <string name="hash_title">File Hash</string>
+    <string name="hash_computing">Computing %1$s hash\u2026</string>
+    <string name="hash_result">%1$s: %2$s</string>
+    <string name="hash_copy">Copy Hash</string>
+    <string name="hash_copied">Hash copied to clipboard</string>
+
+    <!-- Recycle Bin -->
+    <string name="trash_title">Recycle Bin</string>
+    <string name="trash_empty">Trash is empty</string>
+    <string name="trash_summary">%1$d files (%2$s)</string>
+    <string name="trash_restore">Restore</string>
+    <string name="trash_delete_permanent">Delete Permanently</string>
+    <string name="trash_empty_all">Empty Trash</string>
+    <string name="trash_empty_confirm">Permanently delete all %1$d files in trash (%2$s)?</string>
+    <string name="trash_restored">File restored</string>
+    <string name="trash_deleted">File permanently deleted</string>
+
+    <!-- Folder Size Ranking -->
+    <string name="folder_size_title">Folder Sizes</string>
+    <string name="folder_size_desc">See which folders use the most storage</string>
+
+    <!-- Auto Dark Mode -->
+    <string name="auto_dark_mode">Auto Dark Mode</string>
+    <string name="auto_dark_mode_desc">Switch to dark mode automatically between %1$s and %2$s</string>
+    <string name="auto_dark_start">Dark mode starts at</string>
+    <string name="auto_dark_end">Dark mode ends at</string>
 
     <!-- Privacy & Legal -->
     <string name="privacy_policy_title">Privacy Policy</string>

@@ -155,4 +155,13 @@ object UserPreferences {
     var crashReportRepo: String
         get() = prefs.getString("crash_report_repo", "WW-Andene/File-Cleaner-app") ?: "WW-Andene/File-Cleaner-app"
         set(value) = prefs.edit().putString("crash_report_repo", value).apply()
+
+    // Auto dark mode schedule (-1 = disabled)
+    var autoDarkStartHour: Int
+        get() = prefs.getInt("auto_dark_start", -1)
+        set(value) = prefs.edit().putInt("auto_dark_start", value).apply()
+
+    var autoDarkEndHour: Int
+        get() = prefs.getInt("auto_dark_end", -1)
+        set(value) = prefs.edit().putInt("auto_dark_end", value).apply()
 }

@@ -51,6 +51,9 @@
     <item name="alpha_subtitle_secondary" format="float" type="dimen">0.75</item>
     <item name="alpha_video_overlay" format="float" type="dimen">0.9</item>
 
+    <!-- Pie chart -->
+    <dimen name="pie_chart_max_size">200dp</dimen>
+
     <!-- Elevation scale — 0 / 1 / 2 / 4 / 8 / 16 -->
     <dimen name="elevation_none">0dp</dimen>
     <dimen name="elevation_border">1dp</dimen>

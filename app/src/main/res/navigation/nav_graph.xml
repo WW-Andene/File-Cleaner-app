@@ -190,6 +190,11 @@
         android:label="@string/av_title" />
 
     <fragment
+        android:id="@+id/similarPhotosFragment"
+        android:name="com.filecleaner.app.ui.similar.SimilarPhotosFragment"
+        android:label="@string/similar_photos_title" />
+
+    <fragment
         android:id="@+id/messagingCleanerFragment"
         android:name="com.filecleaner.app.ui.messaging.MessagingCleanerFragment"
         android:label="@string/messaging_media_title" />

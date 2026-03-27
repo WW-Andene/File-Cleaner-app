@@ -2,6 +2,7 @@ package com.filecleaner.app.utils
 
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
+import com.filecleaner.app.utils.file.DuplicateFinder
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Rule

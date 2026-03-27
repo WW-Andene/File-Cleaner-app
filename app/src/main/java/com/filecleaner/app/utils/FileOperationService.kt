@@ -175,7 +175,9 @@ class FileOperationService(private val app: Application, private val storagePath
             val parentDir = src.parent
                 ?: return OpResult(false, str(R.string.op_no_parent_dir))
             val outDir = File(parentDir, src.nameWithoutExtension)
-            outDir.mkdirs()
+            if (!outDir.mkdirs() && !outDir.isDirectory) {
+                return OpResult(false, str(R.string.op_extract_failed, "Cannot create output directory"))
+            }
             var totalExtracted = 0L
             var entryCount = 0
             ZipInputStream(src.inputStream().buffered()).use { zis ->

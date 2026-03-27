@@ -19,6 +19,7 @@ suspend inline fun <T> retryOnNetworkError(
     initialDelayMs: Long = 1000L,
     block: () -> T
 ): T {
+    require(maxRetries > 0) { "maxRetries must be positive" }
     var lastException: Exception? = null
     repeat(maxRetries) { attempt ->
         try {
@@ -29,8 +30,10 @@ suspend inline fun <T> retryOnNetworkError(
             if (!isRetryable(e)) throw e
             lastException = e
             if (attempt < maxRetries - 1) {
-                val delayMs = (initialDelayMs * (1L shl attempt)).coerceAtMost(30_000L)
-                delay(delayMs)
+                val baseDelay = (initialDelayMs * (1L shl attempt)).coerceAtMost(30_000L)
+                // Add ±20% jitter to prevent thundering herd on recovery
+                val jitter = (baseDelay * 0.2 * (Math.random() * 2 - 1)).toLong()
+                delay(baseDelay + jitter)
             }
         }
     }

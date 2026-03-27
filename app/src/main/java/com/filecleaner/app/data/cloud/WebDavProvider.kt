@@ -194,6 +194,7 @@ class WebDavProvider(private var connection: CloudConnection) : CloudProvider {
                     requestMethod = "DELETE"
                     setRequestProperty("Authorization", authHeader())
                     connectTimeout = 15000
+                    readTimeout = 15000
                 }
                 val code = conn.responseCode
                 if (code !in 200..299) {
@@ -215,6 +216,7 @@ class WebDavProvider(private var connection: CloudConnection) : CloudProvider {
                     requestMethod = "MKCOL"
                     setRequestProperty("Authorization", authHeader())
                     connectTimeout = 15000
+                    readTimeout = 15000
                 }
                 val code = conn.responseCode
                 if (code !in 200..299) {

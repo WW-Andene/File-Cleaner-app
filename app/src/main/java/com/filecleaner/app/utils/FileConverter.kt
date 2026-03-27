@@ -494,7 +494,9 @@ object FileConverter {
         if (!src.exists()) return ConvertResult(false, "", "Source file not found")
 
         val outDir = File(outputDir)
-        outDir.mkdirs()
+        if (!outDir.mkdirs() && !outDir.isDirectory) {
+            return ConvertResult(false, "", "Cannot create output directory")
+        }
 
         val retriever = MediaMetadataRetriever()
         return try {

@@ -15,14 +15,32 @@
         android:padding="@dimen/spacing_lg"
         android:paddingBottom="@dimen/spacing_bottom_inset">
 
-        <!-- Settings title -->
-        <TextView
+        <!-- Settings header with back button (#14: consistent navigation) -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/settings"
-            android:textAppearance="@style/TextAppearance.FileCleaner.Headline"
-            android:layout_marginBottom="@dimen/spacing_xl"
-            android:accessibilityHeading="true" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/spacing_xl">
+
+            <ImageButton
+                android:id="@+id/btn_back"
+                android:layout_width="@dimen/touch_target_min"
+                android:layout_height="@dimen/touch_target_min"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/back"
+                android:src="@drawable/ic_back"
+                app:tint="@color/textPrimary" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="@dimen/spacing_md"
+                android:text="@string/settings"
+                android:textAppearance="@style/TextAppearance.FileCleaner.Headline"
+                android:accessibilityHeading="true" />
+        </LinearLayout>
 
         <!-- Appearance section -->
         <TextView

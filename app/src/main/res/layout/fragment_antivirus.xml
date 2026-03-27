@@ -193,6 +193,17 @@
                 app:iconGravity="textStart"
                 app:cornerRadius="@dimen/radius_pill" />
 
+            <!-- #10: Heuristic analyzer disclaimer -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/spacing_lg"
+                android:layout_marginTop="@dimen/spacing_xs"
+                android:gravity="center"
+                android:text="@string/av_heuristic_disclaimer"
+                android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                android:textColor="@color/textTertiary" />
+
             <!-- Summary cards row -->
             <LinearLayout
                 android:id="@+id/summary_row"

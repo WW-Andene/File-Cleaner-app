@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.filecleaner.app.MainActivity
 import com.filecleaner.app.R
 import com.filecleaner.app.data.DirectoryNode
@@ -68,6 +69,9 @@ class ArborescenceFragment : Fragment() {
             filterPanelVisible = state.getBoolean(KEY_FILTER_VISIBLE, false)
             state.getStringArrayList(KEY_EXTENSIONS)?.let { selectedTreeExtensions.addAll(it) }
         }
+
+        // #13: Back button — fixes navigation dead end
+        binding.btnBack.setOnClickListener { findNavController().popBackStack() }
 
         // Wire file move callback with confirmation dialog
         binding.arborescenceView.onFileMoveRequested = { filePath, targetDirPath ->

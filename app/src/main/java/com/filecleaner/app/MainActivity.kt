@@ -325,6 +325,17 @@ class MainActivity : AppCompatActivity() {
         return super.onKeyDown(keyCode, event)
     }
 
+    // #16: Auto-retry scan when user returns from Settings after granting permission
+    private var awaitingPermissionReturn = false
+
+    override fun onResume() {
+        super.onResume()
+        if (awaitingPermissionReturn && hasAllStoragePermission()) {
+            awaitingPermissionReturn = false
+            viewModel.startScan()
+        }
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleOAuthIntent(intent)
@@ -439,8 +450,12 @@ class MainActivity : AppCompatActivity() {
             .setTitle(getString(R.string.permission_required))
             .setMessage(getString(R.string.permission_required_message))
             .setPositiveButton(getString(R.string.settings)) { _, _ ->
+                awaitingPermissionReturn = true
                 startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                     Uri.parse("package:$packageName")))
+            }
+            .setNeutralButton(getString(R.string.retry)) { _, _ ->
+                requestPermissionsAndScan()
             }
             .setNegativeButton(getString(R.string.cancel), null)
             .show()

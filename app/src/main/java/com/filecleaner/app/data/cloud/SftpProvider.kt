@@ -33,6 +33,24 @@ class SftpProvider(private var connection: CloudConnection, private val context:
     /** Cached credential for reconnection after credential is cleared from connection */
     private var cachedAuthToken: String = connection.authToken
 
+    // #4: Auto-disconnect after inactivity (5 minutes)
+    private val inactivityScope = kotlinx.coroutines.CoroutineScope(
+        kotlinx.coroutines.SupervisorJob() + Dispatchers.IO
+    )
+    private var inactivityJob: kotlinx.coroutines.Job? = null
+    private val inactivityTimeoutMs = 5L * 60 * 1000 // 5 minutes
+
+    private fun resetInactivityTimer() {
+        inactivityJob?.cancel()
+        inactivityJob = inactivityScope.launch {
+            kotlinx.coroutines.delay(inactivityTimeoutMs)
+            if (isConnected) {
+                if (BuildConfig.DEBUG) Log.d("SftpProvider", "Inactivity timeout — disconnecting ${connection.host}")
+                disconnect()
+            }
+        }
+    }
+
     // F-013: Separate connection lock from operation lock.
     // connectionLock guards connect/disconnect which mutate session/channel state.
     // Operations grab a channel reference under connectionLock but don't hold it during I/O.
@@ -94,6 +112,7 @@ class SftpProvider(private var connection: CloudConnection, private val context:
                 }
                 // F-C3-02: Drop credential reference after auth completes
                 connection = connection.copy(authToken = "")
+                resetInactivityTimer()
                 true
             } catch (e: Exception) {
                 try { channel?.disconnect() } catch (_: Exception) {}
@@ -106,6 +125,7 @@ class SftpProvider(private var connection: CloudConnection, private val context:
     }
 
     override suspend fun disconnect() = withContext(Dispatchers.IO) {
+        inactivityJob?.cancel()
         connectionLock.withLock {
             try { channel?.disconnect() } catch (_: Exception) {}
             try { session?.disconnect() } catch (_: Exception) {}
@@ -130,6 +150,7 @@ class SftpProvider(private var connection: CloudConnection, private val context:
     // This prevents long-running transfers from blocking listFiles, disconnect, etc.
 
     override suspend fun listFiles(remotePath: String): List<CloudFile> = withContext(Dispatchers.IO) {
+        resetInactivityTimer()
         val ch = channelOrNull() ?: return@withContext emptyList()
         try {
             retryOnNetworkError {

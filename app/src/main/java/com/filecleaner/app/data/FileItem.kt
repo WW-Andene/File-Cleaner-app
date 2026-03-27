@@ -22,10 +22,10 @@ enum class FileCategory(@StringRes val displayNameRes: Int, val emoji: String) {
         // F-012: Added missing common extensions: jfif, tif (IMAGE), vob, f4v (VIDEO),
         // caf, mka (AUDIO), djvu, tex (DOCUMENT), aab (APK), lz4 (ARCHIVE)
         private val extMap = mapOf(
-            IMAGE to setOf("jpg","jpeg","png","gif","bmp","webp","heic","heif","tiff","tif","svg","raw","cr2","nef","ico","avif","jxl","jp2","jfif"),
-            VIDEO to setOf("mp4","mkv","avi","mov","wmv","flv","webm","m4v","3gp","ts","mpeg","mpg","mts","m2ts","ogv","rmvb","vob","f4v"),
+            IMAGE to setOf("jpg","jpeg","png","gif","bmp","webp","heic","heif","tiff","tif","svg","raw","cr2","nef","ico","avif","jxl","jp2","jfif","webp2","astc"),
+            VIDEO to setOf("mp4","mkv","avi","mov","wmv","flv","webm","m4v","3gp","ts","mpeg","mpg","mts","m2ts","ogv","rmvb","vob","f4v","vp9","av1"),
             AUDIO to setOf("mp3","aac","flac","wav","ogg","m4a","wma","opus","aiff","mid","amr","ape","wv","m4b","dsf","caf","mka"),
-            DOCUMENT to setOf("pdf","doc","docx","xls","xlsx","ppt","pptx","txt","csv","odt","ods","odp","epub","mobi","rtf","md","html","htm","xml","json","yaml","yml","azw","azw3","key","numbers","djvu","tex"),
+            DOCUMENT to setOf("pdf","doc","docx","xls","xlsx","ppt","pptx","txt","csv","odt","ods","odp","epub","mobi","rtf","md","html","htm","xml","json","yaml","yml","azw","azw3","key","numbers","djvu","tex","ics","vcf"),
             APK to setOf("apk","xapk","apks","aab"),
             ARCHIVE to setOf("zip","rar","7z","tar","gz","bz2","xz","cab","iso","tgz","zst","lz4")
         )

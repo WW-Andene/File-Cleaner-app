@@ -35,6 +35,11 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // #14: Back button — consistent with other detail screens
+        binding.btnBack.setOnClickListener {
+            androidx.navigation.fragment.NavHostFragment.findNavController(this).popBackStack()
+        }
+
         // Theme toggle (System / Light / Dark)
         when (UserPreferences.themeMode) {
             1 -> binding.rbThemeLight.isChecked = true

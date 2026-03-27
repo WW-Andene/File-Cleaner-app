@@ -990,4 +990,189 @@ object FileConverter {
             ConvertResult(false, "", "vCard conversion failed: ${e.localizedMessage}")
         }
     }
+
+    // =========================================================================
+    // BATCH IMAGE CONVERSION
+    // =========================================================================
+
+    /** Convert multiple images to the same format. */
+    fun batchConvertImages(
+        inputPaths: List<String>,
+        outputFormat: ImageFormat,
+        quality: Int = 90,
+        onProgress: ((Int, Int) -> Unit)? = null
+    ): ConvertResult {
+        var success = 0
+        var failed = 0
+        for ((index, path) in inputPaths.withIndex()) {
+            onProgress?.invoke(index, inputPaths.size)
+            val result = convertImage(path, outputFormat, quality)
+            if (result.success) success++ else failed++
+        }
+        onProgress?.invoke(inputPaths.size, inputPaths.size)
+        return ConvertResult(true, "",
+            "Converted $success images to ${outputFormat.label}" +
+                if (failed > 0) " ($failed failed)" else "")
+    }
+
+    // =========================================================================
+    // IMAGE COLOR OPERATIONS
+    // =========================================================================
+
+    /** Convert an image to grayscale (black & white). */
+    fun toGrayscale(inputPath: String): ConvertResult {
+        return try {
+            val src = File(inputPath)
+            val bitmap = BitmapFactory.decodeFile(inputPath) ?: return ConvertResult(false, "", "Cannot decode image")
+            val gray = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(gray)
+            val paint = android.graphics.Paint()
+            val cm = android.graphics.ColorMatrix().apply { setSaturation(0f) }
+            paint.colorFilter = android.graphics.ColorMatrixColorFilter(cm)
+            canvas.drawBitmap(bitmap, 0f, 0f, paint)
+            bitmap.recycle()
+
+            val output = File(src.parent, "${src.nameWithoutExtension}_bw.${src.extension.ifEmpty { "jpg" }}")
+            val format = when (src.extension.lowercase()) {
+                "png" -> Bitmap.CompressFormat.PNG
+                else -> Bitmap.CompressFormat.JPEG
+            }
+            output.outputStream().buffered().use { gray.compress(format, 95, it) }
+            gray.recycle()
+            ConvertResult(true, output.absolutePath, "Converted to grayscale")
+        } catch (e: Exception) {
+            ConvertResult(false, "", "Grayscale failed: ${e.localizedMessage}")
+        }
+    }
+
+    /** Adjust image brightness. [factor] 0.0=black, 1.0=original, 2.0=double bright. */
+    fun adjustBrightness(inputPath: String, factor: Float): ConvertResult {
+        return try {
+            val src = File(inputPath)
+            val bitmap = BitmapFactory.decodeFile(inputPath)?.copy(Bitmap.Config.ARGB_8888, true)
+                ?: return ConvertResult(false, "", "Cannot decode image")
+            val canvas = android.graphics.Canvas(bitmap)
+            val paint = android.graphics.Paint()
+            val cm = android.graphics.ColorMatrix().apply { setScale(factor, factor, factor, 1f) }
+            paint.colorFilter = android.graphics.ColorMatrixColorFilter(cm)
+            canvas.drawBitmap(bitmap, 0f, 0f, paint)
+
+            val label = if (factor > 1f) "brightened" else "darkened"
+            val output = File(src.parent, "${src.nameWithoutExtension}_${label}.${src.extension.ifEmpty { "jpg" }}")
+            val format = when (src.extension.lowercase()) {
+                "png" -> Bitmap.CompressFormat.PNG
+                else -> Bitmap.CompressFormat.JPEG
+            }
+            output.outputStream().buffered().use { bitmap.compress(format, 95, it) }
+            bitmap.recycle()
+            ConvertResult(true, output.absolutePath, "Image $label (${(factor * 100).toInt()}%)")
+        } catch (e: Exception) {
+            ConvertResult(false, "", "Brightness adjust failed: ${e.localizedMessage}")
+        }
+    }
+
+    /** Invert image colors (negative). */
+    fun invertColors(inputPath: String): ConvertResult {
+        return try {
+            val src = File(inputPath)
+            val bitmap = BitmapFactory.decodeFile(inputPath) ?: return ConvertResult(false, "", "Cannot decode image")
+            val inverted = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(inverted)
+            val paint = android.graphics.Paint()
+            val cm = android.graphics.ColorMatrix(floatArrayOf(
+                -1f, 0f, 0f, 0f, 255f,
+                0f, -1f, 0f, 0f, 255f,
+                0f, 0f, -1f, 0f, 255f,
+                0f, 0f, 0f, 1f, 0f
+            ))
+            paint.colorFilter = android.graphics.ColorMatrixColorFilter(cm)
+            canvas.drawBitmap(bitmap, 0f, 0f, paint)
+            bitmap.recycle()
+
+            val output = File(src.parent, "${src.nameWithoutExtension}_inverted.${src.extension.ifEmpty { "jpg" }}")
+            val format = when (src.extension.lowercase()) {
+                "png" -> Bitmap.CompressFormat.PNG
+                else -> Bitmap.CompressFormat.JPEG
+            }
+            output.outputStream().buffered().use { inverted.compress(format, 95, it) }
+            inverted.recycle()
+            ConvertResult(true, output.absolutePath, "Colors inverted")
+        } catch (e: Exception) {
+            ConvertResult(false, "", "Invert failed: ${e.localizedMessage}")
+        }
+    }
+
+    // =========================================================================
+    // DOCUMENT OPERATIONS
+    // =========================================================================
+
+    /** Extract text content from any text-based file for clipboard/sharing. */
+    fun extractText(inputPath: String, maxBytes: Int = 500_000): ConvertResult {
+        return try {
+            val src = File(inputPath)
+            val text = src.inputStream().bufferedReader().use { reader ->
+                val buf = CharArray(maxBytes)
+                val read = reader.read(buf)
+                if (read > 0) String(buf, 0, read) else ""
+            }
+            val output = File(src.parent, "${src.nameWithoutExtension}.txt")
+            output.writeText(text)
+            ConvertResult(true, output.absolutePath, "Extracted ${text.length} characters")
+        } catch (e: Exception) {
+            ConvertResult(false, "", "Extract failed: ${e.localizedMessage}")
+        }
+    }
+
+    /** Combine multiple text files into one. */
+    fun mergeTextFiles(inputPaths: List<String>, outputPath: String): ConvertResult {
+        return try {
+            File(outputPath).bufferedWriter().use { writer ->
+                for ((index, path) in inputPaths.withIndex()) {
+                    if (index > 0) writer.appendLine("\n--- ${File(path).name} ---\n")
+                    File(path).bufferedReader().use { reader ->
+                        reader.copyTo(writer)
+                    }
+                }
+            }
+            ConvertResult(true, outputPath, "Merged ${inputPaths.size} files")
+        } catch (e: Exception) {
+            ConvertResult(false, "", "Merge failed: ${e.localizedMessage}")
+        }
+    }
+
+    /** Convert JSON to formatted/pretty-printed JSON. */
+    fun prettyPrintJson(inputPath: String): ConvertResult {
+        return try {
+            val src = File(inputPath)
+            val raw = src.readText()
+            val json = org.json.JSONTokener(raw).nextValue()
+            val pretty = when (json) {
+                is org.json.JSONObject -> json.toString(2)
+                is org.json.JSONArray -> json.toString(2)
+                else -> raw
+            }
+            val output = File(src.parent, "${src.nameWithoutExtension}_formatted.json")
+            output.writeText(pretty)
+            ConvertResult(true, output.absolutePath, "JSON formatted (${output.length() / 1024} KB)")
+        } catch (e: Exception) {
+            ConvertResult(false, "", "JSON format failed: ${e.localizedMessage}")
+        }
+    }
+
+    /** Minify a JSON file (remove whitespace). */
+    fun minifyJson(inputPath: String): ConvertResult {
+        return try {
+            val src = File(inputPath)
+            val raw = src.readText()
+            val json = org.json.JSONTokener(raw).nextValue()
+            val minified = json.toString()
+            val output = File(src.parent, "${src.nameWithoutExtension}_min.json")
+            output.writeText(minified)
+            val savings = src.length() - output.length()
+            ConvertResult(true, output.absolutePath,
+                "Minified (saved ${UndoHelper.formatBytes(savings)})")
+        } catch (e: Exception) {
+            ConvertResult(false, "", "JSON minify failed: ${e.localizedMessage}")
+        }
+    }
 }

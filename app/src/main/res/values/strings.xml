@@ -1162,6 +1162,26 @@
     <string name="convert_vcard_to_csv">Convert to CSV</string>
     <string name="convert_vcard_desc">Extract contacts to a spreadsheet-compatible CSV file</string>
 
+    <!-- Image color operations -->
+    <string name="convert_grayscale">Convert to Grayscale</string>
+    <string name="convert_grayscale_desc">Remove all color (black \u0026 white)</string>
+    <string name="convert_invert">Invert Colors</string>
+    <string name="convert_invert_desc">Create a color negative of the image</string>
+    <string name="convert_brighten">Brighten (+30%)</string>
+    <string name="convert_brighten_desc">Increase image brightness</string>
+    <string name="convert_darken">Darken (-30%)</string>
+    <string name="convert_darken_desc">Decrease image brightness</string>
+
+    <!-- JSON operations -->
+    <string name="convert_json_pretty">Format JSON</string>
+    <string name="convert_json_pretty_desc">Pretty-print with indentation for readability</string>
+    <string name="convert_json_minify">Minify JSON</string>
+    <string name="convert_json_minify_desc">Remove whitespace to reduce file size</string>
+
+    <!-- Text extraction -->
+    <string name="convert_extract_text">Extract to Plain Text</string>
+    <string name="convert_extract_text_desc">Copy content to a .txt file</string>
+
     <!-- Viewer improvements -->
     <string name="viewer_delete_confirm">Delete \u201C%1$s\u201D? This cannot be undone.</string>
     <string name="viewer_deleted">File deleted</string>

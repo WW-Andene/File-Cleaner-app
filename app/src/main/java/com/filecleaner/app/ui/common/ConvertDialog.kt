@@ -151,6 +151,27 @@ object ConvertDialog {
             description = context.getString(R.string.convert_watermark_desc),
             action = { FileConverter.addWatermark(item.path, "\u00A9 ${java.time.Year.now().value}") }
         ))
+        // Color operations
+        options.add(ConvertOption(
+            title = context.getString(R.string.convert_grayscale),
+            description = context.getString(R.string.convert_grayscale_desc),
+            action = { FileConverter.toGrayscale(item.path) }
+        ))
+        options.add(ConvertOption(
+            title = context.getString(R.string.convert_invert),
+            description = context.getString(R.string.convert_invert_desc),
+            action = { FileConverter.invertColors(item.path) }
+        ))
+        options.add(ConvertOption(
+            title = context.getString(R.string.convert_brighten),
+            description = context.getString(R.string.convert_brighten_desc),
+            action = { FileConverter.adjustBrightness(item.path, 1.3f) }
+        ))
+        options.add(ConvertOption(
+            title = context.getString(R.string.convert_darken),
+            description = context.getString(R.string.convert_darken_desc),
+            action = { FileConverter.adjustBrightness(item.path, 0.7f) }
+        ))
         options.add(ConvertOption(
             title = context.getString(R.string.convert_to_base64),
             description = context.getString(R.string.convert_base64_desc),
@@ -393,6 +414,29 @@ object ConvertDialog {
                     val outputPath = "${item.file.parent}/${item.file.nameWithoutExtension}_table.txt"
                     FileConverter.csvToText(item.path, outputPath)
                 }
+            ))
+        }
+
+        // JSON pretty print / minify
+        if (ext == "json" || ext == "jsonl" || ext == "json5") {
+            options.add(ConvertOption(
+                title = context.getString(R.string.convert_json_pretty),
+                description = context.getString(R.string.convert_json_pretty_desc),
+                action = { FileConverter.prettyPrintJson(item.path) }
+            ))
+            options.add(ConvertOption(
+                title = context.getString(R.string.convert_json_minify),
+                description = context.getString(R.string.convert_json_minify_desc),
+                action = { FileConverter.minifyJson(item.path) }
+            ))
+        }
+
+        // Extract to plain text (for any text-based file)
+        if (ext in TEXT_CONVERTIBLE && ext != "txt") {
+            options.add(ConvertOption(
+                title = context.getString(R.string.convert_extract_text),
+                description = context.getString(R.string.convert_extract_text_desc),
+                action = { FileConverter.extractText(item.path) }
             ))
         }
 

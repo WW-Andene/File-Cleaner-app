@@ -129,4 +129,49 @@ class FileOperationServiceTest {
         // Canonical path resolves ".." so this should be caught
         assertFalse(isPathWithinStorage("/storage/emulated/0/../../../etc/passwd", storagePath))
     }
+
+    // ── ZIP entry validation tests (B4 audit) ──
+
+    /** Mirror of the ZIP entry name validation added in the B4 security audit. */
+    private fun isValidZipEntryName(name: String): Boolean {
+        return name.isNotEmpty() && !name.contains('\u0000') && name.length <= 4096
+    }
+
+    @Test
+    fun `valid zip entry name accepted`() {
+        assertTrue(isValidZipEntryName("documents/file.txt"))
+    }
+
+    @Test
+    fun `empty zip entry name rejected`() {
+        assertFalse(isValidZipEntryName(""))
+    }
+
+    @Test
+    fun `zip entry with null byte rejected`() {
+        assertFalse(isValidZipEntryName("file\u0000.txt"))
+    }
+
+    @Test
+    fun `zip entry with oversized name rejected`() {
+        val longName = "a".repeat(4097)
+        assertFalse(isValidZipEntryName(longName))
+    }
+
+    @Test
+    fun `zip entry at max length accepted`() {
+        val maxName = "a".repeat(4096)
+        assertTrue(isValidZipEntryName(maxName))
+    }
+
+    @Test
+    fun `zip slip path traversal caught by canonical check`() {
+        val outDir = System.getProperty("java.io.tmpdir") ?: "/tmp"
+        val outDirCanonical = File(outDir).canonicalPath + File.separator
+        val maliciousEntry = "../../etc/passwd"
+        val outFile = File(outDir, maliciousEntry)
+        val canonicalPath = outFile.canonicalPath
+        // Path should NOT start with outDir after canonical resolution
+        assertFalse(canonicalPath.startsWith(outDirCanonical))
+    }
 }

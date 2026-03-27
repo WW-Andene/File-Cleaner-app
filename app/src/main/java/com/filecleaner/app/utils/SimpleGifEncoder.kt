@@ -201,6 +201,11 @@ class SimpleGifEncoder(private val out: OutputStream) {
 
     // ── LZW Encoder ─────────────────────────────────────────────────
 
+    /**
+     * LZW encoder using code-prefix keying (standard GIF LZW).
+     * Keys are (prefixCode, appendByte) pairs encoded as a single Long
+     * to avoid object allocation in the hot loop.
+     */
     private class LzwEncoder(private val minCodeSize: Int) {
         fun encode(pixels: ByteArray): ByteArray {
             val clearCode = 1 shl minCodeSize
@@ -209,18 +214,18 @@ class SimpleGifEncoder(private val out: OutputStream) {
             var nextCode = eoiCode + 1
             val maxTableSize = 4096
 
-            val table = HashMap<Long, Int>(maxTableSize)
+            // Key = (prefixCode << 16) | appendByte — safe because codes < 4096
+            val table = HashMap<Long, Int>(maxTableSize * 2)
             val bitStream = BitOutputStream()
 
-            // Initialize table with single-character entries
             fun initTable() {
                 table.clear()
-                for (i in 0 until clearCode) {
-                    table[i.toLong()] = i
-                }
                 nextCode = eoiCode + 1
                 codeSize = minCodeSize + 1
             }
+
+            fun tableKey(prefixCode: Int, appendByte: Int): Long =
+                (prefixCode.toLong() shl 16) or appendByte.toLong()
 
             initTable()
             bitStream.write(clearCode, codeSize)
@@ -230,19 +235,19 @@ class SimpleGifEncoder(private val out: OutputStream) {
                 return bitStream.toByteArray()
             }
 
-            var current = (pixels[0].toInt() and 0xFF).toLong()
+            var prefixCode = pixels[0].toInt() and 0xFF
 
             for (i in 1 until pixels.size) {
-                val next = (pixels[i].toInt() and 0xFF).toLong()
-                val combined = (current shl 12) or next
+                val appendByte = pixels[i].toInt() and 0xFF
+                val key = tableKey(prefixCode, appendByte)
 
-                if (table.containsKey(combined)) {
-                    current = combined
+                if (table.containsKey(key)) {
+                    prefixCode = table[key]!!
                 } else {
-                    bitStream.write(table[current]!!, codeSize)
+                    bitStream.write(prefixCode, codeSize)
 
                     if (nextCode < maxTableSize) {
-                        table[combined] = nextCode++
+                        table[key] = nextCode++
                         if (nextCode > (1 shl codeSize) && codeSize < 12) {
                             codeSize++
                         }
@@ -250,11 +255,11 @@ class SimpleGifEncoder(private val out: OutputStream) {
                         bitStream.write(clearCode, codeSize)
                         initTable()
                     }
-                    current = next
+                    prefixCode = appendByte
                 }
             }
 
-            bitStream.write(table[current]!!, codeSize)
+            bitStream.write(prefixCode, codeSize)
             bitStream.write(eoiCode, codeSize)
 
             return bitStream.toByteArray()

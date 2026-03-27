@@ -130,9 +130,9 @@ object SimilarPhotoDetector {
                 }
             }
             hash
-        } catch (_: Exception) {
-            null
         } catch (_: OutOfMemoryError) {
+            null
+        } catch (_: Exception) {
             null
         }
     }

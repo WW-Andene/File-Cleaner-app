@@ -63,6 +63,7 @@ class BrowseFragment : Fragment() {
     private var shouldScrollToTop = false
     private var dividerDecoration: FileListDividerDecoration? = null
     private lateinit var selectionBackCallback: OnBackPressedCallback
+    private lateinit var browseBackCallback: OnBackPressedCallback
 
     // Direct filesystem browsing — allows instant file access without scan
     private var currentBrowsePath: String? = null
@@ -138,7 +139,7 @@ class BrowseFragment : Fragment() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, selectionBackCallback)
 
         // Back press navigates up directory in direct browse mode
-        val browseBackCallback = object : OnBackPressedCallback(false) {
+        browseBackCallback = object : OnBackPressedCallback(false) {
             override fun handleOnBackPressed() {
                 val parent = currentBrowsePath?.let { java.io.File(it).parent }
                 if (parent != null && parent != currentBrowsePath) {
@@ -152,16 +153,6 @@ class BrowseFragment : Fragment() {
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, browseBackCallback)
-
-        // Keep browse back callback in sync with direct browse mode
-        viewLifecycleOwner.lifecycleScope.launch {
-            while (true) {
-                browseBackCallback.isEnabled = directBrowseMode &&
-                    currentBrowsePath != null && currentBrowsePath != storagePath
-                kotlinx.coroutines.delay(200)
-                if (_binding == null) break
-            }
-        }
 
         // Selection mode callbacks
         adapter.onSelectionChanged = { selected ->
@@ -530,6 +521,7 @@ class BrowseFragment : Fragment() {
     fun navigateToDirectory(path: String) {
         currentBrowsePath = path
         directBrowseMode = true
+        browseBackCallback.isEnabled = path != storagePath
         searchQuery = ""
         _binding?.etSearch?.setText("")
         refreshDirectBrowse()
@@ -594,7 +586,7 @@ class BrowseFragment : Fragment() {
 
             // Update breadcrumb in header if present
             val breadcrumbs = com.filecleaner.app.utils.DirectoryBrowser.getBreadcrumbs(path)
-            binding.tvBrowseHeaderSubtitle?.text = breadcrumbs.joinToString(" › ") { it.first }
+            binding.tvBrowseSubtitle?.text = breadcrumbs.joinToString(" › ") { it.first }
         }
     }
 

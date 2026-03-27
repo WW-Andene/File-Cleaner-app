@@ -105,7 +105,12 @@ object PremiumManager {
             val params = AcknowledgePurchaseParams.newBuilder()
                 .setPurchaseToken(purchase.purchaseToken)
                 .build()
-            billingClient?.acknowledgePurchase(params) { }
+            billingClient?.acknowledgePurchase(params) { result ->
+                if (result.responseCode != BillingClient.BillingResponseCode.OK) {
+                    android.util.Log.w("PremiumManager",
+                        "Acknowledge failed: ${result.debugMessage}")
+                }
+            }
         }
 
         _isPremium.value = true

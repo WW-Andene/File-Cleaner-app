@@ -80,6 +80,9 @@ class MainActivity : AppCompatActivity() {
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        // Show "What's New" dialog after app update
+        com.filecleaner.app.utils.ChangelogHelper.showIfNeeded(this)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 

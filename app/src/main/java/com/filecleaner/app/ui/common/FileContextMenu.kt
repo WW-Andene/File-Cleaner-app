@@ -321,6 +321,22 @@ object FileContextMenu {
         addItem(context.getString(R.string.ctx_open_in_tree), R.drawable.ic_folder) {
             callback.onOpenInTree(item)
         }
+        // Encrypt/Decrypt
+        if (item.name.endsWith(".encrypted")) {
+            addItem(context.getString(R.string.decrypt_title), R.drawable.ic_info) {
+                showEncryptDecryptDialog(context, item, decrypt = true)
+            }
+        } else {
+            addItem(context.getString(R.string.encrypt_title), R.drawable.ic_info) {
+                showEncryptDecryptDialog(context, item, decrypt = false)
+            }
+        }
+        // EXIF for images
+        if (item.category == com.filecleaner.app.data.FileCategory.IMAGE) {
+            addItem(context.getString(R.string.exif_title), R.drawable.ic_info) {
+                showExifDialog(context, item)
+            }
+        }
         addItem(context.getString(R.string.hash_title), R.drawable.ic_info) {
             showHashDialog(context, item)
         }
@@ -406,6 +422,48 @@ object FileContextMenu {
                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                 clipboard.setPrimaryClip(android.content.ClipData.newPlainText("File path", item.path))
             }
+            .show()
+    }
+
+    /** Show encrypt/decrypt password dialog. */
+    private fun showEncryptDecryptDialog(context: Context, item: FileItem, decrypt: Boolean) {
+        val input = android.widget.EditText(context).apply {
+            hint = context.getString(R.string.encrypt_password_hint)
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+            val pad = context.resources.getDimensionPixelSize(R.dimen.spacing_xxl)
+            setPadding(pad, pad, pad, context.resources.getDimensionPixelSize(R.dimen.spacing_sm))
+        }
+        val title = if (decrypt) R.string.decrypt_title else R.string.encrypt_title
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
+            .setTitle(title)
+            .setView(input)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val password = input.text.toString()
+                if (password.isEmpty()) return@setPositiveButton
+                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                    val result = if (decrypt)
+                        com.filecleaner.app.utils.FileEncryptor.decrypt(item.path, password)
+                    else
+                        com.filecleaner.app.utils.FileEncryptor.encrypt(item.path, password)
+                    android.widget.Toast.makeText(context, result.message, android.widget.Toast.LENGTH_LONG).show()
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    /** Show EXIF metadata for images. */
+    private fun showExifDialog(context: Context, item: FileItem) {
+        val data = com.filecleaner.app.utils.ExifReader.read(item.path)
+        val message = if (data != null) {
+            com.filecleaner.app.utils.ExifReader.formatReadable(data)
+        } else {
+            context.getString(R.string.exif_no_data)
+        }
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
+            .setTitle(context.getString(R.string.exif_title))
+            .setMessage(message)
+            .setPositiveButton(android.R.string.ok, null)
             .show()
     }
 

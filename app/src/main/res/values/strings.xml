@@ -1116,6 +1116,59 @@
     <string name="badge_channel_name">Cleanup Badge</string>
     <string name="badge_channel_desc">Shows actionable item count on app icon</string>
 
+    <!-- Changelog -->
+    <string name="changelog_title">What\u0027s New in %1$s</string>
+    <string name="changelog_content">\u2022 Similar Photos: Find and delete visually similar photos\n\u2022 Video to GIF: Convert video clips to animated GIFs\n\u2022 Code Editor: Edit code files with syntax highlighting\n\u2022 App Manager: See apps sorted by storage usage\n\u2022 Messaging Cleaner: Clean WhatsApp, Telegram media\n\u2022 File Encryption: AES-256 password-based encryption\n\u2022 Storage Widget: Home screen storage overview\n\u2022 Recycle Bin: Browse and restore deleted files\n\u2022 Smart Tips: AI-powered cleanup recommendations\n\u2022 Many bug fixes and performance improvements</string>
+
+    <!-- Batch Compress -->
+    <string name="compress_batch_title">Compress Images</string>
+    <string name="compress_batch_result">Compressed %1$d images, saved %2$s</string>
+    <string name="compress_batch_quality">Quality: %1$d%%</string>
+
+    <!-- File Encryption -->
+    <string name="encrypt_title">Encrypt File</string>
+    <string name="encrypt_password_hint">Enter password</string>
+    <string name="encrypt_confirm_hint">Confirm password</string>
+    <string name="encrypt_success">File encrypted: %1$s</string>
+    <string name="decrypt_title">Decrypt File</string>
+    <string name="decrypt_success">File decrypted: %1$s</string>
+    <string name="encrypt_mismatch">Passwords do not match</string>
+
+    <!-- EXIF -->
+    <string name="exif_title">Photo Details</string>
+    <string name="exif_no_data">No EXIF data available</string>
+
+    <!-- Export Report -->
+    <string name="export_report">Export Report</string>
+    <string name="export_csv">Export as CSV</string>
+    <string name="export_summary">Export Summary</string>
+    <string name="export_success">Report saved: %1$s</string>
+
+    <!-- Cloud Backup -->
+    <string name="cloud_backup_title">Cloud Backup</string>
+    <string name="cloud_backup_desc">Automatically back up folders to your cloud storage</string>
+    <string name="cloud_backup_configure">Configure Backup</string>
+
+    <!-- Scheduled Scan -->
+    <string name="scheduled_scan_title">Scheduled Scan</string>
+    <string name="scheduled_scan_desc">Automatically scan storage on a schedule</string>
+    <string name="scheduled_scan_daily">Daily</string>
+    <string name="scheduled_scan_weekly">Weekly</string>
+    <string name="scheduled_scan_off">Off</string>
+
+    <!-- Referral -->
+    <string name="invite_friends">Invite Friends</string>
+    <string name="invite_message">Check out Raccoon File Manager \u2014 the smartest way to clean your phone storage! https://play.google.com/store/apps/details?id=com.filecleaner.app</string>
+
+    <!-- USB OTG -->
+    <string name="usb_storage">USB Storage</string>
+    <string name="usb_no_device">No USB storage device detected</string>
+
+    <!-- Duplicate Preview -->
+    <string name="duplicate_compare">Compare Files</string>
+    <string name="duplicate_keep">Keep</string>
+    <string name="duplicate_delete_other">Delete Other</string>
+
     <!-- Privacy & Legal -->
     <string name="privacy_policy_title">Privacy Policy</string>
     <string name="terms_title">Terms of Service</string>

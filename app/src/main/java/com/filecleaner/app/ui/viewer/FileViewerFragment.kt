@@ -410,6 +410,9 @@ class FileViewerFragment : Fragment() {
                     renderPdfPage()
                 }
             }
+
+            // PDF pinch-to-zoom — reuse image zoom on the PDF ImageView
+            setupPdfZoom()
         } catch (e: Exception) {
             binding.pdfContainer.visibility = View.GONE
             showUnsupported(file)
@@ -435,6 +438,29 @@ class FileViewerFragment : Fragment() {
         binding.tvPdfPageInfo.text = getString(R.string.viewer_pdf_page, currentPdfPage + 1, pageCount)
         binding.btnPdfPrev.isEnabled = currentPdfPage > 0
         binding.btnPdfNext.isEnabled = currentPdfPage < pageCount - 1
+    }
+
+    /** Pinch-to-zoom for PDF pages — same concept as image zoom. */
+    private fun setupPdfZoom() {
+        val iv = binding.ivPdfPage ?: return
+        var scaleFactor = 1f
+        val scaleDetector = android.view.ScaleGestureDetector(requireContext(),
+            object : android.view.ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                override fun onScale(detector: android.view.ScaleGestureDetector): Boolean {
+                    scaleFactor *= detector.scaleFactor
+                    scaleFactor = scaleFactor.coerceIn(0.5f, 4f)
+                    iv.scaleX = scaleFactor
+                    iv.scaleY = scaleFactor
+                    return true
+                }
+            })
+        iv.setOnTouchListener { v, event ->
+            scaleDetector.onTouchEvent(event)
+            if (event.action == android.view.MotionEvent.ACTION_DOWN) {
+                v.performClick()
+            }
+            true
+        }
     }
 
     // ── Text/Code Viewer with Syntax Highlighting & Editing ──────────────
@@ -477,11 +503,15 @@ class FileViewerFragment : Fragment() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: android.text.Editable?) {
-                if (isCode) {
-                    isCodeModified = s?.toString() != originalContent
-                    binding.tvCodeInfo.text = if (isCodeModified) getString(R.string.code_modified) else ""
-                    updateLineNumbers(s?.toString() ?: "")
-                }
+                val text = s?.toString() ?: ""
+                isCodeModified = text != originalContent
+                updateLineNumbers(text)
+                // Show line/word/char count + modified indicator
+                val lines = text.count { it == '\n' } + 1
+                val words = text.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }.size
+                val chars = text.length
+                val countInfo = "L$lines W$words C$chars"
+                binding.tvCodeInfo.text = if (isCodeModified) "$countInfo • ${getString(R.string.code_modified)}" else countInfo
             }
         })
     }
@@ -1025,6 +1055,12 @@ class FileViewerFragment : Fragment() {
 
                 // Inline code
                 processed = processed.replace(Regex("`(.+?)`"), "<code>$1</code>")
+
+                // Images ![alt](url)
+                processed = processed.replace(Regex("!\\[([^]]*)]\\(([^)]+)\\)"), "<img src=\"$2\" alt=\"$1\">")
+
+                // Links [text](url)
+                processed = processed.replace(Regex("\\[([^]]+)]\\(([^)]+)\\)"), "<a href=\"$2\">$1</a>")
 
                 // Horizontal rule
                 if (processed.matches(Regex("^\\s*[-*_]{3,}\\s*$"))) {

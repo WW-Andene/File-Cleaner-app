@@ -18,8 +18,8 @@
     <dimen name="radius_input">12dp</dimen>
     <dimen name="radius_card">24dp</dimen>
     <dimen name="radius_icon_container">12dp</dimen>
-    <dimen name="radius_header">20dp</dimen>
-    <dimen name="radius_modal">24dp</dimen>
+    <dimen name="radius_header">24dp</dimen>
+    <dimen name="radius_modal">28dp</dimen>
     <dimen name="radius_pill">24dp</dimen>
     <!-- Bar / progress radii -->
     <dimen name="radius_bar">6dp</dimen>

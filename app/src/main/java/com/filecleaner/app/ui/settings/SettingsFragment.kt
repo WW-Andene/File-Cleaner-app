@@ -159,6 +159,16 @@ class SettingsFragment : Fragment() {
                 .show()
         }
 
+        // Premium upgrade
+        val premiumManager = com.filecleaner.app.billing.PremiumManager
+        if (premiumManager.isPremium.value) {
+            binding.cardPremium?.visibility = View.GONE
+        } else {
+            binding.btnUpgradePremium?.setOnClickListener {
+                premiumManager.launchPurchaseFlow(requireActivity())
+            }
+        }
+
         // Privacy Policy & Terms of Service
         binding.btnPrivacyPolicy?.setOnClickListener {
             showLegalDialog(getString(R.string.privacy_policy_title), getString(R.string.privacy_policy_content))

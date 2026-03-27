@@ -530,6 +530,51 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Premium section -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_premium"
+            style="@style/Widget.FileCleaner.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_lg"
+            app:cardBackgroundColor="@color/colorPrimaryContainer">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_lg">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/premium_title"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.Subtitle"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorOnPrimaryContainer" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/premium_description"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                    android:textColor="@color/colorOnPrimaryContainer"
+                    android:layout_marginTop="@dimen/spacing_xs" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_upgrade_premium"
+                    style="@style/Widget.FileCleaner.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_height"
+                    android:text="@string/premium_upgrade"
+                    android:textAllCaps="false"
+                    android:layout_marginTop="@dimen/spacing_md"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:cornerRadius="@dimen/radius_pill" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Legal section -->
         <TextView
             android:layout_width="match_parent"

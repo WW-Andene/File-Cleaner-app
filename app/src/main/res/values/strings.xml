@@ -90,6 +90,7 @@
 
     <!-- Context-aware empty states (Browse) -->
     <string name="empty_browse_pre_scan">Ricky needs to scout your storage first!</string>
+    <string name="empty_directory">This folder is empty</string>
     <string name="empty_browse_post_scan">Ricky peeked everywhere but found nothing.\nTry a different category or clear the search.</string>
     <string name="empty_search_results">Ricky searched high and low \u2014 no results for \"%s\"</string>
 
@@ -870,6 +871,14 @@
     <string name="settings_privacy_notice">View Privacy Notice</string>
     <string name="settings_data_section">Data Management</string>
     <!-- F-066: Keyboard shortcuts -->
+    <!-- Premium -->
+    <string name="premium_title">\u2B50 Upgrade to Premium</string>
+    <string name="premium_description">Unlock similar photo detection, cloud backup scheduling, unlimited saved searches, and an ad-free experience.</string>
+    <string name="premium_upgrade">Upgrade Now</string>
+    <string name="premium_active">You\u0027re a Premium user \u2014 thank you!</string>
+    <string name="premium_required_title">Premium Feature</string>
+    <string name="premium_required_message">This feature requires a premium upgrade. Unlock all features with a one-time purchase.</string>
+
     <string name="settings_legal_section">Legal</string>
     <string name="settings_keyboard_shortcuts">Keyboard Shortcuts</string>
     <string name="settings_shortcut_search">Ctrl + F \u2014 Search files</string>

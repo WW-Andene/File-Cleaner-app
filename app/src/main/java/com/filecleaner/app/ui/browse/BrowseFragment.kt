@@ -64,6 +64,10 @@ class BrowseFragment : Fragment() {
     private var dividerDecoration: FileListDividerDecoration? = null
     private lateinit var selectionBackCallback: OnBackPressedCallback
 
+    // Direct filesystem browsing — allows instant file access without scan
+    private var currentBrowsePath: String? = null
+    private var directBrowseMode = false
+
     // File manager needs broad storage access; MANAGE_EXTERNAL_STORAGE grants it
     @Suppress("DEPRECATION")
     private val storagePath: String by lazy {
@@ -109,7 +113,14 @@ class BrowseFragment : Fragment() {
         // RecyclerView with BrowseAdapter (supports folder headers)
         adapter = BrowseAdapter()
         adapter.viewMode = currentViewMode
-        adapter.onItemClick = { item -> FileOpener.openInViewer(requireContext(), item.file) }
+        adapter.onItemClick = { item ->
+            // In direct browse mode, tapping a folder navigates into it
+            if (directBrowseMode && item.file.isDirectory) {
+                navigateToDirectory(item.path)
+            } else {
+                FileOpener.openInViewer(requireContext(), item.file)
+            }
+        }
         adapter.onItemLongClick = { item, anchor ->
             FileContextMenu.show(requireContext(), anchor, item, contextMenuCallback,
                 hasClipboard = vm.clipboardEntry.value != null)
@@ -125,6 +136,32 @@ class BrowseFragment : Fragment() {
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, selectionBackCallback)
+
+        // Back press navigates up directory in direct browse mode
+        val browseBackCallback = object : OnBackPressedCallback(false) {
+            override fun handleOnBackPressed() {
+                val parent = currentBrowsePath?.let { java.io.File(it).parent }
+                if (parent != null && parent != currentBrowsePath) {
+                    navigateToDirectory(parent)
+                } else {
+                    isEnabled = false
+                    directBrowseMode = false
+                    currentBrowsePath = null
+                    refresh()
+                }
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, browseBackCallback)
+
+        // Keep browse back callback in sync with direct browse mode
+        viewLifecycleOwner.lifecycleScope.launch {
+            while (true) {
+                browseBackCallback.isEnabled = directBrowseMode &&
+                    currentBrowsePath != null && currentBrowsePath != storagePath
+                kotlinx.coroutines.delay(200)
+                if (_binding == null) break
+            }
+        }
 
         // Selection mode callbacks
         adapter.onSelectionChanged = { selected ->
@@ -489,7 +526,88 @@ class BrowseFragment : Fragment() {
         })
     }
 
+    /** Navigate to a directory for direct browsing. */
+    fun navigateToDirectory(path: String) {
+        currentBrowsePath = path
+        directBrowseMode = true
+        searchQuery = ""
+        _binding?.etSearch?.setText("")
+        refreshDirectBrowse()
+    }
+
+    private fun refreshDirectBrowse() {
+        val path = currentBrowsePath ?: storagePath
+        viewLifecycleOwner.lifecycleScope.launch {
+            val showHidden = try { UserPreferences.showHiddenFiles } catch (_: Exception) { false }
+            val listing = com.filecleaner.app.utils.DirectoryBrowser.listDirectory(path, showHidden)
+
+            if (_binding == null) return@launch
+
+            // Build browse items: folders first, then files
+            val items = mutableListOf<BrowseAdapter.Item>()
+
+            // Add parent directory entry if not at root
+            if (listing.parentPath != null) {
+                val parentItem = FileItem(
+                    path = listing.parentPath,
+                    name = "..",
+                    size = 0,
+                    lastModified = 0,
+                    category = com.filecleaner.app.data.FileCategory.OTHER
+                )
+                items.add(BrowseAdapter.Item.File(parentItem))
+            }
+
+            // Add folders as FileItems (they'll show folder icons via category)
+            for (folder in listing.folders) {
+                items.add(BrowseAdapter.Item.File(FileItem(
+                    path = folder.path,
+                    name = folder.name,
+                    size = 0,
+                    lastModified = 0,
+                    category = com.filecleaner.app.data.FileCategory.OTHER
+                )))
+            }
+
+            // Add files
+            val searchFiltered = if (searchQuery.isNotBlank()) {
+                listing.files.filter { it.name.contains(searchQuery, ignoreCase = true) }
+            } else listing.files
+
+            for (file in searchFiltered) {
+                items.add(BrowseAdapter.Item.File(file))
+            }
+
+            val fileCount = items.size
+            if (fileCount == 0) {
+                binding.tvEmpty.visibility = View.VISIBLE
+                binding.recyclerView.visibility = View.GONE
+                binding.tvEmptyText.text = getString(R.string.empty_directory)
+                binding.btnScanNow.visibility = View.GONE
+            } else {
+                binding.tvEmpty.visibility = View.GONE
+                binding.recyclerView.visibility = View.VISIBLE
+            }
+
+            adapter.submitFullList(items)
+            binding.tvCount.text = resources.getQuantityString(R.plurals.n_files, fileCount, fileCount)
+
+            // Update breadcrumb in header if present
+            val breadcrumbs = com.filecleaner.app.utils.DirectoryBrowser.getBreadcrumbs(path)
+            binding.tvBrowseHeaderSubtitle?.text = breadcrumbs.joinToString(" › ") { it.first }
+        }
+    }
+
     private fun refresh() {
+        // Use direct browsing mode if active or if no scan data exists
+        val hasScanData = vm.filesByCategory.value?.isNotEmpty() == true
+        if (directBrowseMode || (!hasScanData && vm.scanState.value !is ScanState.Scanning)) {
+            directBrowseMode = true
+            if (currentBrowsePath == null) currentBrowsePath = storagePath
+            refreshDirectBrowse()
+            return
+        }
+
         val catPos = binding.spinnerCategory.selectedItemPosition
         if (catPos < 0 || catPos >= categories.size) return
         val catEntry = categories[catPos]

@@ -21,10 +21,20 @@ android {
         resConfigs "en"
     }
 
+    signingConfigs {
+        release {
+            storeFile file('../release-keystore.jks')
+            storePassword 'raccoon2024'
+            keyAlias 'filecleaner'
+            keyPassword 'raccoon2024'
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -74,6 +84,9 @@ dependencies {
 
     // WorkManager — scheduled background scans and storage alerts
     implementation 'androidx.work:work-runtime-ktx:2.9.1'
+
+    // Google Play Billing — premium tier in-app purchases
+    implementation 'com.android.billingclient:billing-ktx:7.1.1'
 
     // Glide for image thumbnails
     implementation 'com.github.bumptech.glide:glide:4.16.0'

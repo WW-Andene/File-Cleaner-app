@@ -3,6 +3,7 @@ package com.filecleaner.app
 import android.app.Application
 import com.filecleaner.app.data.UserPreferences
 import com.filecleaner.app.data.cloud.CloudConnectionStore
+import com.filecleaner.app.billing.PremiumManager
 import com.filecleaner.app.services.StorageCheckWorker
 import com.filecleaner.app.utils.CrashReporter
 
@@ -34,5 +35,8 @@ class FileCleanerApp : Application() {
 
         // Schedule daily storage check (low space alerts + widget refresh)
         StorageCheckWorker.schedule(applicationContext)
+
+        // Initialize premium billing
+        PremiumManager.init(applicationContext)
     }
 }

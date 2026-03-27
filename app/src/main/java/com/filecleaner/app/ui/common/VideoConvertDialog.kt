@@ -141,6 +141,46 @@ internal object VideoConvertDialog {
         formatRow2.addView(btnKeyJpg)
         container.addView(formatRow2)
 
+        // ---- Divider ----
+        container.addView(View(context).apply {
+            val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, strokeDefault)
+            lp.topMargin = spacingXl
+            lp.bottomMargin = spacingLg
+            layoutParams = lp
+            setBackgroundColor(ContextCompat.getColor(context, R.color.borderDefault))
+        })
+
+        // ---- Section 3: Convert to GIF ----
+        container.addView(buildSectionTitle(context, R.string.convert_video_section_gif))
+        container.addView(buildSectionDesc(context, R.string.convert_video_gif_desc, spacingXs))
+
+        // GIF duration input
+        val gifDurationRow = buildHorizontalRow(context, spacingMd)
+        gifDurationRow.addView(TextView(context).apply {
+            text = context.getString(R.string.convert_gif_duration)
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.text_body))
+            setTextColor(ContextCompat.getColor(context, R.color.textPrimary))
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+        })
+        val gifDurationInput = EditText(context).apply {
+            hint = "3"
+            setText("3")
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.text_subtitle))
+            gravity = Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(
+                context.resources.getDimensionPixelSize(R.dimen.convert_count_input_width),
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+        gifDurationRow.addView(gifDurationInput)
+        container.addView(gifDurationRow)
+
+        val btnCreateGif = ConvertDialogUtils.buildActionButton(context, context.getString(R.string.convert_create_gif))
+        val gifBtnRow = buildHorizontalRow(context, spacingMd)
+        gifBtnRow.addView(btnCreateGif)
+        container.addView(gifBtnRow)
+
         // Show the dialog
         val dialog = MaterialAlertDialogBuilder(context)
             .setTitle(context.getString(R.string.convert_title))
@@ -175,6 +215,20 @@ internal object VideoConvertDialog {
             val outDir = "${item.file.parent}/${item.file.nameWithoutExtension}_frames"
             ConvertDialogUtils.runConversion(context, {
                 FileConverter.extractKeyFrames(item.path, outDir, count, FileConverter.ImageFormat.JPG, quality = 85)
+            }, onResult)
+        }
+
+        btnCreateGif.setOnClickListener {
+            dialog.dismiss()
+            val durationSec = gifDurationInput.text.toString().toIntOrNull()?.coerceIn(1, 30) ?: 3
+            ConvertDialogUtils.runConversion(context, {
+                FileConverter.videoToGif(
+                    item.path,
+                    startMs = selectedTimeMs,
+                    durationMs = durationSec * 1000L,
+                    fps = 10,
+                    maxWidth = 320
+                )
             }, onResult)
         }
 

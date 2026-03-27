@@ -132,22 +132,168 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Text viewer (hidden by default) -->
-        <ScrollView
-            android:id="@+id/scroll_text"
+        <!-- Text/Code viewer (hidden by default) -->
+        <LinearLayout
+            android:id="@+id/code_editor_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:clipToPadding="false"
+            android:orientation="vertical"
             android:visibility="gone">
 
-            <TextView
-                android:id="@+id/tv_text_content"
+            <!-- Code editor toolbar -->
+            <LinearLayout
+                android:id="@+id/code_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="@dimen/spacing_lg"
-                android:textAppearance="@style/TextAppearance.FileCleaner.Mono"
-                android:textIsSelectable="true" />
-        </ScrollView>
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="@dimen/spacing_sm"
+                android:paddingVertical="@dimen/spacing_xs"
+                android:background="@color/surfaceColor"
+                android:visibility="gone">
+
+                <ImageButton
+                    android:id="@+id/btn_code_undo"
+                    android:layout_width="@dimen/touch_target_min"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/code_undo"
+                    android:src="@drawable/ic_undo"
+                    app:tint="@color/textPrimary" />
+
+                <ImageButton
+                    android:id="@+id/btn_code_redo"
+                    android:layout_width="@dimen/touch_target_min"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/code_redo"
+                    android:src="@drawable/ic_redo"
+                    app:tint="@color/textPrimary" />
+
+                <ImageButton
+                    android:id="@+id/btn_code_find"
+                    android:layout_width="@dimen/touch_target_min"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/code_find"
+                    android:src="@drawable/ic_search"
+                    app:tint="@color/textPrimary" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/tv_code_info"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                    android:textColor="@color/textTertiary"
+                    android:layout_marginEnd="@dimen/spacing_sm" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_code_save"
+                    style="@style/Widget.FileCleaner.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/button_height"
+                    android:text="@string/code_save"
+                    android:textAllCaps="false"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp" />
+            </LinearLayout>
+
+            <!-- Find bar (hidden by default) -->
+            <LinearLayout
+                android:id="@+id/find_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="@dimen/spacing_md"
+                android:paddingVertical="@dimen/spacing_xs"
+                android:background="@color/surfaceColor"
+                android:visibility="gone">
+
+                <EditText
+                    android:id="@+id/et_find_query"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/code_find_hint"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall" />
+
+                <ImageButton
+                    android:id="@+id/btn_find_prev"
+                    android:layout_width="@dimen/touch_target_min"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/code_find_prev"
+                    android:src="@drawable/ic_chevron_up"
+                    app:tint="@color/textPrimary" />
+
+                <ImageButton
+                    android:id="@+id/btn_find_next"
+                    android:layout_width="@dimen/touch_target_min"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/code_find_next"
+                    android:src="@drawable/ic_arrow_down"
+                    app:tint="@color/textPrimary" />
+
+                <ImageButton
+                    android:id="@+id/btn_find_close"
+                    android:layout_width="@dimen/touch_target_min"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/code_find_close"
+                    android:src="@drawable/ic_close"
+                    app:tint="@color/textPrimary" />
+            </LinearLayout>
+
+            <!-- Scrollable code area with line numbers -->
+            <ScrollView
+                android:id="@+id/scroll_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!-- Line numbers gutter -->
+                    <TextView
+                        android:id="@+id/tv_line_numbers"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="@dimen/spacing_sm"
+                        android:paddingEnd="@dimen/spacing_sm"
+                        android:paddingTop="@dimen/spacing_lg"
+                        android:textAppearance="@style/TextAppearance.FileCleaner.Mono"
+                        android:textColor="@color/textTertiary"
+                        android:gravity="end"
+                        android:background="@color/surfaceColor"
+                        android:importantForAccessibility="no" />
+
+                    <!-- Code content (editable for code files) -->
+                    <EditText
+                        android:id="@+id/tv_text_content"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="@dimen/spacing_lg"
+                        android:textAppearance="@style/TextAppearance.FileCleaner.Mono"
+                        android:background="@android:color/transparent"
+                        android:gravity="top|start"
+                        android:inputType="textMultiLine|textNoSuggestions"
+                        android:scrollHorizontally="true"
+                        android:importantForAutofill="no" />
+                </LinearLayout>
+            </ScrollView>
+        </LinearLayout>
 
         <!-- Video player (hidden by default) -->
         <FrameLayout

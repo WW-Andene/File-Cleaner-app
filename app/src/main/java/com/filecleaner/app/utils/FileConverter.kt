@@ -549,6 +549,92 @@ object FileConverter {
     }
 
     // =========================================================================
+    // VIDEO → GIF CONVERSION
+    // =========================================================================
+
+    /**
+     * Converts a video segment to an animated GIF.
+     *
+     * @param inputPath Source video path
+     * @param startMs   Start time in milliseconds (default: 0)
+     * @param durationMs Duration to capture in milliseconds (default: 3000 = 3 seconds)
+     * @param fps       Frames per second for the GIF (default: 10)
+     * @param maxWidth  Maximum width in pixels (default: 320, aspect ratio preserved)
+     */
+    fun videoToGif(
+        inputPath: String,
+        startMs: Long = 0,
+        durationMs: Long = 3000,
+        fps: Int = 10,
+        maxWidth: Int = 320
+    ): ConvertResult {
+        val src = File(inputPath)
+        if (!src.exists()) return ConvertResult(false, "", "Source video not found")
+
+        val retriever = MediaMetadataRetriever()
+        return try {
+            retriever.setDataSource(inputPath)
+            val videoDurationMs = retriever.extractMetadata(
+                MediaMetadataRetriever.METADATA_KEY_DURATION
+            )?.toLongOrNull() ?: return ConvertResult(false, "", "Cannot determine video duration")
+
+            val actualDuration = durationMs.coerceAtMost(videoDurationMs - startMs).coerceAtLeast(100)
+            val frameCount = ((actualDuration / 1000.0) * fps).toInt().coerceIn(1, 150)
+            val intervalMs = actualDuration / frameCount
+            val delayCs = (1000 / fps.coerceIn(1, 30)) / 10 // centiseconds for GIF
+
+            // Extract frames
+            val frames = mutableListOf<Bitmap>()
+            for (i in 0 until frameCount) {
+                val timeUs = (startMs + i * intervalMs) * 1000
+                val frame = retriever.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+                    ?: continue
+
+                // Scale down to maxWidth preserving aspect ratio
+                val scale = maxWidth.toFloat() / frame.width.coerceAtLeast(1)
+                val scaledFrame = if (scale < 1f) {
+                    val newW = (frame.width * scale).toInt().coerceAtLeast(1)
+                    val newH = (frame.height * scale).toInt().coerceAtLeast(1)
+                    try {
+                        Bitmap.createScaledBitmap(frame, newW, newH, true).also {
+                            if (it !== frame) frame.recycle()
+                        }
+                    } catch (_: OutOfMemoryError) {
+                        frame.recycle()
+                        continue
+                    }
+                } else {
+                    frame
+                }
+                frames.add(scaledFrame)
+            }
+
+            if (frames.isEmpty()) {
+                return ConvertResult(false, "", "No frames could be extracted")
+            }
+
+            // Encode as GIF
+            val outputFile = File(src.parent, "${src.nameWithoutExtension}_${formatTimeSuffix(startMs)}.gif")
+            outputFile.outputStream().buffered().use { out ->
+                val encoder = SimpleGifEncoder(out)
+                encoder.start(frames[0].width, frames[0].height, delayCs)
+                for (frame in frames) {
+                    encoder.addFrame(frame)
+                    frame.recycle()
+                }
+                encoder.finish()
+            }
+
+            ConvertResult(true, outputFile.absolutePath,
+                "Created GIF: ${frames.size} frames, ${outputFile.length() / 1024} KB")
+        } catch (e: Exception) {
+            ConvertResult(false, "", "GIF creation failed: ${e.localizedMessage}")
+        } finally {
+            try { retriever.release() } catch (_: Exception) {}
+        }
+    }
+
+    // =========================================================================
     // AUDIO CONVERSIONS
     // =========================================================================
 

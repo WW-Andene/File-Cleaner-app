@@ -371,26 +371,147 @@ class FileViewerFragment : Fragment() {
         binding.btnPdfNext.isEnabled = currentPdfPage < pageCount - 1
     }
 
-    // ── Text/Code Viewer with Syntax Highlighting ───────────────────────────
+    // ── Text/Code Viewer with Syntax Highlighting & Editing ──────────────
+
+    private var currentFilePath: String? = null
+    private var originalContent: String? = null
+    private var isCodeModified = false
 
     private fun showText(file: File, ext: String) {
-        binding.scrollText.visibility = View.VISIBLE
+        binding.codeEditorContainer.visibility = View.VISIBLE
+        currentFilePath = file.absolutePath
+
+        val isCode = ext in CODE_EXTENSIONS
+        val maxBytes = if (isCode) MAX_TEXT_BYTES * 4 else MAX_TEXT_BYTES // 200 KB for code files
         val rawContent = try {
-            val bytes = file.inputStream().use { it.readNBytes(MAX_TEXT_BYTES) }
-            val text = String(bytes, Charsets.UTF_8)
-            if (file.length() > MAX_TEXT_BYTES) {
-                text + "\n\n\u2026 [truncated at 50 KB]"
-            } else {
-                text
-            }
+            val bytes = file.inputStream().use { it.readNBytes(maxBytes) }
+            String(bytes, Charsets.UTF_8)
         } catch (e: Exception) {
             getString(R.string.preview_error, e.localizedMessage ?: "")
         }
+        originalContent = rawContent
 
-        if (ext in CODE_EXTENSIONS) {
-            binding.tvTextContent.text = applySyntaxHighlighting(rawContent, ext)
+        // Show code toolbar for code files
+        if (isCode) {
+            binding.codeToolbar.visibility = View.VISIBLE
+            binding.tvTextContent.isFocusableInTouchMode = true
+            binding.tvTextContent.isFocusable = true
+            setupCodeToolbar(file, ext)
         } else {
-            binding.tvTextContent.text = rawContent
+            binding.codeToolbar.visibility = View.GONE
+            binding.tvTextContent.isFocusableInTouchMode = false
+            binding.tvTextContent.keyListener = null
+        }
+
+        // Apply syntax highlighting and line numbers
+        if (isCode) {
+            binding.tvTextContent.setText(applySyntaxHighlighting(rawContent, ext))
+        } else {
+            binding.tvTextContent.setText(rawContent)
+        }
+
+        updateLineNumbers(rawContent)
+
+        // Track modifications
+        binding.tvTextContent.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                if (isCode) {
+                    isCodeModified = s?.toString() != originalContent
+                    binding.tvCodeInfo.text = if (isCodeModified) getString(R.string.code_modified) else ""
+                    updateLineNumbers(s?.toString() ?: "")
+                }
+            }
+        })
+    }
+
+    private fun updateLineNumbers(text: String) {
+        val lineCount = text.count { it == '\n' } + 1
+        val numbers = (1..lineCount).joinToString("\n")
+        binding.tvLineNumbers.text = numbers
+    }
+
+    private fun setupCodeToolbar(file: File, ext: String) {
+        // Save button
+        binding.btnCodeSave.setOnClickListener {
+            val content = binding.tvTextContent.text.toString()
+            try {
+                file.writeText(content)
+                originalContent = content
+                isCodeModified = false
+                binding.tvCodeInfo.text = ""
+                com.google.android.material.snackbar.Snackbar.make(
+                    binding.root, getString(R.string.code_saved),
+                    com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
+                ).show()
+            } catch (e: Exception) {
+                com.google.android.material.snackbar.Snackbar.make(
+                    binding.root, getString(R.string.code_save_failed, e.localizedMessage ?: ""),
+                    com.google.android.material.snackbar.Snackbar.LENGTH_LONG
+                ).show()
+            }
+        }
+
+        // Undo/Redo (using EditText's built-in undo)
+        binding.btnCodeUndo.setOnClickListener {
+            binding.tvTextContent.onTextContextMenuItem(android.R.id.undo)
+        }
+        binding.btnCodeRedo.setOnClickListener {
+            binding.tvTextContent.onTextContextMenuItem(android.R.id.redo)
+        }
+
+        // Find bar
+        binding.btnCodeFind.setOnClickListener {
+            binding.findBar.visibility = if (binding.findBar.visibility == View.VISIBLE)
+                View.GONE else View.VISIBLE
+            if (binding.findBar.visibility == View.VISIBLE) {
+                binding.etFindQuery.requestFocus()
+            }
+        }
+        binding.btnFindClose.setOnClickListener {
+            binding.findBar.visibility = View.GONE
+        }
+
+        var findIndex = -1
+        val findMatches = mutableListOf<Int>()
+
+        fun updateFindMatches() {
+            val query = binding.etFindQuery.text.toString()
+            findMatches.clear()
+            findIndex = -1
+            if (query.isBlank()) return
+            val text = binding.tvTextContent.text.toString()
+            var idx = text.indexOf(query, ignoreCase = true)
+            while (idx >= 0) {
+                findMatches.add(idx)
+                idx = text.indexOf(query, idx + 1, ignoreCase = true)
+            }
+        }
+
+        fun goToMatch(index: Int) {
+            if (findMatches.isEmpty()) return
+            findIndex = index.mod(findMatches.size)
+            val pos = findMatches[findIndex]
+            binding.tvTextContent.setSelection(pos, pos + binding.etFindQuery.text.length)
+            binding.tvTextContent.requestFocus()
+        }
+
+        binding.etFindQuery.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                updateFindMatches()
+                if (findMatches.isNotEmpty()) goToMatch(0)
+            }
+        })
+        binding.btnFindNext.setOnClickListener {
+            updateFindMatches()
+            goToMatch(findIndex + 1)
+        }
+        binding.btnFindPrev.setOnClickListener {
+            updateFindMatches()
+            goToMatch(findIndex - 1)
         }
     }
 

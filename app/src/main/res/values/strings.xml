@@ -318,6 +318,27 @@
     <string name="convert_extract_as_jpg">Save as JPG</string>
     <string name="convert_video_section_key_frames">Extract key frames</string>
     <string name="convert_video_key_frames_desc">Capture evenly-spaced frames across the entire video and save them as individual image files in a new folder.</string>
+    <string name="convert_video_section_gif">Convert to GIF</string>
+    <string name="convert_video_gif_desc">Create an animated GIF from the selected timestamp. Choose how many seconds to capture (max 30s).</string>
+    <string name="convert_gif_duration">Duration (seconds)</string>
+    <string name="convert_create_gif">Create GIF</string>
+
+    <!-- Code editor -->
+    <string name="code_undo">Undo</string>
+    <string name="code_redo">Redo</string>
+    <string name="code_find">Find</string>
+    <string name="code_find_hint">Find in file\u2026</string>
+    <string name="code_find_prev">Find previous</string>
+    <string name="code_find_next">Find next</string>
+    <string name="code_find_close">Close find bar</string>
+    <string name="code_save">Save</string>
+    <string name="code_saved">File saved</string>
+    <string name="code_save_failed">Save failed: %1$s</string>
+    <string name="code_line_col">Ln %1$d, Col %2$d</string>
+    <string name="code_modified">Modified</string>
+    <string name="code_unsaved_title">Unsaved Changes</string>
+    <string name="code_unsaved_message">You have unsaved changes. Save before leaving?</string>
+    <string name="code_discard">Discard</string>
     <string name="convert_video_frame_count">Number of frames:</string>
     <string name="convert_extract_key_png">As PNG</string>
     <string name="convert_extract_key_jpg">As JPG</string>

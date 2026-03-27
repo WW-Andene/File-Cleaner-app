@@ -366,7 +366,8 @@ class BrowseFragment : Fragment() {
         } else {
             adapter.expandAll()
         }
-        updateExpandCollapseButton()
+        // Force RecyclerView to re-layout
+        _binding?.recyclerView?.post { updateExpandCollapseButton() }
     }
 
     /** Updates the Expand All / Collapse All button text and icon to reflect current state. */

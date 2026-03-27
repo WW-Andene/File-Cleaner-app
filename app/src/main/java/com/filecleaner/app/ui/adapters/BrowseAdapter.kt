@@ -183,10 +183,12 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         }
         fullList = items
         val visible = computeVisibleList()
+        // Force diff by clearing first — ListAdapter ignores submitList if content is "same"
+        submitList(null)
         if (commitCallback != null) {
-            submitList(visible, commitCallback)
+            submitList(visible.toList(), commitCallback)
         } else {
-            submitList(visible)
+            submitList(visible.toList())
         }
     }
 
@@ -202,7 +204,9 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
             collapsedFolders.add(folderPath)
             expandedByUser.remove(folderPath)
         }
-        submitList(computeVisibleList())
+        val visible = computeVisibleList()
+        submitList(null)
+        submitList(visible)
     }
 
     /** When true in direct browse mode, files are hidden (only folders shown). */
@@ -212,7 +216,11 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
     fun expandAll() {
         collapsedFolders.clear()
         filesCollapsed = false
-        submitList(computeVisibleList())
+        expandedByUser.clear()
+        val visible = computeVisibleList()
+        // Force update by submitting null then the new list
+        submitList(null)
+        submitList(visible)
     }
 
     /** Collapse all folders. */
@@ -223,8 +231,12 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
                 collapsedFolders.add(item.folderPath)
             }
         }
+        expandedByUser.clear()
         filesCollapsed = true
-        submitList(computeVisibleList())
+        val visible = computeVisibleList()
+        // Force update by submitting null then the new list
+        submitList(null)
+        submitList(visible)
     }
 
     /** Returns true if any folder is currently expanded (or files are visible in direct browse). */

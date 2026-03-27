@@ -108,49 +108,7 @@ object ConvertDialog {
             }
         ))
 
-        // Resize option -- handled specially with a sub-dialog
-        options.add(ConvertOption(
-            title = context.getString(R.string.convert_resize),
-            description = context.getString(R.string.convert_resize_desc),
-            action = null // Handled by custom click
-        ))
-
-        // Image transforms
-        options.add(ConvertOption(
-            title = context.getString(R.string.convert_rotate_90),
-            description = context.getString(R.string.convert_rotate_desc),
-            action = { FileConverter.rotateImage(item.path, 90f) }
-        ))
-        options.add(ConvertOption(
-            title = context.getString(R.string.convert_rotate_180),
-            description = context.getString(R.string.convert_rotate_desc),
-            action = { FileConverter.rotateImage(item.path, 180f) }
-        ))
-        options.add(ConvertOption(
-            title = context.getString(R.string.convert_flip_h),
-            description = context.getString(R.string.convert_flip_desc),
-            action = { FileConverter.flipImage(item.path, horizontal = true) }
-        ))
-        options.add(ConvertOption(
-            title = context.getString(R.string.convert_flip_v),
-            description = context.getString(R.string.convert_flip_desc),
-            action = { FileConverter.flipImage(item.path, horizontal = false) }
-        ))
-        options.add(ConvertOption(
-            title = context.getString(R.string.convert_crop_square),
-            description = context.getString(R.string.convert_crop_desc),
-            action = { FileConverter.cropToAspectRatio(item.path, 1, 1) }
-        ))
-        options.add(ConvertOption(
-            title = context.getString(R.string.convert_crop_16_9),
-            description = context.getString(R.string.convert_crop_desc),
-            action = { FileConverter.cropToAspectRatio(item.path, 16, 9) }
-        ))
-        options.add(ConvertOption(
-            title = context.getString(R.string.convert_watermark),
-            description = context.getString(R.string.convert_watermark_desc),
-            action = { FileConverter.addWatermark(item.path, "\u00A9 ${java.time.Year.now().value}") }
-        ))
+        // Base64 export
         options.add(ConvertOption(
             title = context.getString(R.string.convert_to_base64),
             description = context.getString(R.string.convert_base64_desc),

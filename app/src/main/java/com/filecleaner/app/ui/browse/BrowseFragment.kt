@@ -111,6 +111,10 @@ class BrowseFragment : Fragment() {
             state.getString(KEY_SEARCH_QUERY)?.let { searchQuery = it }
             state.getStringArrayList(KEY_EXTENSIONS)?.let { selectedExtensions.addAll(it) }
             state.getStringArrayList(KEY_COLLAPSED_FOLDERS)?.let { restoredCollapsedFolders.addAll(it) }
+            directBrowseMode = state.getBoolean(KEY_DIRECT_BROWSE, true)
+            state.getString(KEY_BROWSE_PATH)?.let { currentBrowsePath = it }
+            restoredFolderViewMode = state.getInt(KEY_FOLDER_VIEW_MODE, -1)
+            restoredScrollPos = state.getInt(KEY_SCROLL_POS, -1)
         }
 
         // RecyclerView with BrowseAdapter (supports folder headers)
@@ -214,6 +218,11 @@ class BrowseFragment : Fragment() {
         if (restoredCollapsedFolders.isNotEmpty()) {
             adapter.collapsedFolders.addAll(restoredCollapsedFolders)
             restoredCollapsedFolders.clear()
+        }
+        // Restore folder view mode
+        if (restoredFolderViewMode in ViewMode.entries.indices) {
+            adapter.folderViewMode = ViewMode.entries[restoredFolderViewMode]
+            restoredFolderViewMode = -1
         }
         dividerDecoration = FileListDividerDecoration(requireContext()) { position ->
             adapter.isHeader(position)
@@ -345,6 +354,8 @@ class BrowseFragment : Fragment() {
 
     private var filtersExpanded = false
     private val restoredCollapsedFolders = mutableSetOf<String>()
+    private var restoredFolderViewMode = -1
+    private var restoredScrollPos = -1
 
     /** Toggle all folders between expanded and collapsed. */
     private fun toggleAllFolders() {
@@ -359,6 +370,17 @@ class BrowseFragment : Fragment() {
     /** Updates the Expand All / Collapse All button text and icon to reflect current state. */
     private fun updateExpandCollapseButton() {
         val binding = _binding ?: return
+        // Hide in direct browse mode (no collapsible section headers)
+        if (directBrowseMode) {
+            binding.btnToggleExpandCollapse.visibility = View.GONE
+            return
+        }
+        binding.btnToggleExpandCollapse.visibility = View.VISIBLE
+        val hasHeaders = adapter.currentList.any { it is BrowseAdapter.Item.Header }
+        if (!hasHeaders) {
+            binding.btnToggleExpandCollapse.visibility = View.GONE
+            return
+        }
         val allExpanded = adapter.hasExpandedFolders()
         if (allExpanded) {
             binding.btnToggleExpandCollapse.text = getString(R.string.collapse_all)
@@ -613,12 +635,25 @@ class BrowseFragment : Fragment() {
                 ))
             }
 
-            // Add files
-            val searchFiltered = if (searchQuery.isNotBlank()) {
-                listing.files.filter { it.name.contains(searchQuery, ignoreCase = true) }
-            } else listing.files
+            // Apply category filter
+            val catPos = _binding?.spinnerCategory?.selectedItemPosition ?: 0
+            val selectedCat = if (catPos in categories.indices) categories[catPos].second else null
 
-            for (file in searchFiltered) {
+            var filteredFiles = listing.files
+            // Filter by category if a specific one is selected
+            if (selectedCat is com.filecleaner.app.data.FileCategory) {
+                filteredFiles = filteredFiles.filter { it.category == selectedCat }
+            }
+            // Filter by search query
+            if (searchQuery.isNotBlank()) {
+                filteredFiles = filteredFiles.filter { it.name.contains(searchQuery, ignoreCase = true) }
+            }
+            // Filter by selected extensions
+            if (selectedExtensions.isNotEmpty()) {
+                filteredFiles = filteredFiles.filter { it.extension in selectedExtensions }
+            }
+
+            for (file in filteredFiles) {
                 items.add(BrowseAdapter.Item.File(file))
             }
 
@@ -633,8 +668,15 @@ class BrowseFragment : Fragment() {
                 binding.recyclerView.visibility = View.VISIBLE
             }
 
-            adapter.submitFullList(items)
+            adapter.submitFullList(items) {
+                // Restore scroll position if we have one saved
+                if (restoredScrollPos >= 0) {
+                    _binding?.recyclerView?.scrollToPosition(restoredScrollPos)
+                    restoredScrollPos = -1
+                }
+            }
             binding.tvCount.text = resources.getQuantityString(R.plurals.n_files, fileCount, fileCount)
+            updateExpandCollapseButton()
 
             // Update breadcrumb bar
             val breadcrumbs = com.filecleaner.app.utils.file.DirectoryBrowser.getBreadcrumbs(path)
@@ -831,8 +873,16 @@ class BrowseFragment : Fragment() {
         outState.putInt(KEY_SORT_ORDER, _binding?.spinnerSort?.selectedItemPosition ?: 0)
         outState.putInt(KEY_CATEGORY_POS, _binding?.spinnerCategory?.selectedItemPosition ?: 0)
         outState.putStringArrayList(KEY_EXTENSIONS, ArrayList(selectedExtensions))
+        outState.putBoolean(KEY_DIRECT_BROWSE, directBrowseMode)
+        outState.putString(KEY_BROWSE_PATH, currentBrowsePath)
         if (::adapter.isInitialized) {
             outState.putStringArrayList(KEY_COLLAPSED_FOLDERS, ArrayList(adapter.collapsedFolders))
+            outState.putInt(KEY_FOLDER_VIEW_MODE, adapter.folderViewMode.ordinal)
+        }
+        // Save scroll position
+        val lm = _binding?.recyclerView?.layoutManager
+        if (lm is androidx.recyclerview.widget.LinearLayoutManager) {
+            outState.putInt(KEY_SCROLL_POS, lm.findFirstVisibleItemPosition())
         }
     }
 
@@ -997,10 +1047,14 @@ class BrowseFragment : Fragment() {
 
     companion object {
         private const val KEY_VIEW_MODE = "browse_view_mode"
+        private const val KEY_FOLDER_VIEW_MODE = "browse_folder_view_mode"
         private const val KEY_SEARCH_QUERY = "browse_search_query"
         private const val KEY_SORT_ORDER = "browse_sort_order"
         private const val KEY_CATEGORY_POS = "browse_category_pos"
         private const val KEY_EXTENSIONS = "browse_extensions"
         private const val KEY_COLLAPSED_FOLDERS = "browse_collapsed_folders"
+        private const val KEY_DIRECT_BROWSE = "browse_direct_mode"
+        private const val KEY_BROWSE_PATH = "browse_path"
+        private const val KEY_SCROLL_POS = "browse_scroll_pos"
     }
 }

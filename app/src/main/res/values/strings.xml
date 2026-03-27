@@ -1251,6 +1251,19 @@
     <string name="network_log_title">Network Activity</string>
     <string name="network_log_desc">See what URLs the app connected to</string>
 
+    <!-- Cloud & Network -->
+    <string name="transfer_queue_title">Transfer Queue</string>
+    <string name="transfer_queue_empty">No active transfers</string>
+    <string name="transfer_progress">%1$s of %2$s (%3$d%%)</string>
+    <string name="transfer_completed">%1$d transfers completed</string>
+    <string name="connection_health_title">Connection Health</string>
+    <string name="connection_health_testing">Testing connections\u2026</string>
+    <string name="bandwidth_title">Data Usage</string>
+    <string name="offline_cache_title">Offline Cache</string>
+    <string name="offline_cache_size">Cache size: %1$s</string>
+    <string name="offline_cache_clear">Clear Cache</string>
+    <string name="ftp_provider">FTP Server</string>
+
     <!-- Sort -->
     <string name="sort_by_name">Name</string>
     <string name="sort_by_size">Size</string>

@@ -263,6 +263,7 @@ class FileViewerFragment : Fragment() {
             ext == "pdf" -> showPdf(file, savedInstanceState)
             category == FileCategory.VIDEO || ext in VIDEO_EXTENSIONS -> showVideo(file)
             ext in TEXT_EXTENSIONS -> showText(file, ext)
+            ext == "apk" -> showApkInfo(file)
             else -> showUnsupported(file)
         }
     }
@@ -1043,6 +1044,142 @@ class FileViewerFragment : Fragment() {
             null
         )
         binding.webView.contentDescription = getString(R.string.a11y_webview_content, file.name)
+    }
+
+    // ── APK Viewer ────────────────────────────────────────────────────────
+
+    private fun showApkInfo(file: File) {
+        binding.codeEditorContainer.visibility = View.VISIBLE
+        binding.codeToolbar.visibility = View.GONE // Read-only for APKs
+        binding.tvTextContent.isFocusableInTouchMode = false
+        binding.tvTextContent.keyListener = null
+
+        val ctx = requireContext()
+        val pm = ctx.packageManager
+
+        try {
+            val apkInfo = pm.getPackageArchiveInfo(file.absolutePath,
+                android.content.pm.PackageManager.GET_PERMISSIONS or
+                android.content.pm.PackageManager.GET_ACTIVITIES or
+                android.content.pm.PackageManager.GET_META_DATA
+            )
+
+            if (apkInfo == null) {
+                binding.tvTextContent.setText(getString(R.string.apk_parse_failed))
+                return
+            }
+
+            val appInfo = apkInfo.applicationInfo
+            appInfo?.sourceDir = file.absolutePath
+            appInfo?.publicSourceDir = file.absolutePath
+
+            val appName = try { appInfo?.let { pm.getApplicationLabel(it).toString() } ?: "Unknown" } catch (_: Exception) { "Unknown" }
+            val versionName = apkInfo.versionName ?: "Unknown"
+            val versionCode = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                apkInfo.longVersionCode.toString()
+            } else {
+                @Suppress("DEPRECATION")
+                apkInfo.versionCode.toString()
+            }
+            val packageName = apkInfo.packageName ?: "Unknown"
+            val minSdk = appInfo?.minSdkVersion ?: 0
+            val targetSdk = appInfo?.targetSdkVersion ?: 0
+
+            // Check if already installed
+            val installedVersion = try {
+                val installed = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                    pm.getPackageInfo(packageName, android.content.pm.PackageManager.PackageInfoFlags.of(0))
+                } else {
+                    @Suppress("DEPRECATION")
+                    pm.getPackageInfo(packageName, 0)
+                }
+                installed.versionName ?: "Unknown"
+            } catch (_: Exception) { null }
+
+            // Permissions
+            val permissions = apkInfo.requestedPermissions ?: emptyArray()
+            val dangerousPerms = permissions.filter { perm ->
+                try {
+                    val permInfo = pm.getPermissionInfo(perm, 0)
+                    permInfo.protection == android.content.pm.PermissionInfo.PROTECTION_DANGEROUS
+                } catch (_: Exception) { false }
+            }
+
+            val info = buildString {
+                appendLine("══════════════════════════════")
+                appendLine("  APK DETAILS")
+                appendLine("══════════════════════════════")
+                appendLine()
+                appendLine("App Name:      $appName")
+                appendLine("Package:       $packageName")
+                appendLine("Version:       $versionName ($versionCode)")
+                appendLine("Min SDK:       $minSdk (Android ${sdkToVersion(minSdk)})")
+                appendLine("Target SDK:    $targetSdk (Android ${sdkToVersion(targetSdk)})")
+                appendLine("File Size:     ${UndoHelper.formatBytes(file.length())}")
+                appendLine()
+
+                if (installedVersion != null) {
+                    appendLine("⚠ Already installed: v$installedVersion")
+                    if (installedVersion != versionName) {
+                        appendLine("  APK is ${if (versionName > installedVersion) "NEWER" else "OLDER"} than installed")
+                    }
+                    appendLine()
+                }
+
+                appendLine("══════════════════════════════")
+                appendLine("  PERMISSIONS (${permissions.size})")
+                appendLine("══════════════════════════════")
+                appendLine()
+
+                if (dangerousPerms.isNotEmpty()) {
+                    appendLine("⚠ Dangerous permissions (${dangerousPerms.size}):")
+                    for (perm in dangerousPerms) {
+                        appendLine("  • ${perm.substringAfterLast('.')}")
+                    }
+                    appendLine()
+                }
+
+                appendLine("All permissions:")
+                for (perm in permissions.sorted()) {
+                    val short = perm.substringAfterLast('.')
+                    val isDangerous = perm in dangerousPerms
+                    appendLine("  ${if (isDangerous) "⚠" else "•"} $short")
+                }
+
+                // Activities count
+                val activities = apkInfo.activities?.size ?: 0
+                if (activities > 0) {
+                    appendLine()
+                    appendLine("Activities: $activities")
+                }
+            }
+
+            binding.tvTextContent.setText(info)
+            updateLineNumbers(info)
+
+            // Try to load APK icon
+            try {
+                val icon = appInfo?.let { pm.getApplicationIcon(it) }
+                if (icon != null) {
+                    // Show icon in image viewer area as well
+                    binding.tvLineNumbers.visibility = View.GONE
+                }
+            } catch (_: Exception) { }
+
+        } catch (e: Exception) {
+            binding.tvTextContent.setText(getString(R.string.apk_parse_failed) + "\n\n${e.localizedMessage}")
+        }
+    }
+
+    private fun sdkToVersion(sdk: Int): String = when (sdk) {
+        29 -> "10"
+        30 -> "11"
+        31 -> "12"
+        32 -> "12L"
+        33 -> "13"
+        34 -> "14"
+        35 -> "15"
+        else -> if (sdk > 0) "API $sdk" else "?"
     }
 
     // ── Unsupported Fallback ────────────────────────────────────────────────

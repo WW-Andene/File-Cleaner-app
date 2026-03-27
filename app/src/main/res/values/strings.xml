@@ -1168,6 +1168,9 @@
     <string name="speed_1x">1x</string>
     <string name="a11y_playback_speed">Playback speed</string>
 
+    <!-- APK Viewer -->
+    <string name="apk_parse_failed">Cannot parse this APK file. It may be corrupted or use an unsupported format.</string>
+
     <string name="a11y_list_content">List of items</string>
     <string name="a11y_storage_progress">Storage usage progress bar</string>
 

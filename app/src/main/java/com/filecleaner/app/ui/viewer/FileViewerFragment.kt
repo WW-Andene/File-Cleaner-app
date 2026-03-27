@@ -711,6 +711,7 @@ class FileViewerFragment : Fragment() {
     }
 
     private fun updateAudioSeekBar() {
+        if (_binding == null) return
         val mp = mediaPlayer ?: return
         if (isAudioPlaying && mp.isPlaying) {
             _binding?.seekAudio?.progress = mp.currentPosition
@@ -923,7 +924,10 @@ class FileViewerFragment : Fragment() {
         mediaPlayer?.release()
         mediaPlayer = null
         isAudioPlaying = false
-        // Release video
+        // Release video — clear all listeners before stopping to prevent stale callbacks
+        _binding?.videoView?.setOnPreparedListener(null)
+        _binding?.videoView?.setOnErrorListener(null)
+        _binding?.videoView?.setOnCompletionListener(null)
         _binding?.videoView?.stopPlayback()
         isVideoPlaying = false
         isVideoInitialized = false

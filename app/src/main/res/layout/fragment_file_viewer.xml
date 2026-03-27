@@ -58,6 +58,26 @@
             android:focusable="true"
             android:contentDescription="@string/a11y_share_file"
             app:tint="@color/textPrimary" />
+
+        <ImageButton
+            android:id="@+id/btn_delete_file"
+            android:layout_width="@dimen/icon_button"
+            android:layout_height="@dimen/icon_button"
+            android:src="@drawable/ic_delete"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:focusable="true"
+            android:contentDescription="@string/ctx_delete"
+            app:tint="@color/colorError" />
+
+        <ImageButton
+            android:id="@+id/btn_file_info"
+            android:layout_width="@dimen/icon_button"
+            android:layout_height="@dimen/icon_button"
+            android:src="@drawable/ic_info"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:focusable="true"
+            android:contentDescription="@string/ctx_properties"
+            app:tint="@color/textPrimary" />
     </LinearLayout>
 
     <!-- Content area -->
@@ -384,6 +404,22 @@
                         android:contentDescription="@string/a11y_video_duration"
                         android:textColor="@color/textOnPrimary"
                         android:textAppearance="@style/TextAppearance.FileCleaner.Numeric" />
+
+                    <TextView
+                        android:id="@+id/btn_video_speed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/touch_target_min"
+                        android:layout_marginStart="@dimen/spacing_sm"
+                        android:paddingHorizontal="@dimen/spacing_sm"
+                        android:gravity="center"
+                        android:text="@string/speed_1x"
+                        android:textColor="@color/textOnPrimary"
+                        android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                        android:textStyle="bold"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:contentDescription="@string/a11y_playback_speed" />
                 </LinearLayout>
             </LinearLayout>
         </FrameLayout>

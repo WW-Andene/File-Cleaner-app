@@ -1162,6 +1162,12 @@
     <string name="convert_vcard_to_csv">Convert to CSV</string>
     <string name="convert_vcard_desc">Extract contacts to a spreadsheet-compatible CSV file</string>
 
+    <!-- Viewer improvements -->
+    <string name="viewer_delete_confirm">Delete \u201C%1$s\u201D? This cannot be undone.</string>
+    <string name="viewer_deleted">File deleted</string>
+    <string name="speed_1x">1x</string>
+    <string name="a11y_playback_speed">Playback speed</string>
+
     <string name="a11y_list_content">List of items</string>
     <string name="a11y_storage_progress">Storage usage progress bar</string>
 

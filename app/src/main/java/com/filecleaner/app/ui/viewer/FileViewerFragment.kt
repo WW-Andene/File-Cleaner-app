@@ -207,6 +207,46 @@ class FileViewerFragment : Fragment() {
         binding.btnOpenExternal.setOnClickListener { FileOpener.open(requireContext(), file) }
         binding.btnShare.setOnClickListener { FileOpener.share(requireContext(), file) }
 
+        // Delete from viewer
+        binding.btnDeleteFile.setOnClickListener {
+            com.filecleaner.app.ui.common.RoundedDialogBuilder(requireContext())
+                .setTitle(getString(R.string.ctx_delete))
+                .setMessage(getString(R.string.viewer_delete_confirm, file.name))
+                .setPositiveButton(getString(R.string.ctx_delete)) { _, _ ->
+                    if (file.delete()) {
+                        com.google.android.material.snackbar.Snackbar.make(
+                            binding.root, getString(R.string.viewer_deleted), com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
+                        ).show()
+                        findNavController().popBackStack()
+                    }
+                }
+                .setNegativeButton(getString(R.string.cancel), null)
+                .show()
+        }
+
+        // File info/properties dialog
+        binding.btnFileInfo.setOnClickListener {
+            val info = buildString {
+                appendLine("${getString(R.string.prop_name)}: ${file.name}")
+                appendLine("${getString(R.string.prop_path)}: ${file.absolutePath}")
+                appendLine("${getString(R.string.prop_size)}: ${UndoHelper.formatBytes(file.length())} (${file.length()} bytes)")
+                appendLine("${getString(R.string.prop_modified)}: ${com.filecleaner.app.utils.DateFormatUtils.formatDateTime(file.lastModified())}")
+                val mime = android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext) ?: "unknown"
+                appendLine("${getString(R.string.prop_type)}: $mime")
+                if (category == FileCategory.IMAGE) {
+                    val exif = com.filecleaner.app.utils.ExifReader.read(filePath)
+                    if (exif != null) {
+                        appendLine("\n${com.filecleaner.app.utils.ExifReader.formatReadable(exif)}")
+                    }
+                }
+            }
+            com.filecleaner.app.ui.common.RoundedDialogBuilder(requireContext())
+                .setTitle(getString(R.string.ctx_properties))
+                .setMessage(info)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+        }
+
         // File info bar — F-081: Use centralized date formatting
         binding.tvFileInfo.text = getString(
             R.string.viewer_file_info,
@@ -391,17 +431,11 @@ class FileViewerFragment : Fragment() {
         }
         originalContent = rawContent
 
-        // Show code toolbar for code files
-        if (isCode) {
-            binding.codeToolbar.visibility = View.VISIBLE
-            binding.tvTextContent.isFocusableInTouchMode = true
-            binding.tvTextContent.isFocusable = true
-            setupCodeToolbar(file, ext)
-        } else {
-            binding.codeToolbar.visibility = View.GONE
-            binding.tvTextContent.isFocusableInTouchMode = false
-            binding.tvTextContent.keyListener = null
-        }
+        // All text files are editable — code files get syntax highlighting
+        binding.codeToolbar.visibility = View.VISIBLE
+        binding.tvTextContent.isFocusableInTouchMode = true
+        binding.tvTextContent.isFocusable = true
+        setupCodeToolbar(file, ext)
 
         // Apply syntax highlighting and line numbers
         if (isCode) {
@@ -744,6 +778,20 @@ class FileViewerFragment : Fragment() {
             override fun onStartTrackingTouch(sb: SeekBar?) {}
             override fun onStopTrackingTouch(sb: SeekBar?) {}
         })
+
+        // Video speed control
+        val speeds = floatArrayOf(0.5f, 1.0f, 1.5f, 2.0f)
+        val speedLabels = arrayOf("0.5x", "1x", "1.5x", "2x")
+        var speedIndex = 1 // Default 1x
+        binding.btnVideoSpeed?.setOnClickListener {
+            speedIndex = (speedIndex + 1) % speeds.size
+            val speed = speeds[speedIndex]
+            binding.btnVideoSpeed?.text = speedLabels[speedIndex]
+            try {
+                val params = android.media.PlaybackParams().setSpeed(speed)
+                videoView.setPlaybackParams(params)
+            } catch (_: Exception) { /* Some devices don't support speed change */ }
+        }
     }
 
     private fun updateVideoSeekBar() {

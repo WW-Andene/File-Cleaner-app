@@ -90,6 +90,7 @@ object OnboardingDialog {
             }
             builder.setNegativeButton(context.getString(R.string.onboarding_skip)) { _, _ ->
                 UserPreferences.hasSeenOnboarding = true
+                (context as? com.filecleaner.app.MainActivity)?.requestPermissionsAndScan()
             }
         }
 

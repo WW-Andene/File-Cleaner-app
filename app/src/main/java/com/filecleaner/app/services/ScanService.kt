@@ -203,8 +203,18 @@ class ScanService : Service() {
 
     private fun updateNotification(progress: Int, phase: String) {
         updateStatus { copy(currentProgress = progress, currentPhase = phase) }
+        if (!hasNotificationPermission()) return
         val nm = getSystemService(NotificationManager::class.java)
         nm?.notify(NOTIFICATION_ID, buildNotification(progress, phase))
+    }
+
+    /** Android 13+ requires POST_NOTIFICATIONS runtime permission for notify(). */
+    private fun hasNotificationPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            androidx.core.content.ContextCompat.checkSelfPermission(
+                this, android.Manifest.permission.POST_NOTIFICATIONS
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        } else true
     }
 
     private fun buildNotification(progress: Int, phase: String): Notification {
@@ -262,8 +272,10 @@ class ScanService : Service() {
             .setContentIntent(pendingOpen)
             .build()
 
-        val nm = getSystemService(NotificationManager::class.java)
-        nm?.notify(NOTIFICATION_ID + 1, notification)
+        if (hasNotificationPermission()) {
+            val nm = getSystemService(NotificationManager::class.java)
+            nm?.notify(NOTIFICATION_ID + 1, notification)
+        }
     }
 
     private fun createNotificationChannel() {
@@ -273,7 +285,7 @@ class ScanService : Service() {
                 getString(R.string.av_title),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Security Scanner progress"
+                description = getString(R.string.av_notification_channel_desc)
                 setShowBadge(false)
             }
             val nm = getSystemService(NotificationManager::class.java)

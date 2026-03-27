@@ -815,6 +815,7 @@
     <string name="av_no_history">No scan history yet \u2014 Ricky is ready for its first patrol!</string>
     <string name="av_clear_history">Clear History</string>
     <string name="av_clear_history_confirm">This will permanently delete all scan history records. Continue?</string>
+    <string name="av_notification_channel_desc">Security Scanner progress</string>
     <string name="av_scan_history_summary">%1$d findings \u2014 %2$d critical, %3$d high, %4$d medium</string>
 
     <!-- Fix all plurals -->

@@ -192,7 +192,7 @@ object CloudSetupDialog {
             val host = etHost.text.toString().trim()
             val port = etPort.text.toString().toIntOrNull() ?: -1
             val username = etUsername.text.toString().trim()
-            val password = etPassword.text.toString()
+            val password = etPassword.text.toString().trim()
 
             // Clear previous errors
             tilHost.error = null

@@ -29,8 +29,12 @@ class FileOperationService(private val app: Application, private val storagePath
 
     /** Validates that a file path is within external storage. */
     fun isPathWithinStorage(path: String): Boolean {
-        val canonical = File(path).canonicalPath
-        return canonical.startsWith(storagePath)
+        return try {
+            val canonical = File(path).canonicalPath
+            canonical.startsWith(storagePath)
+        } catch (_: Exception) {
+            false // Reject if canonicalization fails (e.g., permission denied, broken symlink)
+        }
     }
 
     /** Returns true if the filename contains characters invalid on common filesystems. */
@@ -178,9 +182,19 @@ class FileOperationService(private val app: Application, private val storagePath
                 val outDirCanonical = outDir.canonicalPath + File.separator
                 var entry = zis.nextEntry
                 while (entry != null) {
-                    val outFile = File(outDir, entry.name)
-                    if (!outFile.canonicalPath.startsWith(outDirCanonical) &&
-                        outFile.canonicalPath != outDir.canonicalPath) {
+                    // B4: Validate entry name to prevent zip slip and malformed entries
+                    val entryName = entry.name
+                    if (entryName.isEmpty() || entryName.contains('\u0000') || entryName.length > 4096) {
+                        entry = zis.nextEntry
+                        continue
+                    }
+                    val outFile = File(outDir, entryName)
+                    val canonicalPath = try { outFile.canonicalPath } catch (_: Exception) {
+                        entry = zis.nextEntry
+                        continue
+                    }
+                    if (!canonicalPath.startsWith(outDirCanonical) &&
+                        canonicalPath != outDir.canonicalPath) {
                         entry = zis.nextEntry
                         continue
                     }

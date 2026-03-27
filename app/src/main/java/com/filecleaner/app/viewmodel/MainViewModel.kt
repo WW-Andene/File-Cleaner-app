@@ -182,6 +182,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         // F-008: Clear partial state from cancelled scan so stale data isn't cached
         latestFiles = emptyList()
         latestTree = null
+        // B1: Also clear derived state so stale results from previous scan aren't visible
+        _duplicates.value = emptyList()
+        _largeFiles.value = emptyList()
+        _junkFiles.value = emptyList()
     }
 
     init {

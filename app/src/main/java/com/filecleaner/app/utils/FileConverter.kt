@@ -217,8 +217,10 @@ object FileConverter {
         val pdfFile = File(pdfPath)
         if (!pdfFile.exists()) return ConvertResult(false, "", "PDF not found")
 
+        // B4: Extract to temp directory first, then rename on success to avoid partial results
         val outDir = File(outputDir)
-        outDir.mkdirs()
+        val tempDir = File(outDir.parent, "${outDir.name}_tmp_${System.currentTimeMillis()}")
+        tempDir.mkdirs()
 
         var fd: ParcelFileDescriptor? = null
         var renderer: PdfRenderer? = null
@@ -242,7 +244,7 @@ object FileConverter {
                     page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                     page.close()
 
-                    val pageFile = File(outDir, "${pdfFile.nameWithoutExtension}_page_${i + 1}.${format.extension}")
+                    val pageFile = File(tempDir, "${pdfFile.nameWithoutExtension}_page_${i + 1}.${format.extension}")
                     pageFile.outputStream().buffered().use { out ->
                         bitmap.compress(format.compressFormat, quality, out)
                     }
@@ -251,8 +253,15 @@ object FileConverter {
                 }
             }
 
+            // All pages extracted successfully — move temp dir to final location
+            renderer?.close(); renderer = null
+            fd?.close(); fd = null
+            if (outDir.exists()) outDir.deleteRecursively()
+            tempDir.renameTo(outDir)
             ConvertResult(true, outDir.absolutePath, "Extracted $pageCount pages to ${outDir.name}/")
         } catch (e: Exception) {
+            // Clean up partial temp output on failure
+            tempDir.deleteRecursively()
             ConvertResult(false, "", "PDF extraction failed: ${e.localizedMessage}")
         } finally {
             renderer?.close()

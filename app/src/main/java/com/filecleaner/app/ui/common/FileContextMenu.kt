@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.filecleaner.app.R
 import com.filecleaner.app.data.FileCategory
+import com.filecleaner.app.utils.FileShredder
 import com.filecleaner.app.data.FileItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -345,6 +346,22 @@ object FileContextMenu {
             addItem(context.getString(R.string.encrypt_title), R.drawable.ic_info) {
                 showEncryptDecryptDialog(context, item, decrypt = false)
             }
+        }
+        // Secure delete (file shredder)
+        addItem(context.getString(R.string.file_shredder_title), R.drawable.ic_delete) {
+            RoundedDialogBuilder(context)
+                .setTitle(context.getString(R.string.file_shredder_title))
+                .setMessage(context.getString(R.string.file_shredder_confirm, item.name))
+                .setPositiveButton(context.getString(R.string.ctx_delete)) { _, _ ->
+                    CoroutineScope(Dispatchers.Main).launch {
+                        FileShredder.shred(item.path)
+                        android.widget.Toast.makeText(context,
+                            context.getString(R.string.file_shredded),
+                            android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .setNegativeButton(context.getString(R.string.cancel), null)
+                .show()
         }
         // EXIF for images
         if (item.category == com.filecleaner.app.data.FileCategory.IMAGE) {

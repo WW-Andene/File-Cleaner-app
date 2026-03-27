@@ -1230,6 +1230,27 @@
     <string name="op_outside_storage">Path is outside storage</string>
     <string name="op_invalid_filename">Filename contains invalid characters</string>
 
+    <!-- Security & Privacy -->
+    <string name="app_lock_title">App Lock</string>
+    <string name="app_lock_desc">Require fingerprint or PIN to open the app</string>
+    <string name="app_lock_prompt_title">Raccoon File Manager</string>
+    <string name="app_lock_prompt_subtitle">Authenticate to access your files</string>
+    <string name="secure_folder_title">Secure Folder</string>
+    <string name="secure_folder_desc">Encrypted private storage for sensitive files</string>
+    <string name="secure_folder_empty">No files in secure folder</string>
+    <string name="secure_folder_add">Move to Secure Folder</string>
+    <string name="secure_folder_restore">Restore from Secure Folder</string>
+    <string name="file_shredder_title">Secure Delete</string>
+    <string name="file_shredder_desc">Permanently erase with 3-pass overwrite</string>
+    <string name="file_shredder_confirm">Securely delete \u201C%1$s\u201D? This overwrites the data 3 times and cannot be undone.</string>
+    <string name="file_shredded">File securely deleted</string>
+    <string name="sensitive_scan_title">Sensitive File Scanner</string>
+    <string name="sensitive_scan_desc">Find files containing passwords, keys, or personal data</string>
+    <string name="sensitive_found">Found %1$d sensitive files</string>
+    <string name="sensitive_none">No sensitive files detected</string>
+    <string name="network_log_title">Network Activity</string>
+    <string name="network_log_desc">See what URLs the app connected to</string>
+
     <!-- Sort -->
     <string name="sort_by_name">Name</string>
     <string name="sort_by_size">Size</string>

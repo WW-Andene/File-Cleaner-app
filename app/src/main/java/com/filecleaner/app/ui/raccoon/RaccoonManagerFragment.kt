@@ -130,6 +130,25 @@ class RaccoonManagerFragment : Fragment() {
             findNavController().navigate(R.id.appManagerFragment, null, navAnimOptions)
         }
 
+        // Similar Photos — perceptual hash detection
+        binding.cardSimilarPhotos?.setOnClickListener {
+            if (hasScanData()) {
+                findNavController().navigate(R.id.similarPhotosFragment, null, navAnimOptions)
+            } else {
+                showScanNeeded()
+            }
+        }
+
+        // Recycle Bin — browse and restore deleted files
+        binding.cardTrash?.setOnClickListener {
+            findNavController().navigate(R.id.trashFragment, null, navAnimOptions)
+        }
+
+        // Folder Sizes — visual size ranking
+        binding.cardFolderSizes?.setOnClickListener {
+            findNavController().navigate(R.id.folderSizeFragment, null, navAnimOptions)
+        }
+
         // Settings — app preferences & configuration
         binding.cardSettings.setOnClickListener {
             findNavController().navigate(R.id.settingsFragment, null, navAnimOptions)
@@ -192,6 +211,7 @@ class RaccoonManagerFragment : Fragment() {
             binding.cardArborescence.alpha = alpha
             binding.cardOptimize.alpha = alpha
             binding.cardJanitor.alpha = alpha
+            binding.cardSimilarPhotos?.alpha = alpha
             // Show scan phase on card descriptions during active scan
             val scanPhaseText = if (state is ScanState.Scanning) when (state.phase) {
                 ScanPhase.INDEXING -> getString(R.string.scanning_phase_indexing, state.filesFound)

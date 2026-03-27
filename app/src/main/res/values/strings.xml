@@ -1088,6 +1088,7 @@
 
     <!-- Recycle Bin -->
     <string name="trash_title">Recycle Bin</string>
+    <string name="trash_desc">Browse and restore recently deleted files</string>
     <string name="trash_empty">Trash is empty</string>
     <string name="trash_summary">%1$d files (%2$s)</string>
     <string name="trash_restore">Restore</string>

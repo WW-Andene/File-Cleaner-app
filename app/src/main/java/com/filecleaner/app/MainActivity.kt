@@ -476,7 +476,15 @@ class MainActivity : AppCompatActivity() {
         badge.badgeTextColor = ContextCompat.getColor(this, R.color.textOnPrimary)
         badge.maxCharacterCount = 3
         badge.isVisible = count > 0
-        if (count > 0) badge.number = count
+        if (count > 0) {
+            badge.number = count
+            // Accessibility: describe what the badge count means
+            val menuItem = binding.bottomNav.menu.findItem(menuItemId)
+            menuItem?.contentDescription = "${menuItem.title} ($count)"
+        } else {
+            val menuItem = binding.bottomNav.menu.findItem(menuItemId)
+            menuItem?.contentDescription = null // Reset to default title
+        }
     }
 
     // ── Progress indicator helpers ──

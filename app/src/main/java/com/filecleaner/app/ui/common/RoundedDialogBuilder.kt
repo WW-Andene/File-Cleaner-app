@@ -96,8 +96,17 @@ class RoundedDialogBuilder(private val context: Context) {
         val wrapper = android.widget.FrameLayout(context).apply {
             setPadding(paddingLg, paddingLg, paddingLg, paddingLg)
             addView(card)
+            // Accessibility: mark as modal, focusable, and announce dialog
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+            isFocusable = true
+            accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
         dialog.setContentView(wrapper)
+
+        // Announce dialog to TalkBack
+        wrapper.post {
+            wrapper.announceForAccessibility(title ?: context.getString(android.R.string.dialog_alert_title))
+        }
         if (dismissListener != null) {
             dialog.setOnDismissListener(dismissListener)
         }

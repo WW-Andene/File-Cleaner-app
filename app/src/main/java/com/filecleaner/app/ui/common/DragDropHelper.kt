@@ -24,6 +24,7 @@ object DragDropHelper {
      */
     fun makeDraggable(view: View, filePath: String) {
         view.setOnLongClickListener {
+            view.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS)
             val clipData = ClipData(
                 "file",
                 arrayOf(MIME_FILE_PATH),

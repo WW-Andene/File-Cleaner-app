@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ScrollView
 import android.widget.TextView
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import androidx.navigation.findNavController
 import com.bumptech.glide.Glide
 import com.filecleaner.app.R
@@ -111,7 +111,7 @@ object FilePreviewDialog {
             .error(R.drawable.ic_image)
             .into(imageView)
 
-        MaterialAlertDialogBuilder(context)
+        RoundedDialogBuilder(context)
             .setTitle(item.name)
             .setView(imageView)
             .setPositiveButton(android.R.string.ok, null)
@@ -156,7 +156,7 @@ object FilePreviewDialog {
             addView(textView)
         }
 
-        MaterialAlertDialogBuilder(context)
+        RoundedDialogBuilder(context)
             .setTitle(item.name)
             .setView(scrollView)
             .setPositiveButton(android.R.string.ok, null)

@@ -27,7 +27,7 @@ import com.filecleaner.app.data.UserPreferences
 import com.filecleaner.app.ui.adapters.BrowseAdapter
 import com.filecleaner.app.ui.adapters.ViewMode
 import androidx.appcompat.app.AlertDialog
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import com.filecleaner.app.ui.common.BaseFileListFragment
 import com.filecleaner.app.ui.common.FileContextMenu
 import com.filecleaner.app.ui.common.FileListDividerDecoration
@@ -170,7 +170,7 @@ class BrowseFragment : Fragment() {
             if (items.isNotEmpty()) {
                 val totalSize = UndoHelper.totalSize(items)
                 activeDialog?.dismiss()
-                activeDialog = MaterialAlertDialogBuilder(requireContext())
+                activeDialog = RoundedDialogBuilder(requireContext())
                     .setTitle(resources.getQuantityString(R.plurals.delete_n_files_title, items.size, items.size))
                     .setMessage(getString(R.string.confirm_delete_message,
                         try { com.filecleaner.app.data.UserPreferences.undoTimeoutMs / 1000 } catch (_: Exception) { 8 }))
@@ -797,7 +797,7 @@ class BrowseFragment : Fragment() {
             items.add(s.name)
         }
 
-        MaterialAlertDialogBuilder(ctx)
+        RoundedDialogBuilder(ctx)
             .setTitle(R.string.saved_search_title)
             .setItems(items.toTypedArray()) { _, which ->
                 if (searchQuery.isNotBlank() && which == 0) {
@@ -821,7 +821,7 @@ class BrowseFragment : Fragment() {
             val pad = resources.getDimensionPixelSize(R.dimen.spacing_xxl)
             setPadding(pad, pad, pad, resources.getDimensionPixelSize(R.dimen.spacing_sm))
         }
-        MaterialAlertDialogBuilder(ctx)
+        RoundedDialogBuilder(ctx)
             .setTitle(R.string.saved_search_save_title)
             .setView(input)
             .setPositiveButton(R.string.saved_search_save) { _, _ ->

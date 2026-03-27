@@ -16,7 +16,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.doOnLayout
 import androidx.core.view.updatePadding
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -423,7 +423,7 @@ class CloudBrowserFragment : Fragment() {
 
         val ctx = context ?: return
         activeDialog?.dismiss()
-        activeDialog = MaterialAlertDialogBuilder(ctx)
+        activeDialog = RoundedDialogBuilder(ctx)
             .setTitle(getString(R.string.cloud_remove))
             .setMessage(getString(R.string.cloud_remove_confirm, conn.displayName))
             .setPositiveButton(getString(R.string.delete)) { _, _ ->

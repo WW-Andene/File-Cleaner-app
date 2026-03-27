@@ -14,7 +14,7 @@ import com.filecleaner.app.databinding.ItemFileBinding
 import com.filecleaner.app.ui.common.SimpleListAdapter
 import com.filecleaner.app.utils.TrashManager
 import com.filecleaner.app.utils.UndoHelper
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -89,7 +89,7 @@ class TrashFragment : Fragment() {
         }
         options.add(getString(R.string.trash_delete_permanent))
 
-        MaterialAlertDialogBuilder(ctx)
+        RoundedDialogBuilder(ctx)
             .setTitle(entry.item.name)
             .setItems(options.toTypedArray()) { _, which ->
                 val isRestore = entry.originalPath != null && which == 0
@@ -112,7 +112,7 @@ class TrashFragment : Fragment() {
         val ctx = context ?: return
         val entries = TrashManager.listTrash()
         val totalSize = entries.sumOf { it.item.size }
-        MaterialAlertDialogBuilder(ctx)
+        RoundedDialogBuilder(ctx)
             .setTitle(getString(R.string.trash_empty_all))
             .setMessage(getString(R.string.trash_empty_confirm,
                 entries.size, UndoHelper.formatBytes(totalSize)))

@@ -12,7 +12,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.filecleaner.app.R
@@ -236,7 +236,7 @@ object FileContextMenu {
                 setText(item.name)
                 selectAll()
             }
-            MaterialAlertDialogBuilder(context)
+            RoundedDialogBuilder(context)
                 .setTitle(context.getString(R.string.ctx_rename))
                 .setView(editText)
                 .setPositiveButton(android.R.string.ok) { _, _ ->
@@ -367,7 +367,7 @@ object FileContextMenu {
                 val undoSec = try { UserPreferences.undoTimeoutMs / 1000 } catch (_: Exception) { 8 }
                 val detail = context.resources.getQuantityString(
                     R.plurals.confirm_delete_detail, 1, 1, UndoHelper.formatBytes(item.size), undoSec)
-                MaterialAlertDialogBuilder(context)
+                RoundedDialogBuilder(context)
                     .setTitle(context.resources.getQuantityString(R.plurals.delete_n_files_title, 1, 1))
                     .setMessage("${item.name}\n\n$detail")
                     .setPositiveButton(context.getString(R.string.delete)) { _, _ ->
@@ -417,7 +417,7 @@ object FileContextMenu {
             appendLine("${context.getString(R.string.prop_folder)}: $parentDir")
         }
 
-        MaterialAlertDialogBuilder(context)
+        RoundedDialogBuilder(context)
             .setTitle(context.getString(R.string.ctx_properties))
             .setMessage(info)
             .setPositiveButton(android.R.string.ok, null)
@@ -437,7 +437,7 @@ object FileContextMenu {
             setPadding(pad, pad, pad, context.resources.getDimensionPixelSize(R.dimen.spacing_sm))
         }
         val title = if (decrypt) R.string.decrypt_title else R.string.encrypt_title
-        com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
+        RoundedDialogBuilder(context)
             .setTitle(title)
             .setView(input)
             .setPositiveButton(android.R.string.ok) { _, _ ->
@@ -463,7 +463,7 @@ object FileContextMenu {
         } else {
             context.getString(R.string.exif_no_data)
         }
-        com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
+        RoundedDialogBuilder(context)
             .setTitle(context.getString(R.string.exif_title))
             .setMessage(message)
             .setPositiveButton(android.R.string.ok, null)
@@ -472,13 +472,11 @@ object FileContextMenu {
 
     /** Show file hash (MD5, SHA-1, SHA-256) with copy button. */
     private fun showHashDialog(context: Context, item: FileItem) {
-        val message = StringBuilder()
-        message.appendLine(context.getString(R.string.hash_computing, "SHA-256"))
-
-        val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
+        // Show loading dialog first
+        val loadingDialog = RoundedDialogBuilder(context)
             .setTitle(context.getString(R.string.hash_title))
-            .setMessage(message)
-            .setPositiveButton(android.R.string.ok, null)
+            .setMessage(context.getString(R.string.hash_computing, "SHA-256"))
+            .setCancelable(false)
             .show()
 
         CoroutineScope(Dispatchers.Main).launch {
@@ -490,16 +488,19 @@ object FileContextMenu {
             val text = results.joinToString("\n\n") { r ->
                 "${r.algorithm.label}:\n${r.hash}"
             }
-            if (dialog.isShowing) {
-                dialog.setMessage(text)
-                dialog.getButton(android.app.AlertDialog.BUTTON_NEUTRAL)?.visibility = android.view.View.VISIBLE
-            }
-        }
 
-        dialog.setButton(android.app.AlertDialog.BUTTON_NEUTRAL,
-            context.getString(R.string.hash_copy)) { _, _ ->
-            val clip = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-            clip.setPrimaryClip(android.content.ClipData.newPlainText("Hash", dialog.findViewById<android.widget.TextView>(android.R.id.message)?.text))
+            if (loadingDialog.isShowing) loadingDialog.dismiss()
+
+            // Show results dialog with copy button
+            RoundedDialogBuilder(context)
+                .setTitle(context.getString(R.string.hash_title))
+                .setMessage(text)
+                .setPositiveButton(android.R.string.ok, null)
+                .setNeutralButton(context.getString(R.string.hash_copy)) { _, _ ->
+                    val clip = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    clip.setPrimaryClip(android.content.ClipData.newPlainText("Hash", text))
+                }
+                .show()
         }
     }
 

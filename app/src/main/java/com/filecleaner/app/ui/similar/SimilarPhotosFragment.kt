@@ -19,7 +19,7 @@ import com.filecleaner.app.databinding.FragmentSimilarPhotosBinding
 import com.filecleaner.app.utils.SimilarPhotoDetector
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.MainViewModel
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -53,7 +53,7 @@ class SimilarPhotosFragment : Fragment() {
         binding.btnDeleteSelected.setOnClickListener {
             if (selectedPaths.isEmpty()) return@setOnClickListener
             val items = groups.flatMap { it.photos }.filter { it.path in selectedPaths }
-            MaterialAlertDialogBuilder(requireContext())
+            RoundedDialogBuilder(requireContext())
                 .setTitle(getString(R.string.similar_delete_title))
                 .setMessage(getString(R.string.similar_delete_confirm,
                     items.size, UndoHelper.formatBytes(items.sumOf { it.size })))

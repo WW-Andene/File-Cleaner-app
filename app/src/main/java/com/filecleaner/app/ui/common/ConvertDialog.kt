@@ -13,7 +13,7 @@ import com.filecleaner.app.R
 import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.utils.FileConverter
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 
 /**
  * Material Design conversion dialog for files.
@@ -66,7 +66,7 @@ object ConvertDialog {
         // For all other types, build a list of conversion options
         val options = buildOptionsForNonMediaFile(context, item)
         if (options.isEmpty()) {
-            MaterialAlertDialogBuilder(context)
+            RoundedDialogBuilder(context)
                 .setTitle(context.getString(R.string.convert_title))
                 .setMessage(context.getString(R.string.convert_unsupported))
                 .setPositiveButton(android.R.string.ok, null)
@@ -136,7 +136,7 @@ object ConvertDialog {
         }
         scrollView.addView(container)
 
-        val dialog = MaterialAlertDialogBuilder(context)
+        val dialog = RoundedDialogBuilder(context)
             .setTitle(context.getString(R.string.convert_title))
             .setView(scrollView)
             .setNegativeButton(context.getString(R.string.cancel), null)
@@ -232,7 +232,7 @@ object ConvertDialog {
         }
         container.addView(noteText)
 
-        MaterialAlertDialogBuilder(context)
+        RoundedDialogBuilder(context)
             .setTitle(context.getString(R.string.convert_resize))
             .setView(container)
             .setPositiveButton(context.getString(R.string.convert_action)) { _, _ ->

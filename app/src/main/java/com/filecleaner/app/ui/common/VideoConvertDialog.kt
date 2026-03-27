@@ -15,7 +15,7 @@ import androidx.core.content.ContextCompat
 import com.filecleaner.app.R
 import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.utils.FileConverter
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 
 /**
  * Video-specific conversion dialog extracted from ConvertDialog.
@@ -182,7 +182,7 @@ internal object VideoConvertDialog {
         container.addView(gifBtnRow)
 
         // Show the dialog
-        val dialog = MaterialAlertDialogBuilder(context)
+        val dialog = RoundedDialogBuilder(context)
             .setTitle(context.getString(R.string.convert_title))
             .setView(scrollView)
             .setNegativeButton(context.getString(R.string.cancel), null)

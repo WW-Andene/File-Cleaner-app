@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -78,7 +78,7 @@ class RaccoonManagerFragment : Fragment() {
                 R.plurals.confirm_delete_detail,
                 junk.size, junk.size, totalSize, undoSeconds)
             activeDialog?.dismiss()
-            activeDialog = MaterialAlertDialogBuilder(requireContext())
+            activeDialog = RoundedDialogBuilder(requireContext())
                 .setTitle(getString(R.string.raccoon_quick_clean_title))
                 .setMessage(detail)
                 .setPositiveButton(getString(R.string.clean)) { _, _ ->
@@ -256,7 +256,7 @@ class RaccoonManagerFragment : Fragment() {
     }
 
     private fun showJanitorDialog() {
-        MaterialAlertDialogBuilder(requireContext())
+        RoundedDialogBuilder(requireContext())
             .setTitle(getString(R.string.raccoon_janitor_title))
             .setMessage(getString(R.string.raccoon_janitor_desc))
             .setPositiveButton(getString(R.string.raccoon_janitor_start)) { _, _ ->
@@ -279,7 +279,7 @@ class RaccoonManagerFragment : Fragment() {
 
     /** F-057: Post-scan dialog guiding user to review tabs */
     private fun showJanitorReviewDialog() {
-        MaterialAlertDialogBuilder(requireContext())
+        RoundedDialogBuilder(requireContext())
             .setTitle(getString(R.string.raccoon_janitor_done_title))
             .setMessage(getString(R.string.raccoon_janitor_done_message))
             .setPositiveButton(getString(R.string.raccoon_janitor_review_duplicates)) { _, _ ->

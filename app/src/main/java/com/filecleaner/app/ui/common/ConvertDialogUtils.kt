@@ -11,7 +11,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.filecleaner.app.R
 import com.filecleaner.app.utils.FileConverter
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -42,7 +42,7 @@ internal object ConvertDialogUtils {
         }
         scrollView.addView(container)
 
-        val dialog = MaterialAlertDialogBuilder(context)
+        val dialog = RoundedDialogBuilder(context)
             .setTitle(context.getString(R.string.convert_title))
             .setView(scrollView)
             .setNegativeButton(context.getString(R.string.cancel), null)
@@ -144,7 +144,7 @@ internal object ConvertDialogUtils {
             })
         }
 
-        val progressDialog = MaterialAlertDialogBuilder(context)
+        val progressDialog = RoundedDialogBuilder(context)
             .setView(progressContainer)
             .setCancelable(false)
             .show()

@@ -3,7 +3,7 @@ package com.filecleaner.app.utils
 import android.content.Context
 import com.filecleaner.app.BuildConfig
 import com.filecleaner.app.R
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 
 /**
  * Shows a "What's New" dialog on first launch after an app update.
@@ -21,7 +21,7 @@ object ChangelogHelper {
         val currentVersion = BuildConfig.VERSION_CODE
 
         if (lastVersion > 0 && lastVersion < currentVersion) {
-            MaterialAlertDialogBuilder(context)
+            RoundedDialogBuilder(context)
                 .setTitle(context.getString(R.string.changelog_title, BuildConfig.VERSION_NAME))
                 .setMessage(context.getString(R.string.changelog_content))
                 .setPositiveButton(android.R.string.ok, null)

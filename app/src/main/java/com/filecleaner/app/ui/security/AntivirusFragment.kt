@@ -15,7 +15,7 @@ import android.view.animation.ScaleAnimation
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AlertDialog
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -331,11 +331,11 @@ class AntivirusFragment : Fragment() {
         }
 
         activeDialog?.dismiss()
-        activeDialog = MaterialAlertDialogBuilder(ctx)
+        activeDialog = RoundedDialogBuilder(ctx)
             .setView(dialogView)
             .setPositiveButton(R.string.av_dismiss, null)
             .setNeutralButton(R.string.av_clear_history) { _, _ ->
-                MaterialAlertDialogBuilder(ctx)
+                RoundedDialogBuilder(ctx)
                     .setTitle(R.string.av_clear_history)
                     .setMessage(R.string.av_clear_history_confirm)
                     .setPositiveButton(R.string.av_clear_history) { _, _ ->
@@ -364,7 +364,7 @@ class AntivirusFragment : Fragment() {
         }.trim()
 
         activeDialog?.dismiss()
-        activeDialog = MaterialAlertDialogBuilder(ctx)
+        activeDialog = RoundedDialogBuilder(ctx)
             .setTitle(getString(R.string.av_fix_all))
             .setMessage(getString(R.string.av_fix_all_confirm, summary))
             .setPositiveButton(getString(R.string.av_proceed)) { _, _ ->
@@ -463,7 +463,7 @@ class AntivirusFragment : Fragment() {
         tvCategory.text = categoryLabel(ctx, threat.category)
 
         activeDialog?.dismiss()
-        val dialog = MaterialAlertDialogBuilder(ctx)
+        val dialog = RoundedDialogBuilder(ctx)
             .setView(dialogView)
             .create()
         activeDialog = dialog
@@ -532,7 +532,7 @@ class AntivirusFragment : Fragment() {
     private fun confirmDelete(filePath: String) {
         val ctx = context ?: return
         activeDialog?.dismiss()
-        activeDialog = MaterialAlertDialogBuilder(ctx)
+        activeDialog = RoundedDialogBuilder(ctx)
             .setTitle(getString(R.string.delete))
             .setMessage(getString(R.string.av_confirm_delete, File(filePath).name))
             .setPositiveButton(getString(R.string.delete)) { _, _ ->

@@ -7,7 +7,7 @@ import com.filecleaner.app.data.cloud.CloudConnection
 import com.filecleaner.app.data.cloud.OAuthHelper
 import com.filecleaner.app.data.cloud.ProviderType
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 
 /**
  * Step 1 of the cloud connection flow: provider picker.
@@ -33,7 +33,7 @@ object CloudProviderPickerDialog {
         val cardSftp = view.findViewById<MaterialCardView>(R.id.card_sftp)
         val cardWebDav = view.findViewById<MaterialCardView>(R.id.card_webdav)
 
-        val dialog = MaterialAlertDialogBuilder(context)
+        val dialog = RoundedDialogBuilder(context)
             .setView(view)
             .setNegativeButton(context.getString(R.string.cancel), null)
             .create()

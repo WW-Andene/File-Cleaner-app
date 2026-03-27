@@ -14,7 +14,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import com.filecleaner.app.R
 import com.filecleaner.app.data.FileItem
 import java.text.SimpleDateFormat
@@ -247,7 +247,7 @@ object BatchRenameDialog {
         // Initial state
         buildModeFields(MODE_PATTERN)
 
-        MaterialAlertDialogBuilder(context)
+        RoundedDialogBuilder(context)
             .setTitle(context.getString(R.string.batch_rename_title, files.size))
             .setView(root)
             .setPositiveButton(context.getString(R.string.ctx_rename)) { _, _ ->

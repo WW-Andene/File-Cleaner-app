@@ -16,7 +16,7 @@ import com.filecleaner.app.ui.common.SimpleListAdapter
 import com.filecleaner.app.utils.MessagingMediaCleaner
 import com.filecleaner.app.utils.UndoHelper
 import com.filecleaner.app.viewmodel.MainViewModel
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -97,7 +97,7 @@ class MessagingCleanerFragment : Fragment() {
 
     private fun showCleanConfirmDialog(group: MessagingMediaCleaner.MessagingMediaGroup) {
         val ctx = context ?: return
-        MaterialAlertDialogBuilder(ctx)
+        RoundedDialogBuilder(ctx)
             .setTitle(getString(R.string.messaging_clean_title))
             .setMessage(getString(R.string.messaging_clean_confirm,
                 group.files.size, group.appName, group.category,

@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.appcompat.app.AlertDialog
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -152,7 +152,7 @@ class SettingsFragment : Fragment() {
         binding.btnPrivacyNotice.setOnClickListener {
             val ctx = context ?: return@setOnClickListener
             activeDialog?.dismiss()
-            activeDialog = MaterialAlertDialogBuilder(ctx)
+            activeDialog = RoundedDialogBuilder(ctx)
                 .setTitle(getString(R.string.privacy_notice_title))
                 .setMessage(getString(R.string.privacy_notice_message))
                 .setPositiveButton(getString(R.string.privacy_notice_accept), null)
@@ -181,7 +181,7 @@ class SettingsFragment : Fragment() {
         binding.btnClearData.setOnClickListener {
             val ctx = context ?: return@setOnClickListener
             activeDialog?.dismiss()
-            activeDialog = MaterialAlertDialogBuilder(ctx)
+            activeDialog = RoundedDialogBuilder(ctx)
                 .setTitle(getString(R.string.settings_clear_data_confirm_title))
                 .setMessage(getString(R.string.settings_clear_data_confirm_message))
                 .setPositiveButton(getString(R.string.delete)) { _, _ ->
@@ -195,7 +195,7 @@ class SettingsFragment : Fragment() {
     private fun showLegalDialog(title: String, content: String) {
         val ctx = context ?: return
         activeDialog?.dismiss()
-        activeDialog = MaterialAlertDialogBuilder(ctx)
+        activeDialog = RoundedDialogBuilder(ctx)
             .setTitle(title)
             .setMessage(content)
             .setPositiveButton(android.R.string.ok, null)

@@ -13,7 +13,7 @@ import android.view.View
 import android.view.accessibility.AccessibilityEvent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.WindowCompat
@@ -282,7 +282,7 @@ class MainActivity : AppCompatActivity() {
         // P3 Security: Privacy disclosure on first launch (F-C6-01)
         // Only show on fresh launch (not rotation) to prevent duplicate dialogs
         if (savedInstanceState == null && !UserPreferences.hasSeenPrivacyNotice) {
-            MaterialAlertDialogBuilder(this)
+            RoundedDialogBuilder(this)
                 .setTitle(getString(R.string.privacy_notice_title))
                 .setMessage(getString(R.string.privacy_notice_message))
                 .setCancelable(false)
@@ -408,7 +408,7 @@ class MainActivity : AppCompatActivity() {
             if (Environment.isExternalStorageManager()) {
                 startScan()
             } else {
-                MaterialAlertDialogBuilder(this)
+                RoundedDialogBuilder(this)
                     .setTitle(getString(R.string.storage_access_needed))
                     .setMessage(getString(R.string.storage_access_message))
                     .setPositiveButton(getString(R.string.open_settings)) { _, _ ->
@@ -449,7 +449,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showPermissionDeniedDialog() {
-        MaterialAlertDialogBuilder(this)
+        RoundedDialogBuilder(this)
             .setTitle(getString(R.string.permission_required))
             .setMessage(getString(R.string.permission_required_message))
             .setPositiveButton(getString(R.string.settings)) { _, _ ->

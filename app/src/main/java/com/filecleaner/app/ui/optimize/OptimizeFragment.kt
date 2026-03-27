@@ -9,7 +9,7 @@ import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import androidx.core.view.doOnLayout
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
@@ -317,7 +317,7 @@ class OptimizeFragment : Fragment() {
         }
 
         activeDialog?.dismiss()
-        activeDialog = MaterialAlertDialogBuilder(requireContext())
+        activeDialog = RoundedDialogBuilder(requireContext())
             .setTitle(getString(R.string.optimize_confirm_title))
             .setMessage(resources.getQuantityString(R.plurals.optimize_confirm_message, accepted.size, accepted.size))
             .setPositiveButton(getString(R.string.move)) { _, _ ->

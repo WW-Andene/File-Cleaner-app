@@ -17,7 +17,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnLayout
 import androidx.core.view.updatePadding
@@ -345,7 +345,7 @@ class DualPaneFragment : Fragment() {
     private fun showDragCopyMoveDialog(items: List<PaneAdapter.PaneItem>, targetPane: Pane) {
         val targetPath = if (targetPane == Pane.LEFT) leftPath else rightPath
         activeDialog?.dismiss()
-        activeDialog = MaterialAlertDialogBuilder(requireContext())
+        activeDialog = RoundedDialogBuilder(requireContext())
             .setTitle(getString(R.string.dual_pane_drag_copy_or_move))
             .setMessage(getString(R.string.dual_pane_drag_message, items.size))
             .setPositiveButton(getString(R.string.dual_pane_copy)) { _, _ ->
@@ -601,7 +601,7 @@ class DualPaneFragment : Fragment() {
         }
 
         activeDialog?.dismiss()
-        activeDialog = MaterialAlertDialogBuilder(requireContext())
+        activeDialog = RoundedDialogBuilder(requireContext())
             .setTitle(getString(R.string.dual_pane_pick_directory))
             .setView(input)
             .setPositiveButton(getString(R.string.select_directory)) { _, _ ->
@@ -664,7 +664,7 @@ class DualPaneFragment : Fragment() {
         val opName = if (copy) getString(R.string.dual_pane_copy) else getString(R.string.dual_pane_move)
 
         activeDialog?.dismiss()
-        activeDialog = MaterialAlertDialogBuilder(requireContext())
+        activeDialog = RoundedDialogBuilder(requireContext())
             .setTitle(opName)
             .setMessage(resources.getQuantityString(
                 R.plurals.dual_pane_confirm_op, selected.size,
@@ -706,7 +706,7 @@ class DualPaneFragment : Fragment() {
         )
 
         activeDialog?.dismiss()
-        activeDialog = MaterialAlertDialogBuilder(requireContext())
+        activeDialog = RoundedDialogBuilder(requireContext())
             .setTitle(resources.getQuantityString(R.plurals.delete_n_files_title, fileItems.size, fileItems.size))
             .setMessage(detail)
             .setPositiveButton(getString(R.string.delete)) { _, _ ->

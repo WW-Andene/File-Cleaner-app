@@ -14,7 +14,7 @@ import com.filecleaner.app.databinding.ItemInstalledAppBinding
 import com.filecleaner.app.ui.common.SimpleListAdapter
 import com.filecleaner.app.utils.AppManager
 import com.filecleaner.app.utils.UndoHelper
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -101,7 +101,7 @@ class AppManagerFragment : Fragment() {
 
     private fun showAppActions(app: AppManager.InstalledApp) {
         val ctx = context ?: return
-        MaterialAlertDialogBuilder(ctx)
+        RoundedDialogBuilder(ctx)
             .setTitle(app.name)
             .setMessage(getString(R.string.app_manager_detail,
                 app.packageName,

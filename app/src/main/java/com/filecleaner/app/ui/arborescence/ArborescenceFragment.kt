@@ -10,7 +10,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.filecleaner.app.ui.common.RoundedDialogBuilder
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -78,7 +78,7 @@ class ArborescenceFragment : Fragment() {
             val fileName = File(filePath).name
             val targetName = File(targetDirPath).name
             activeDialog?.dismiss()
-            activeDialog = MaterialAlertDialogBuilder(requireContext())
+            activeDialog = RoundedDialogBuilder(requireContext())
                 .setTitle(getString(R.string.confirm_move_title))
                 .setMessage(getString(R.string.confirm_move_message, fileName, targetName))
                 .setPositiveButton(getString(R.string.move)) { _, _ ->
@@ -146,7 +146,7 @@ class ArborescenceFragment : Fragment() {
             val folderName = File(folderPath).name
             val targetName = File(targetDirPath).name
             activeDialog?.dismiss()
-            activeDialog = MaterialAlertDialogBuilder(requireContext())
+            activeDialog = RoundedDialogBuilder(requireContext())
                 .setTitle(getString(R.string.confirm_move_title))
                 .setMessage(getString(R.string.confirm_move_message, folderName, targetName))
                 .setPositiveButton(getString(R.string.move)) { _, _ ->

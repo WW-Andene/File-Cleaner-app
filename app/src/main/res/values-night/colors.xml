@@ -115,6 +115,10 @@
     <color name="tintAntivirus">#1A3D1F</color>
     <color name="tintJanitor">#1E2240</color>
 
+    <!-- ── Settings card tint (warm amber, matching accentOnTintAnalysis hue) ── -->
+    <color name="tintSettings">#3D2E1A</color>
+    <color name="accentOnTintSettings">#F0D0A0</color>
+
     <!-- ── Text on colored backgrounds (e.g. tree view headers) ── -->
     <color name="textOnColor">#CCFFFFFF</color>
 

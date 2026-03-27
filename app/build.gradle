@@ -77,6 +77,7 @@ dependencies {
     implementation 'androidx.browser:browser:1.8.0'
 
     // AndroidX Security – EncryptedSharedPreferences
+    // TODO: Upgrade to stable when available (currently alpha — track https://developer.android.com/jetpack/androidx/releases/security)
     implementation 'androidx.security:security-crypto:1.1.0-alpha06'
 
     // SFTP (SSH) – maintained JSch fork with Terrapin (CVE-2023-48795) fix

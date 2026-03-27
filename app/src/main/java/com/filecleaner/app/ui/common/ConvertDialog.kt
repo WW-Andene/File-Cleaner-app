@@ -3,14 +3,10 @@ package com.filecleaner.app.ui.common
 import android.content.Context
 import android.graphics.Typeface
 import android.util.TypedValue
-import android.view.Gravity
-import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.ProgressBar
 import android.widget.ScrollView
-import android.widget.SeekBar
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.filecleaner.app.R
@@ -18,10 +14,6 @@ import com.filecleaner.app.data.FileCategory
 import com.filecleaner.app.data.FileItem
 import com.filecleaner.app.utils.FileConverter
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * Material Design conversion dialog for files.
@@ -61,7 +53,7 @@ object ConvertDialog {
 
         // For video files, show the special video conversion dialog with seek bar
         if (category == FileCategory.VIDEO) {
-            showVideoConvertDialog(context, item, onResult)
+            VideoConvertDialog.show(context, item, onResult)
             return
         }
 
@@ -82,7 +74,7 @@ object ConvertDialog {
             return
         }
 
-        showOptionsList(context, options, onResult)
+        ConvertDialogUtils.showOptionsList(context, options, onResult)
     }
 
     // =========================================================================
@@ -151,11 +143,11 @@ object ConvertDialog {
             .create()
 
         for (option in options) {
-            val row = buildOptionRow(context, option)
+            val row = ConvertDialogUtils.buildOptionRow(context, option)
             row.setOnClickListener {
                 dialog.dismiss()
                 if (option.action != null) {
-                    runConversion(context, option.action, onResult)
+                    ConvertDialogUtils.runConversion(context, option.action, onResult)
                 } else {
                     // This is the resize option -- show resize sub-dialog
                     showResizeDialog(context, item, onResult)
@@ -254,245 +246,10 @@ object ConvertDialog {
                     "bmp" -> FileConverter.ImageFormat.BMP
                     else -> FileConverter.ImageFormat.JPG
                 }
-                runConversion(context, { FileConverter.resizeImage(item.path, maxW, maxH, fmt) }, onResult)
+                ConvertDialogUtils.runConversion(context, { FileConverter.resizeImage(item.path, maxW, maxH, fmt) }, onResult)
             }
             .setNegativeButton(context.getString(R.string.cancel), null)
             .show()
-    }
-
-    // =========================================================================
-    // VIDEO CONVERSION DIALOG
-    // =========================================================================
-
-    /**
-     * Shows a video-specific conversion dialog with:
-     * 1. "Extract frame at timestamp" with a seek bar to choose the exact position
-     * 2. "Extract key frames" to get evenly-spaced frames across the entire video
-     */
-    private fun showVideoConvertDialog(context: Context, item: FileItem, onResult: (FileConverter.ConvertResult) -> Unit) {
-        val spacingXs = context.resources.getDimensionPixelSize(R.dimen.spacing_xs)
-        val spacingSm = context.resources.getDimensionPixelSize(R.dimen.spacing_sm)
-        val spacingMd = context.resources.getDimensionPixelSize(R.dimen.spacing_md)
-        val spacingLg = context.resources.getDimensionPixelSize(R.dimen.spacing_lg)
-        val spacingXl = context.resources.getDimensionPixelSize(R.dimen.spacing_xl)
-        val spacingXxl = context.resources.getDimensionPixelSize(R.dimen.spacing_xxl)
-        val strokeDefault = context.resources.getDimensionPixelSize(R.dimen.stroke_default)
-        val durationMs = FileConverter.getVideoDurationMs(item.path)
-
-        val scrollView = ScrollView(context)
-        val container = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(spacingXxl, spacingLg, spacingXxl, spacingSm)
-        }
-        scrollView.addView(container)
-
-        // ---- Section 1: Extract single frame ----
-        val sectionTitle1 = TextView(context).apply {
-            text = context.getString(R.string.convert_video_section_single_frame)
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.text_subtitle))
-            setTextColor(ContextCompat.getColor(context, R.color.textPrimary))
-            typeface = Typeface.DEFAULT_BOLD
-        }
-        container.addView(sectionTitle1)
-
-        val sectionDesc1 = TextView(context).apply {
-            text = context.getString(R.string.convert_video_single_frame_desc)
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.text_chip))
-            setTextColor(ContextCompat.getColor(context, R.color.textSecondary))
-            val lp = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            lp.topMargin = spacingXs
-            layoutParams = lp
-        }
-        container.addView(sectionDesc1)
-
-        // Timestamp display
-        val timeDisplay = TextView(context).apply {
-            text = context.getString(R.string.convert_video_timestamp, "0:00",
-                if (durationMs > 0) FileConverter.formatTimeDisplay(durationMs) else "?:??")
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.text_body))
-            setTextColor(ContextCompat.getColor(context, R.color.colorPrimary))
-            gravity = Gravity.CENTER
-            val lp = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            lp.topMargin = spacingMd
-            layoutParams = lp
-        }
-        container.addView(timeDisplay)
-
-        // Seek bar for timestamp selection
-        var selectedTimeMs = 0L
-        val seekBar = SeekBar(context).apply {
-            max = if (durationMs > 0) durationMs.toInt() else 100
-            progress = 0
-            val lp = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            lp.topMargin = spacingXs
-            layoutParams = lp
-            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
-                    selectedTimeMs = progress.toLong()
-                    timeDisplay.text = context.getString(
-                        R.string.convert_video_timestamp,
-                        FileConverter.formatTimeDisplay(selectedTimeMs),
-                        if (durationMs > 0) FileConverter.formatTimeDisplay(durationMs) else "?:??"
-                    )
-                }
-                override fun onStartTrackingTouch(sb: SeekBar?) {}
-                override fun onStopTrackingTouch(sb: SeekBar?) {}
-            })
-        }
-        if (durationMs <= 0) {
-            seekBar.isEnabled = false
-        }
-        container.addView(seekBar)
-
-        // Format choice row for single frame
-        val formatRow1 = LinearLayout(context).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            val lp = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            lp.topMargin = spacingMd
-            layoutParams = lp
-        }
-
-        val btnExtractPng = buildActionButton(context, context.getString(R.string.convert_extract_as_png))
-        val btnExtractJpg = buildActionButton(context, context.getString(R.string.convert_extract_as_jpg))
-        formatRow1.addView(btnExtractPng)
-        formatRow1.addView(btnExtractJpg)
-        container.addView(formatRow1)
-
-        // ---- Divider ----
-        val divider = View(context).apply {
-            val lp = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                strokeDefault
-            )
-            lp.topMargin = spacingXl
-            lp.bottomMargin = spacingLg
-            layoutParams = lp
-            setBackgroundColor(ContextCompat.getColor(context, R.color.borderDefault))
-        }
-        container.addView(divider)
-
-        // ---- Section 2: Extract key frames ----
-        val sectionTitle2 = TextView(context).apply {
-            text = context.getString(R.string.convert_video_section_key_frames)
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.text_subtitle))
-            setTextColor(ContextCompat.getColor(context, R.color.textPrimary))
-            typeface = Typeface.DEFAULT_BOLD
-        }
-        container.addView(sectionTitle2)
-
-        val sectionDesc2 = TextView(context).apply {
-            text = context.getString(R.string.convert_video_key_frames_desc)
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.text_chip))
-            setTextColor(ContextCompat.getColor(context, R.color.textSecondary))
-            val lp = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            lp.topMargin = spacingXs
-            layoutParams = lp
-        }
-        container.addView(sectionDesc2)
-
-        // Frame count input
-        val countRow = LinearLayout(context).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            val lp = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            lp.topMargin = spacingMd
-            layoutParams = lp
-        }
-
-        val countLabel = TextView(context).apply {
-            text = context.getString(R.string.convert_video_frame_count)
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.text_body))
-            setTextColor(ContextCompat.getColor(context, R.color.textPrimary))
-            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
-        }
-        countRow.addView(countLabel)
-
-        val countInput = EditText(context).apply {
-            hint = "10"
-            setText("10")
-            inputType = android.text.InputType.TYPE_CLASS_NUMBER
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.text_subtitle))
-            gravity = Gravity.CENTER
-            layoutParams = LinearLayout.LayoutParams(context.resources.getDimensionPixelSize(R.dimen.convert_count_input_width), ViewGroup.LayoutParams.WRAP_CONTENT)
-        }
-        countRow.addView(countInput)
-        container.addView(countRow)
-
-        // Format choice row for key frames
-        val formatRow2 = LinearLayout(context).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            val lp = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            lp.topMargin = spacingMd
-            layoutParams = lp
-        }
-
-        val btnKeyPng = buildActionButton(context, context.getString(R.string.convert_extract_key_png))
-        val btnKeyJpg = buildActionButton(context, context.getString(R.string.convert_extract_key_jpg))
-        formatRow2.addView(btnKeyPng)
-        formatRow2.addView(btnKeyJpg)
-        container.addView(formatRow2)
-
-        // Show the dialog
-        val dialog = MaterialAlertDialogBuilder(context)
-            .setTitle(context.getString(R.string.convert_title))
-            .setView(scrollView)
-            .setNegativeButton(context.getString(R.string.cancel), null)
-            .create()
-
-        // Wire button actions
-        btnExtractPng.setOnClickListener {
-            dialog.dismiss()
-            runConversion(context, {
-                FileConverter.extractFrameAtTime(item.path, selectedTimeMs, FileConverter.ImageFormat.PNG)
-            }, onResult)
-        }
-        btnExtractJpg.setOnClickListener {
-            dialog.dismiss()
-            runConversion(context, {
-                FileConverter.extractFrameAtTime(item.path, selectedTimeMs, FileConverter.ImageFormat.JPG, quality = 90)
-            }, onResult)
-        }
-        btnKeyPng.setOnClickListener {
-            dialog.dismiss()
-            val count = countInput.text.toString().toIntOrNull()?.coerceIn(1, 100) ?: 10
-            val outDir = "${item.file.parent}/${item.file.nameWithoutExtension}_frames"
-            runConversion(context, {
-                FileConverter.extractKeyFrames(item.path, outDir, count, FileConverter.ImageFormat.PNG)
-            }, onResult)
-        }
-        btnKeyJpg.setOnClickListener {
-            dialog.dismiss()
-            val count = countInput.text.toString().toIntOrNull()?.coerceIn(1, 100) ?: 10
-            val outDir = "${item.file.parent}/${item.file.nameWithoutExtension}_frames"
-            runConversion(context, {
-                FileConverter.extractKeyFrames(item.path, outDir, count, FileConverter.ImageFormat.JPG, quality = 85)
-            }, onResult)
-        }
-
-        dialog.show()
     }
 
     // =========================================================================
@@ -582,158 +339,4 @@ object ConvertDialog {
         return options
     }
 
-    // =========================================================================
-    // SHARED UI HELPERS
-    // =========================================================================
-
-    /** A single conversion option with title, description, and conversion action. */
-    private data class ConvertOption(
-        val title: String,
-        val description: String,
-        val action: (() -> FileConverter.ConvertResult)?
-    )
-
-    /**
-     * Shows a simple list of conversion options (used for non-media files and audio).
-     */
-    private fun showOptionsList(
-        context: Context,
-        options: List<ConvertOption>,
-        onResult: (FileConverter.ConvertResult) -> Unit
-    ) {
-        val spacingSm = context.resources.getDimensionPixelSize(R.dimen.spacing_sm)
-        val scrollView = ScrollView(context)
-        val container = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(0, spacingSm, 0, spacingSm)
-        }
-        scrollView.addView(container)
-
-        val dialog = MaterialAlertDialogBuilder(context)
-            .setTitle(context.getString(R.string.convert_title))
-            .setView(scrollView)
-            .setNegativeButton(context.getString(R.string.cancel), null)
-            .create()
-
-        for (option in options) {
-            val row = buildOptionRow(context, option)
-            row.setOnClickListener {
-                dialog.dismiss()
-                if (option.action != null) {
-                    runConversion(context, option.action, onResult)
-                }
-            }
-            container.addView(row)
-        }
-
-        dialog.show()
-    }
-
-    /**
-     * Builds a tappable row with a title and description for a conversion option.
-     */
-    private fun buildOptionRow(context: Context, option: ConvertOption): LinearLayout {
-        val spacingMicro = context.resources.getDimensionPixelSize(R.dimen.spacing_micro)
-        val spacingMd = context.resources.getDimensionPixelSize(R.dimen.spacing_md)
-        val spacingXxl = context.resources.getDimensionPixelSize(R.dimen.spacing_xxl)
-
-        return LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(spacingXxl, spacingMd, spacingXxl, spacingMd)
-
-            val outValue = TypedValue()
-            context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
-            setBackgroundResource(outValue.resourceId)
-            isClickable = true
-            isFocusable = true
-            contentDescription = option.title
-
-            val titleView = TextView(context).apply {
-                text = option.title
-                setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.text_body))
-                setTextColor(ContextCompat.getColor(context, R.color.textPrimary))
-                typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            }
-            addView(titleView)
-
-            val descView = TextView(context).apply {
-                text = option.description
-                setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.text_chip))
-                setTextColor(ContextCompat.getColor(context, R.color.textSecondary))
-                val lp = LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-                lp.topMargin = spacingMicro
-                layoutParams = lp
-            }
-            addView(descView)
-        }
-    }
-
-    /**
-     * Builds a Material-styled outlined action button.
-     */
-    private fun buildActionButton(context: Context, label: String): com.google.android.material.button.MaterialButton {
-        val spacingSm = context.resources.getDimensionPixelSize(R.dimen.spacing_sm)
-        return com.google.android.material.button.MaterialButton(
-            context, null, com.google.android.material.R.attr.materialButtonOutlinedStyle
-        ).apply {
-            text = label
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.text_chip))
-            isAllCaps = false
-            val lp = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
-            lp.marginEnd = spacingSm
-            layoutParams = lp
-        }
-    }
-
-    /**
-     * Runs a conversion action on a background thread with a progress dialog.
-     */
-    private fun runConversion(
-        context: Context,
-        action: () -> FileConverter.ConvertResult,
-        onResult: (FileConverter.ConvertResult) -> Unit
-    ) {
-        val spacingLg = context.resources.getDimensionPixelSize(R.dimen.spacing_lg)
-        val spacingXxl = context.resources.getDimensionPixelSize(R.dimen.spacing_xxl)
-        val progressContainer = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(spacingXxl, spacingLg, spacingXxl, spacingLg)
-
-            addView(TextView(context).apply {
-                text = context.getString(R.string.convert_progress)
-                setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.text_body))
-                setTextColor(ContextCompat.getColor(context, R.color.textPrimary))
-            })
-
-            addView(ProgressBar(context).apply {
-                isIndeterminate = true
-                val lp = LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-                lp.topMargin = spacingLg
-                layoutParams = lp
-            })
-        }
-
-        val progressDialog = MaterialAlertDialogBuilder(context)
-            .setView(progressContainer)
-            .setCancelable(false)
-            .show()
-
-        // Use SupervisorJob so the coroutine is scoped to the dialog lifecycle
-        val job = kotlinx.coroutines.SupervisorJob()
-        val scope = CoroutineScope(Dispatchers.Main + job)
-        progressDialog.setOnDismissListener { job.cancel() }
-        scope.launch {
-            val result = withContext(Dispatchers.IO) { action() }
-            try {
-                if (progressDialog.isShowing) progressDialog.dismiss()
-            } catch (_: Exception) { /* Window already destroyed */ }
-            onResult(result)
-        }
-    }
 }

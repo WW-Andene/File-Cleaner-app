@@ -225,6 +225,15 @@
 
     <!-- Expandable filter panel -->
     <LinearLayout
+    <!-- Clickable breadcrumb bar for direct browse navigation -->
+    <com.filecleaner.app.ui.common.BreadcrumbBar
+        android:id="@+id/breadcrumb_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/surfaceColor"
+        android:visibility="gone" />
+
+    <LinearLayout
         android:id="@+id/filter_panel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

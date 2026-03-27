@@ -120,13 +120,20 @@ class MainActivity : AppCompatActivity() {
             navController.navigate(destId, null, buildBottomNavOptions())
             true
         }
-        // Reselect: if on a non-tab fragment (e.g. tree view), pop back to the tab
+        // Reselect: if on a non-tab fragment, pop back; if already on tab, scroll to top
         binding.bottomNav.setOnItemReselectedListener { item ->
             val currentDest = navController.currentDestination?.id
             if (currentDest != null && currentDest !in bottomNavIds) {
                 navController.popBackStack(currentDest, true)
                 val destId = menuToNav[item.itemId] ?: return@setOnItemReselectedListener
                 navController.navigate(destId, null, buildBottomNavOptions())
+            } else {
+                // Already on this tab — scroll the active fragment's list to top
+                val navHost = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
+                val activeFragment = navHost?.childFragmentManager?.fragments?.lastOrNull()
+                activeFragment?.view?.findViewById<androidx.recyclerview.widget.RecyclerView>(
+                    R.id.recycler_view
+                )?.smoothScrollToPosition(0)
             }
         }
 

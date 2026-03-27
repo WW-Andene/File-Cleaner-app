@@ -603,9 +603,14 @@ class BrowseFragment : Fragment() {
             adapter.submitFullList(items)
             binding.tvCount.text = resources.getQuantityString(R.plurals.n_files, fileCount, fileCount)
 
-            // Update breadcrumb in header if present
+            // Update breadcrumb bar
             val breadcrumbs = com.filecleaner.app.utils.DirectoryBrowser.getBreadcrumbs(path)
             binding.tvBrowseSubtitle?.text = breadcrumbs.joinToString(" › ") { it.first }
+            binding.breadcrumbBar?.visibility = View.VISIBLE
+            binding.breadcrumbBar?.setPath(breadcrumbs)
+            binding.breadcrumbBar?.onSegmentClick = { segmentPath ->
+                navigateToDirectory(segmentPath)
+            }
         }
     }
 

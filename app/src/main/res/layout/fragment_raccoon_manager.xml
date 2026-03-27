@@ -871,6 +871,17 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- ── Deep Clean section ── -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/raccoon_section_cleanup"
+            android:textAppearance="@style/TextAppearance.FileCleaner.SectionHeader"
+            android:background="@drawable/bg_section_header"
+            android:layout_marginBottom="@dimen/spacing_md"
+            android:accessibilityHeading="true"
+            android:importantForAccessibility="yes" />
+
         <!-- Similar Photos card -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_similar_photos"
@@ -939,6 +950,17 @@
                     app:tint="@color/textTertiary" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- ── System section ── -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/raccoon_section_system"
+            android:textAppearance="@style/TextAppearance.FileCleaner.SectionHeader"
+            android:background="@drawable/bg_section_header"
+            android:layout_marginBottom="@dimen/spacing_md"
+            android:accessibilityHeading="true"
+            android:importantForAccessibility="yes" />
 
         <!-- Recycle Bin card -->
         <com.google.android.material.card.MaterialCardView

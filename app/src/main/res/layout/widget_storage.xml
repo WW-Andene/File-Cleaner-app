@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
+    android:contentDescription="@string/widget_description"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -43,6 +44,7 @@
     <!-- Progress bar -->
     <ProgressBar
         android:id="@+id/progress_widget"
+        android:contentDescription="@string/a11y_storage_progress"
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="match_parent"
         android:layout_height="@dimen/spacing_sm"

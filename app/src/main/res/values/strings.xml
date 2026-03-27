@@ -584,6 +584,8 @@
 
     <!-- F1: Section labels -->
     <string name="raccoon_section_advanced">Advanced</string>
+    <string name="raccoon_section_cleanup">Deep Clean</string>
+    <string name="raccoon_section_system">System</string>
 
     <!-- F4: Improved copy -->
     <string name="raccoon_action_quick_clean_desc_dynamic">%s in junk files can be freed</string>
@@ -1128,6 +1130,10 @@
     <string name="empty_folders_title">Empty Folders</string>
     <string name="empty_folders_found">Found %1$d empty folders</string>
     <string name="empty_folders_none">No empty folders found</string>
+
+    <!-- Accessibility additions -->
+    <string name="a11y_list_content">List of items</string>
+    <string name="a11y_storage_progress">Storage usage progress bar</string>
 
     <!-- Folder Size Ranking -->
     <string name="folder_size_title">Folder Sizes</string>

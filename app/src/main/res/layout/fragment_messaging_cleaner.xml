@@ -88,6 +88,7 @@
     <!-- Media groups list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_groups"
+        android:contentDescription="@string/a11y_list_content"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"

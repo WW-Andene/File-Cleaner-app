@@ -39,6 +39,7 @@
         <!-- Icon -->
         <ImageView
             android:id="@+id/iv_step_icon"
+            android:importantForAccessibility="no"
             android:layout_width="@dimen/onboarding_icon_size"
             android:layout_height="@dimen/onboarding_icon_size"
             android:layout_gravity="center_horizontal"

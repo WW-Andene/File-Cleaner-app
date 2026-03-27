@@ -101,4 +101,31 @@ object JunkFinder {
     private fun isMedia(ext: String) = ext in FileCategory.MEDIA_EXTENSIONS
     private fun isDocument(ext: String) = ext in FileCategory.DOCUMENT_EXTENSIONS
     private fun isArchiveOrApk(ext: String) = ext in FileCategory.ARCHIVE_APK_EXTENSIONS
+
+    /** Find old/duplicate APK files, keeping only the newest per app name. */
+    suspend fun findDuplicateApks(files: List<FileItem>): List<FileItem> =
+        withContext(Dispatchers.IO) {
+            val apkRegex = Regex("""[-_v]\d+[\.\d]*\.apk$""", RegexOption.IGNORE_CASE)
+            val apks = files.filter { it.category == FileCategory.APK }
+            val grouped = apks.groupBy { apkRegex.replace(it.name, ".apk").lowercase() }
+
+            val result = mutableListOf<FileItem>()
+            for ((_, copies) in grouped) {
+                if (copies.size >= 2) {
+                    result.addAll(copies.sortedByDescending { it.lastModified }.drop(1))
+                }
+            }
+            result.sortedByDescending { it.size }
+        }
+
+    /** Find log files in app data directories. */
+    suspend fun findLogFiles(files: List<FileItem>): List<FileItem> =
+        withContext(Dispatchers.IO) {
+            val logExts = setOf("log", "logs", "logcat")
+            val appDirs = setOf("/Android/data/", "/Android/obb/", "/.cache/", "/logs/", "/log/")
+            files.filter { item ->
+                item.extension in logExts &&
+                    appDirs.any { item.path.contains(it, ignoreCase = true) }
+            }.sortedByDescending { it.size }
+        }
 }

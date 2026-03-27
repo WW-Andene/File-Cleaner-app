@@ -1098,6 +1098,37 @@
     <string name="trash_restored">File restored</string>
     <string name="trash_deleted">File permanently deleted</string>
 
+    <!-- Smart Clean -->
+    <string name="smart_clean_title">Smart Clean</string>
+    <string name="smart_clean_scanning">Analyzing storage\u2026</string>
+    <string name="smart_clean_preview">Safe to free %1$s across %2$d files</string>
+    <string name="smart_clean_junk">Junk Files</string>
+    <string name="smart_clean_junk_desc">Temporary files, logs, cache data</string>
+    <string name="smart_clean_residuals">Uninstalled App Data</string>
+    <string name="smart_clean_residuals_desc">Leftover folders from apps you\u0027ve removed</string>
+    <string name="smart_clean_downloads">Duplicate Downloads</string>
+    <string name="smart_clean_downloads_desc">Same file downloaded multiple times</string>
+    <string name="smart_clean_thumbnails">Thumbnail Cache</string>
+    <string name="smart_clean_thumbnails_desc">Auto-generated preview images</string>
+    <string name="smart_clean_old_media">Old Large Media</string>
+    <string name="smart_clean_old_media_desc">Photos and videos older than 1 year (50MB+)</string>
+    <string name="smart_clean_empty_folders">Empty Folders</string>
+    <string name="smart_clean_empty_folders_desc">Directories with no files inside</string>
+    <string name="smart_clean_complete">Cleaned %1$s!</string>
+
+    <!-- App Residuals -->
+    <string name="residual_title">Uninstalled App Data</string>
+    <string name="residual_desc">Data left behind by apps you\u0027ve uninstalled</string>
+
+    <!-- Redundant Downloads -->
+    <string name="redundant_title">Duplicate Downloads</string>
+    <string name="redundant_desc">Files downloaded multiple times</string>
+
+    <!-- Empty Folders -->
+    <string name="empty_folders_title">Empty Folders</string>
+    <string name="empty_folders_found">Found %1$d empty folders</string>
+    <string name="empty_folders_none">No empty folders found</string>
+
     <!-- Folder Size Ranking -->
     <string name="folder_size_title">Folder Sizes</string>
     <string name="folder_size_desc">See which folders use the most storage</string>

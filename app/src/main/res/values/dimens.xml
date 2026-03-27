@@ -16,7 +16,7 @@
     <!-- Corner radii — refined scale with softer, more modern rounding -->
     <dimen name="radius_btn">12dp</dimen>
     <dimen name="radius_input">12dp</dimen>
-    <dimen name="radius_card">16dp</dimen>
+    <dimen name="radius_card">24dp</dimen>
     <dimen name="radius_icon_container">12dp</dimen>
     <dimen name="radius_header">20dp</dimen>
     <dimen name="radius_modal">24dp</dimen>

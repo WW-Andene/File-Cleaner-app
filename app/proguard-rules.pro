@@ -24,6 +24,11 @@
 # Kotlin coroutines
 -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
 -keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
+-keepnames class kotlinx.coroutines.android.AndroidDispatcherFactory {}
+
+# Navigation component SafeArgs
+-keep class * extends androidx.navigation.NavArgs { *; }
+-keepclassmembers class * extends androidx.navigation.NavArgs { *; }
 
 # JSch (SFTP library)
 -keep class com.jcraft.jsch.** { *; }

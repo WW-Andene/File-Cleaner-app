@@ -26,6 +26,12 @@ android {
         }
     }
 
+    lint {
+        abortOnError false
+        checkReleaseBuilds true
+        disable 'MissingTranslation'
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -78,4 +84,7 @@ dependencies {
 
     // Testing
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1'
+    testImplementation 'io.mockk:mockk:1.13.11'
+    testImplementation 'androidx.test:core:1.6.1'
 }

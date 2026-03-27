@@ -159,6 +159,14 @@ class SettingsFragment : Fragment() {
                 .show()
         }
 
+        // Privacy Policy & Terms of Service
+        binding.btnPrivacyPolicy?.setOnClickListener {
+            showLegalDialog(getString(R.string.privacy_policy_title), getString(R.string.privacy_policy_content))
+        }
+        binding.btnTermsOfService?.setOnClickListener {
+            showLegalDialog(getString(R.string.terms_title), getString(R.string.terms_content))
+        }
+
         // Clear All Data (P3 Security: GDPR data erasure)
         binding.btnClearData.setOnClickListener {
             val ctx = context ?: return@setOnClickListener
@@ -172,6 +180,16 @@ class SettingsFragment : Fragment() {
                 .setNegativeButton(getString(R.string.cancel), null)
                 .show()
         }
+    }
+
+    private fun showLegalDialog(title: String, content: String) {
+        val ctx = context ?: return
+        activeDialog?.dismiss()
+        activeDialog = MaterialAlertDialogBuilder(ctx)
+            .setTitle(title)
+            .setMessage(content)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 
     private fun updateLargeFileLabel() {

@@ -530,6 +530,58 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Legal section -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_legal_section"
+            android:textAppearance="@style/TextAppearance.FileCleaner.SectionHeader"
+            android:layout_marginTop="@dimen/spacing_xl"
+            android:layout_marginBottom="@dimen/spacing_sm"
+            android:accessibilityHeading="true" />
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.FileCleaner.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_lg">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_lg">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_privacy_policy"
+                    style="@style/Widget.FileCleaner.Button.Text"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_height"
+                    android:text="@string/privacy_policy_title"
+                    android:textAllCaps="false"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:gravity="start|center_vertical"
+                    app:icon="@drawable/ic_info"
+                    app:iconGravity="textStart"
+                    app:cornerRadius="@dimen/radius_btn" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_terms_of_service"
+                    style="@style/Widget.FileCleaner.Button.Text"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_height"
+                    android:text="@string/terms_title"
+                    android:textAllCaps="false"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:gravity="start|center_vertical"
+                    app:icon="@drawable/ic_info"
+                    app:iconGravity="textStart"
+                    app:cornerRadius="@dimen/radius_btn" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- F-066: Keyboard shortcuts section -->
         <TextView
             android:layout_width="match_parent"

@@ -870,6 +870,7 @@
     <string name="settings_privacy_notice">View Privacy Notice</string>
     <string name="settings_data_section">Data Management</string>
     <!-- F-066: Keyboard shortcuts -->
+    <string name="settings_legal_section">Legal</string>
     <string name="settings_keyboard_shortcuts">Keyboard Shortcuts</string>
     <string name="settings_shortcut_search">Ctrl + F \u2014 Search files</string>
     <string name="settings_shortcut_settings">Ctrl + S \u2014 Open settings</string>
@@ -1045,6 +1046,27 @@
     <string name="app_manager_summary">%1$d apps using %2$s</string>
     <string name="app_manager_uninstall">Uninstall</string>
     <string name="app_manager_info">App Info</string>
+    <string name="app_manager_detail">Package: %1$s\nSize: %2$s</string>
+    <string name="app_manager_show_system">Show System</string>
+    <string name="app_manager_hide_system">Hide System</string>
+    <string name="messaging_summary">%1$s of messaging media found</string>
+    <plurals name="messaging_summary_detail">
+        <item quantity="one">%1$d file across %2$d app</item>
+        <item quantity="other">%1$d files across %2$d apps</item>
+    </plurals>
+    <string name="messaging_clean_title">Clean Media</string>
+    <string name="messaging_clean_confirm">Delete %1$d files from %2$s %3$s (%4$s)?</string>
+    <string name="messaging_cleaned">Freed %1$s</string>
+
+    <!-- Similar Photos -->
+    <string name="similar_photos_title">Similar Photos</string>
+    <string name="similar_photos_desc">Find visually similar photos using AI-powered analysis</string>
+
+    <!-- Privacy & Legal -->
+    <string name="privacy_policy_title">Privacy Policy</string>
+    <string name="terms_title">Terms of Service</string>
+    <string name="privacy_policy_content">Raccoon File Manager respects your privacy.\n\n\u2022 All file scanning and analysis happens entirely on your device.\n\u2022 No personal data, file names, or file contents are ever transmitted to external servers.\n\u2022 Crash reports (if enabled) contain only technical stack traces with file paths redacted.\n\u2022 Cloud features connect only to servers you explicitly configure (Google Drive, SFTP, WebDAV, GitHub).\n\u2022 OAuth credentials are stored in Android EncryptedSharedPreferences.\n\u2022 No advertising SDKs, analytics trackers, or third-party data collection.\n\u2022 You can delete all app data at any time from Settings \u2192 Clear All Data.\n\nThis app requires storage permissions to scan and manage your files. No data leaves your device without your explicit action.</string>
+    <string name="terms_content">By using Raccoon File Manager, you agree to these terms:\n\n1. PURPOSE: This app helps you manage, organize, and clean files on your device.\n\n2. FILE OPERATIONS: Deleted files are moved to a temporary trash directory for undo support. After the undo window expires, files are permanently deleted. The developer is not responsible for data loss from file operations you initiate.\n\n3. SECURITY SCANNING: The security scanner uses heuristic analysis and pattern matching. It is not a replacement for a dedicated antivirus solution. No guarantees are made about threat detection accuracy.\n\n4. CLOUD FEATURES: Cloud connections are configured by you. The app accesses only the accounts and servers you authorize. You are responsible for the security of your credentials.\n\n5. NO WARRANTY: This app is provided \"as is\" without warranty of any kind. Use at your own risk.\n\n6. UPDATES: These terms may be updated. Continued use constitutes acceptance of updated terms.</string>
     <!-- F-089: DualPaneFragment analysis summary (previously hardcoded) -->
     <string name="dual_pane_analysis_summary">Duplicates: %1$d \u2022 Large: %2$d \u2022 Junk: %3$d</string>
     <string name="optimize_analysis_failed">Ricky hit a snag while analyzing \u2014 try again later.</string>

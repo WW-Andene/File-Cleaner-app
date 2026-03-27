@@ -190,6 +190,16 @@
         android:label="@string/av_title" />
 
     <fragment
+        android:id="@+id/messagingCleanerFragment"
+        android:name="com.filecleaner.app.ui.messaging.MessagingCleanerFragment"
+        android:label="@string/messaging_media_title" />
+
+    <fragment
+        android:id="@+id/appManagerFragment"
+        android:name="com.filecleaner.app.ui.apps.AppManagerFragment"
+        android:label="@string/app_manager_title" />
+
+    <fragment
         android:id="@+id/fileViewerFragment"
         android:name="com.filecleaner.app.ui.viewer.FileViewerFragment"
         android:label="@string/viewer_title">

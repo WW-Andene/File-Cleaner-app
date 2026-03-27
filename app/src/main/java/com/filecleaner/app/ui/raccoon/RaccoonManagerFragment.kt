@@ -121,6 +121,16 @@ class RaccoonManagerFragment : Fragment() {
             findNavController().navigate(R.id.antivirusFragment, null, navAnimOptions)
         }
 
+        // Messaging Media Cleaner — WhatsApp, Telegram, etc.
+        binding.cardMessagingCleaner?.setOnClickListener {
+            findNavController().navigate(R.id.messagingCleanerFragment, null, navAnimOptions)
+        }
+
+        // App Manager — installed apps by size
+        binding.cardAppManager?.setOnClickListener {
+            findNavController().navigate(R.id.appManagerFragment, null, navAnimOptions)
+        }
+
         // Settings — app preferences & configuration
         binding.cardSettings.setOnClickListener {
             findNavController().navigate(R.id.settingsFragment, null, navAnimOptions)

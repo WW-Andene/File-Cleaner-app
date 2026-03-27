@@ -727,6 +727,150 @@
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
+        <!-- Messaging Media Cleaner card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_messaging_cleaner"
+            style="@style/Widget.FileCleaner.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_md"
+            android:minHeight="@dimen/card_min_height"
+            android:foreground="@drawable/ripple_card"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="false"
+            android:stateListAnimator="@animator/card_state_list_anim"
+            android:contentDescription="@string/messaging_media_title">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="@dimen/spacing_lg">
+
+                <FrameLayout
+                    android:layout_width="@dimen/icon_hub_circle"
+                    android:layout_height="@dimen/icon_hub_circle"
+                    android:background="@drawable/bg_hub_icon_circle"
+                    android:backgroundTint="@color/tintJanitor"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="@dimen/hub_card_icon_inner"
+                        android:layout_height="@dimen/hub_card_icon_inner"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_messaging"
+                        android:scaleType="centerInside"
+                        android:importantForAccessibility="no"
+                        app:tint="@color/accentOnTintJanitor" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:layout_marginStart="@dimen/spacing_lg">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/messaging_media_title"
+                        android:textAppearance="@style/TextAppearance.FileCleaner.Subtitle"
+                        android:textColor="@color/textPrimary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/messaging_media_desc"
+                        android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                        android:textColor="@color/textSecondary"
+                        android:layout_marginTop="@dimen/spacing_xs" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="@dimen/icon_nav"
+                    android:layout_height="@dimen/icon_nav"
+                    android:src="@drawable/ic_chevron_right"
+                    android:importantForAccessibility="no"
+                    app:tint="@color/textTertiary" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- App Manager card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_app_manager"
+            style="@style/Widget.FileCleaner.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_md"
+            android:minHeight="@dimen/card_min_height"
+            android:foreground="@drawable/ripple_card"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="false"
+            android:stateListAnimator="@animator/card_state_list_anim"
+            android:contentDescription="@string/app_manager_title">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="@dimen/spacing_lg">
+
+                <FrameLayout
+                    android:layout_width="@dimen/icon_hub_circle"
+                    android:layout_height="@dimen/icon_hub_circle"
+                    android:background="@drawable/bg_hub_icon_circle"
+                    android:backgroundTint="@color/tintAntivirus"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="@dimen/hub_card_icon_inner"
+                        android:layout_height="@dimen/hub_card_icon_inner"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_apps"
+                        android:scaleType="centerInside"
+                        android:importantForAccessibility="no"
+                        app:tint="@color/accentOnTintAntivirus" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:layout_marginStart="@dimen/spacing_lg">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/app_manager_title"
+                        android:textAppearance="@style/TextAppearance.FileCleaner.Subtitle"
+                        android:textColor="@color/textPrimary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/app_manager_desc"
+                        android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
+                        android:textColor="@color/textSecondary"
+                        android:layout_marginTop="@dimen/spacing_xs" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="@dimen/icon_nav"
+                    android:layout_height="@dimen/icon_nav"
+                    android:src="@drawable/ic_chevron_right"
+                    android:importantForAccessibility="no"
+                    app:tint="@color/textTertiary" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Settings card — horizontal like Optimize Storage -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_settings"

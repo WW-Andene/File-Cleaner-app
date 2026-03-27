@@ -4,31 +4,23 @@ import android.graphics.Bitmap
 import java.io.OutputStream
 
 /**
- * Minimal GIF89a animated encoder using only Android SDK APIs.
+ * GIF89a animated encoder using only Android SDK APIs.
  *
- * Produces small, compatible animated GIFs with a fixed 256-color palette
- * derived from median-cut quantization of the first frame. Subsequent frames
- * reuse the same palette for consistency and speed.
- *
- * Limitations:
- * - Fixed 256-color global palette (no per-frame local palettes)
- * - No transparency support
- * - No LZW compression optimization (uses standard LZW)
+ * Features:
+ * - Median-cut color quantization (256-color palette from actual image colors)
+ * - Floyd-Steinberg dithering for smooth gradients
+ * - Standard LZW compression
+ * - Netscape looping extension for animation
  */
 class SimpleGifEncoder(private val out: OutputStream) {
 
     private var width = 0
     private var height = 0
-    private var delayCs = 10 // centiseconds between frames
+    private var delayCs = 10
     private var palette = IntArray(256)
     private var started = false
+    private var headerWritten = false
 
-    /**
-     * Initializes the GIF with dimensions and frame delay.
-     * @param w Width in pixels
-     * @param h Height in pixels
-     * @param delayCentiseconds Delay between frames in 1/100ths of a second
-     */
     fun start(w: Int, h: Int, delayCentiseconds: Int = 10) {
         width = w
         height = h
@@ -36,93 +28,173 @@ class SimpleGifEncoder(private val out: OutputStream) {
         started = true
     }
 
-    /**
-     * Adds a frame to the GIF. First frame also builds the global color palette.
-     * Bitmap is NOT recycled by this method — caller manages lifecycle.
-     */
     fun addFrame(bitmap: Bitmap) {
+        val scaled = if (bitmap.width != width || bitmap.height != height) {
+            Bitmap.createScaledBitmap(bitmap, width, height, true)
+        } else bitmap
+
         val pixels = IntArray(width * height)
-        bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+        scaled.getPixels(pixels, 0, width, 0, 0, width, height)
+        if (scaled !== bitmap) scaled.recycle()
 
         if (!headerWritten) {
-            palette = buildPalette(pixels)
+            palette = medianCutQuantize(pixels, 256)
             writeHeader()
             writeGlobalColorTable()
-            writeNetscapeExtension() // loop forever
+            writeNetscapeExtension()
             headerWritten = true
         }
 
-        val indexed = quantizePixels(pixels)
+        val indexed = ditherAndQuantize(pixels)
         writeGraphicControlExtension()
         writeImageDescriptor()
         writeLzwCompressed(indexed)
     }
 
-    /** Finishes the GIF stream. */
     fun finish() {
         if (headerWritten) {
-            out.write(0x3B) // GIF trailer
+            out.write(0x3B)
             out.flush()
         }
     }
 
-    // ── Internal state ──────────────────────────────────────────────
+    // ── Median-cut color quantization ──────────────────────────────
 
-    private var headerWritten = false
+    private fun medianCutQuantize(pixels: IntArray, numColors: Int): IntArray {
+        // Sample pixels (every Nth for large images to save memory)
+        val step = (pixels.size / 50000).coerceAtLeast(1)
+        val samples = mutableListOf<IntArray>()
+        for (i in pixels.indices step step) {
+            val c = pixels[i]
+            samples.add(intArrayOf((c shr 16) and 0xFF, (c shr 8) and 0xFF, c and 0xFF))
+        }
 
-    // ── Palette building (median-cut simplified to uniform sampling) ──
-
-    private fun buildPalette(pixels: IntArray): IntArray {
-        // Sample colors uniformly across a 6x6x6 RGB cube (216 colors)
-        // plus 40 most-frequent colors from the actual image
-        val pal = IntArray(256)
-        var idx = 0
-
-        // 6x6x6 uniform cube = 216 entries
-        for (r in 0..5) {
-            for (g in 0..5) {
-                for (b in 0..5) {
-                    if (idx < 216) {
-                        pal[idx++] = (0xFF shl 24) or
-                            ((r * 51) shl 16) or ((g * 51) shl 8) or (b * 51)
-                    }
+        // Median-cut: recursively split color boxes
+        val boxes = mutableListOf(samples)
+        while (boxes.size < numColors && boxes.isNotEmpty()) {
+            // Find the box with the largest range on any channel
+            var bestIdx = 0
+            var bestRange = 0
+            var bestChannel = 0
+            for (i in boxes.indices) {
+                val box = boxes[i]
+                if (box.size < 2) continue
+                for (ch in 0..2) {
+                    var mn = 255; var mx = 0
+                    for (c in box) { mn = minOf(mn, c[ch]); mx = maxOf(mx, c[ch]) }
+                    val range = mx - mn
+                    if (range > bestRange) { bestRange = range; bestIdx = i; bestChannel = ch }
                 }
             }
+            if (bestRange == 0) break
+
+            val box = boxes.removeAt(bestIdx)
+            box.sortBy { it[bestChannel] }
+            val mid = box.size / 2
+            boxes.add(box.subList(0, mid).toMutableList())
+            boxes.add(box.subList(mid, box.size).toMutableList())
         }
 
-        // Fill remaining 40 slots with most frequent image colors (sampled)
-        val freq = HashMap<Int, Int>(256)
-        val step = (pixels.size / 1000).coerceAtLeast(1)
-        for (i in pixels.indices step step) {
-            val c = pixels[i] and 0x00F8F8F8.toInt() // quantize to 5-bit
-            freq[c] = (freq[c] ?: 0) + 1
+        // Compute average color for each box
+        val pal = IntArray(256)
+        for (i in boxes.indices.take(256)) {
+            val box = boxes[i]
+            if (box.isEmpty()) continue
+            var rSum = 0L; var gSum = 0L; var bSum = 0L
+            for (c in box) { rSum += c[0]; gSum += c[1]; bSum += c[2] }
+            val n = box.size
+            val r = (rSum / n).toInt().coerceIn(0, 255)
+            val g = (gSum / n).toInt().coerceIn(0, 255)
+            val b = (bSum / n).toInt().coerceIn(0, 255)
+            pal[i] = (0xFF shl 24) or (r shl 16) or (g shl 8) or b
         }
-        val topColors = freq.entries.sortedByDescending { it.value }.take(40)
-        for (entry in topColors) {
-            if (idx < 256) pal[idx++] = entry.key or (0xFF shl 24)
-        }
-
         return pal
     }
 
-    private fun quantizePixels(pixels: IntArray): ByteArray {
-        val indexed = ByteArray(pixels.size)
-        for (i in pixels.indices) {
-            indexed[i] = nearestColor(pixels[i]).toByte()
-        }
-        return indexed
+    // ── Floyd-Steinberg dithering + nearest-color lookup ───────────
+
+    /** Pre-built kd-tree-like cache for fast nearest-color lookup. */
+    private var colorCache: HashMap<Int, Int>? = null
+
+    private fun buildColorCache() {
+        colorCache = HashMap(4096)
     }
 
-    private fun nearestColor(argb: Int): Int {
-        val r = (argb shr 16) and 0xFF
-        val g = (argb shr 8) and 0xFF
-        val b = argb and 0xFF
+    private fun nearestColor(r: Int, g: Int, b: Int): Int {
+        // Quantize to 4-bit per channel for cache key (16x16x16 = 4096 buckets)
+        val key = ((r shr 4) shl 8) or ((g shr 4) shl 4) or (b shr 4)
+        val cache = colorCache ?: HashMap<Int, Int>(4096).also { colorCache = it }
+        cache[key]?.let { return it }
 
-        // Fast lookup: map to nearest 6x6x6 cube index
-        val ri = ((r + 25) / 51).coerceIn(0, 5)
-        val gi = ((g + 25) / 51).coerceIn(0, 5)
-        val bi = ((b + 25) / 51).coerceIn(0, 5)
-        return ri * 36 + gi * 6 + bi
+        var bestIdx = 0
+        var bestDist = Int.MAX_VALUE
+        for (i in 0 until 256) {
+            val c = palette[i]
+            val dr = ((c shr 16) and 0xFF) - r
+            val dg = ((c shr 8) and 0xFF) - g
+            val db = (c and 0xFF) - b
+            // Weighted distance (human eye is more sensitive to green)
+            val dist = 2 * dr * dr + 4 * dg * dg + 3 * db * db
+            if (dist < bestDist) { bestDist = dist; bestIdx = i }
+        }
+        cache[key] = bestIdx
+        return bestIdx
+    }
+
+    private fun ditherAndQuantize(pixels: IntArray): ByteArray {
+        buildColorCache()
+        val indexed = ByteArray(width * height)
+
+        // Error diffusion buffers (current row + next row)
+        val errR = IntArray(width + 2)
+        val errG = IntArray(width + 2)
+        val errB = IntArray(width + 2)
+        val nextErrR = IntArray(width + 2)
+        val nextErrG = IntArray(width + 2)
+        val nextErrB = IntArray(width + 2)
+
+        for (y in 0 until height) {
+            // Clear next row errors
+            nextErrR.fill(0); nextErrG.fill(0); nextErrB.fill(0)
+
+            for (x in 0 until width) {
+                val px = pixels[y * width + x]
+                val r = (((px shr 16) and 0xFF) + errR[x + 1]).coerceIn(0, 255)
+                val g = (((px shr 8) and 0xFF) + errG[x + 1]).coerceIn(0, 255)
+                val b = ((px and 0xFF) + errB[x + 1]).coerceIn(0, 255)
+
+                val palIdx = nearestColor(r, g, b)
+                indexed[y * width + x] = palIdx.toByte()
+
+                val palColor = palette[palIdx]
+                val er = r - ((palColor shr 16) and 0xFF)
+                val eg = g - ((palColor shr 8) and 0xFF)
+                val eb = b - (palColor and 0xFF)
+
+                // Floyd-Steinberg error distribution: 7/16, 3/16, 5/16, 1/16
+                errR[x + 2] += er * 7 / 16
+                errG[x + 2] += eg * 7 / 16
+                errB[x + 2] += eb * 7 / 16
+
+                nextErrR[x] += er * 3 / 16
+                nextErrG[x] += eg * 3 / 16
+                nextErrB[x] += eb * 3 / 16
+
+                nextErrR[x + 1] += er * 5 / 16
+                nextErrG[x + 1] += eg * 5 / 16
+                nextErrB[x + 1] += eb * 5 / 16
+
+                nextErrR[x + 2] += er / 16
+                nextErrG[x + 2] += eg / 16
+                nextErrB[x + 2] += eb / 16
+            }
+
+            // Swap rows
+            System.arraycopy(nextErrR, 0, errR, 0, width + 2)
+            System.arraycopy(nextErrG, 0, errG, 0, width + 2)
+            System.arraycopy(nextErrB, 0, errB, 0, width + 2)
+        }
+        return indexed
     }
 
     // ── GIF format writing ──────────────────────────────────────────
@@ -131,8 +203,7 @@ class SimpleGifEncoder(private val out: OutputStream) {
         out.write("GIF89a".toByteArray())
         writeShort(width)
         writeShort(height)
-        // Global color table: 256 colors (2^8), 8 bits color resolution
-        out.write(0xF7) // GCT flag | color resolution (7) | size (7 = 256 colors)
+        out.write(0xF7) // GCT flag | color resolution 7 | size 7 (256 colors)
         out.write(0)    // background color index
         out.write(0)    // pixel aspect ratio
     }
@@ -140,50 +211,38 @@ class SimpleGifEncoder(private val out: OutputStream) {
     private fun writeGlobalColorTable() {
         for (i in 0 until 256) {
             val c = palette[i]
-            out.write((c shr 16) and 0xFF) // R
-            out.write((c shr 8) and 0xFF)  // G
-            out.write(c and 0xFF)          // B
+            out.write((c shr 16) and 0xFF)
+            out.write((c shr 8) and 0xFF)
+            out.write(c and 0xFF)
         }
     }
 
     private fun writeNetscapeExtension() {
-        out.write(0x21)  // Extension
-        out.write(0xFF)  // Application extension
-        out.write(11)    // Block size
+        out.write(0x21); out.write(0xFF); out.write(11)
         out.write("NETSCAPE2.0".toByteArray())
-        out.write(3)     // Sub-block size
-        out.write(1)     // Loop sub-block ID
-        writeShort(0)    // Loop count (0 = infinite)
-        out.write(0)     // Block terminator
+        out.write(3); out.write(1)
+        writeShort(0) // infinite loop
+        out.write(0)
     }
 
     private fun writeGraphicControlExtension() {
-        out.write(0x21) // Extension
-        out.write(0xF9) // Graphic control
-        out.write(4)    // Block size
-        out.write(0)    // Packed: no disposal, no transparency
-        writeShort(delayCs) // Delay in centiseconds
-        out.write(0)    // Transparent color index (unused)
-        out.write(0)    // Block terminator
+        out.write(0x21); out.write(0xF9); out.write(4)
+        out.write(0x04) // dispose: restore to background (prevents ghosting)
+        writeShort(delayCs)
+        out.write(0); out.write(0)
     }
 
     private fun writeImageDescriptor() {
-        out.write(0x2C) // Image separator
-        writeShort(0)   // Left
-        writeShort(0)   // Top
-        writeShort(width)
-        writeShort(height)
-        out.write(0)    // No local color table, not interlaced
+        out.write(0x2C)
+        writeShort(0); writeShort(0)
+        writeShort(width); writeShort(height)
+        out.write(0)
     }
 
     private fun writeLzwCompressed(pixels: ByteArray) {
         val minCodeSize = 8
         out.write(minCodeSize)
-
-        val lzw = LzwEncoder(minCodeSize)
-        val compressed = lzw.encode(pixels)
-
-        // Write in sub-blocks of max 255 bytes
+        val compressed = LzwEncoder(minCodeSize).encode(pixels)
         var offset = 0
         while (offset < compressed.size) {
             val blockSize = (compressed.size - offset).coerceAtMost(255)
@@ -191,7 +250,7 @@ class SimpleGifEncoder(private val out: OutputStream) {
             out.write(compressed, offset, blockSize)
             offset += blockSize
         }
-        out.write(0) // Block terminator
+        out.write(0)
     }
 
     private fun writeShort(value: Int) {
@@ -201,56 +260,34 @@ class SimpleGifEncoder(private val out: OutputStream) {
 
     // ── LZW Encoder ─────────────────────────────────────────────────
 
-    /**
-     * LZW encoder using code-prefix keying (standard GIF LZW).
-     * Keys are (prefixCode, appendByte) pairs encoded as a single Long
-     * to avoid object allocation in the hot loop.
-     */
     private class LzwEncoder(private val minCodeSize: Int) {
         fun encode(pixels: ByteArray): ByteArray {
             val clearCode = 1 shl minCodeSize
             val eoiCode = clearCode + 1
             var codeSize = minCodeSize + 1
             var nextCode = eoiCode + 1
-            val maxTableSize = 4096
 
-            // Key = (prefixCode << 16) | appendByte — safe because codes < 4096
-            val table = HashMap<Long, Int>(maxTableSize * 2)
+            val table = HashMap<Long, Int>(8192)
             val bitStream = BitOutputStream()
 
-            fun initTable() {
-                table.clear()
-                nextCode = eoiCode + 1
-                codeSize = minCodeSize + 1
-            }
-
-            fun tableKey(prefixCode: Int, appendByte: Int): Long =
-                (prefixCode.toLong() shl 16) or appendByte.toLong()
+            fun initTable() { table.clear(); nextCode = eoiCode + 1; codeSize = minCodeSize + 1 }
+            fun tableKey(prefix: Int, append: Int): Long = (prefix.toLong() shl 16) or append.toLong()
 
             initTable()
             bitStream.write(clearCode, codeSize)
-
-            if (pixels.isEmpty()) {
-                bitStream.write(eoiCode, codeSize)
-                return bitStream.toByteArray()
-            }
+            if (pixels.isEmpty()) { bitStream.write(eoiCode, codeSize); return bitStream.toByteArray() }
 
             var prefixCode = pixels[0].toInt() and 0xFF
-
             for (i in 1 until pixels.size) {
                 val appendByte = pixels[i].toInt() and 0xFF
                 val key = tableKey(prefixCode, appendByte)
-
                 if (table.containsKey(key)) {
                     prefixCode = table[key]!!
                 } else {
                     bitStream.write(prefixCode, codeSize)
-
-                    if (nextCode < maxTableSize) {
+                    if (nextCode < 4096) {
                         table[key] = nextCode++
-                        if (nextCode > (1 shl codeSize) && codeSize < 12) {
-                            codeSize++
-                        }
+                        if (nextCode > (1 shl codeSize) && codeSize < 12) codeSize++
                     } else {
                         bitStream.write(clearCode, codeSize)
                         initTable()
@@ -258,10 +295,8 @@ class SimpleGifEncoder(private val out: OutputStream) {
                     prefixCode = appendByte
                 }
             }
-
             bitStream.write(prefixCode, codeSize)
             bitStream.write(eoiCode, codeSize)
-
             return bitStream.toByteArray()
         }
     }
@@ -272,25 +307,16 @@ class SimpleGifEncoder(private val out: OutputStream) {
         private var bitPos = 0
 
         fun write(code: Int, numBits: Int) {
-            var remaining = numBits
-            var value = code
+            var remaining = numBits; var value = code
             while (remaining > 0) {
                 currentByte = currentByte or ((value and 1) shl bitPos)
-                bitPos++
-                value = value shr 1
-                remaining--
-                if (bitPos == 8) {
-                    bytes.add(currentByte.toByte())
-                    currentByte = 0
-                    bitPos = 0
-                }
+                bitPos++; value = value shr 1; remaining--
+                if (bitPos == 8) { bytes.add(currentByte.toByte()); currentByte = 0; bitPos = 0 }
             }
         }
 
         fun toByteArray(): ByteArray {
-            if (bitPos > 0) {
-                bytes.add(currentByte.toByte())
-            }
+            if (bitPos > 0) bytes.add(currentByte.toByte())
             return bytes.toByteArray()
         }
     }

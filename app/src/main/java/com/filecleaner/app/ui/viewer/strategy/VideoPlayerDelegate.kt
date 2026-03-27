@@ -27,6 +27,9 @@ class VideoPlayerDelegate(
     private val tvVideoCurrent: TextView,
     private val tvVideoDuration: TextView,
     private val btnVideoSpeed: TextView?,
+    private val btnSkipBack: ImageButton?,
+    private val btnSkipForward: ImageButton?,
+    private val btnMute: ImageButton?,
     private val handler: Handler,
     private val strPlayVideo: String,
     private val strPauseVideo: String
@@ -35,6 +38,7 @@ class VideoPlayerDelegate(
     private var isPlaying = false
     private var isInitialized = false
     private var mediaPlayer: MediaPlayer? = null
+    private var isMuted = false
 
     /** Show the video. [onUnsupported] is called if playback fails. */
     fun show(file: File, onUnsupported: () -> Unit) {
@@ -107,10 +111,38 @@ class VideoPlayerDelegate(
             override fun onStopTrackingTouch(sb: SeekBar?) {}
         })
 
+        // Skip back/forward 10 seconds
+        btnSkipBack?.setOnClickListener {
+            if (isInitialized) {
+                val pos = (videoView.currentPosition - 10_000).coerceAtLeast(0)
+                videoView.seekTo(pos)
+                seekVideo.progress = pos
+                tvVideoCurrent.text = formatTime(pos)
+            }
+        }
+        btnSkipForward?.setOnClickListener {
+            if (isInitialized) {
+                val pos = (videoView.currentPosition + 10_000).coerceAtMost(videoView.duration)
+                videoView.seekTo(pos)
+                seekVideo.progress = pos
+                tvVideoCurrent.text = formatTime(pos)
+            }
+        }
+
+        // Mute toggle
+        btnMute?.setOnClickListener {
+            isMuted = !isMuted
+            try {
+                val vol = if (isMuted) 0f else 1f
+                mediaPlayer?.setVolume(vol, vol)
+            } catch (_: Exception) { }
+            btnMute.alpha = if (isMuted) 0.4f else 1.0f
+        }
+
         // Speed control
-        val speeds = floatArrayOf(0.5f, 1.0f, 1.5f, 2.0f)
-        val speedLabels = arrayOf("0.5x", "1x", "1.5x", "2x")
-        var speedIndex = 1
+        val speeds = floatArrayOf(0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 2.0f)
+        val speedLabels = arrayOf("0.5x", "0.75x", "1x", "1.25x", "1.5x", "2x")
+        var speedIndex = 2
         btnVideoSpeed?.setOnClickListener {
             speedIndex = (speedIndex + 1) % speeds.size
             btnVideoSpeed.text = speedLabels[speedIndex]

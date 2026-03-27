@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import androidx.navigation.fragment.findNavController
 import com.filecleaner.app.R
 import com.filecleaner.app.data.FileCategory
@@ -189,7 +190,10 @@ class FileViewerFragment : Fragment() {
             binding.ivVideoPlayOverlay, binding.videoControls,
             binding.btnVideoPlay, binding.seekVideo,
             binding.tvVideoCurrent, binding.tvVideoDuration,
-            binding.btnVideoSpeed, handler,
+            binding.btnVideoSpeed,
+            binding.btnVideoSkipBack, binding.btnVideoSkipForward,
+            binding.btnVideoMute,
+            handler,
             getString(R.string.a11y_play_video), getString(R.string.a11y_pause_video)
         )
         videoDelegate = delegate
@@ -216,9 +220,17 @@ class FileViewerFragment : Fragment() {
     private fun showApkInfo(file: File) {
         binding.codeEditorContainer.visibility = View.VISIBLE
         binding.codeToolbar.visibility = View.VISIBLE
+
+        // Install button
         binding.btnCodeSave.text = getString(R.string.apk_install)
         binding.btnCodeSave.setOnClickListener { installApk(file) }
-        binding.btnCodeUndo.visibility = View.GONE
+
+        // Extract All button (repurpose Undo)
+        binding.btnCodeUndo.visibility = View.VISIBLE
+        (binding.btnCodeUndo as? android.widget.TextView)?.text = getString(R.string.apk_extract_all)
+        binding.btnCodeUndo.setOnClickListener { extractApkContents(file) }
+
+        // Extract Single File (repurpose Redo) — hidden, shown on entry tap
         binding.btnCodeRedo.visibility = View.GONE
         binding.btnCodeFind.visibility = View.GONE
         binding.tvTextContent.isFocusableInTouchMode = false
@@ -232,6 +244,36 @@ class FileViewerFragment : Fragment() {
         binding.tvTextContent.setText(fullInfo)
         val lineCount = fullInfo.count { it == '\n' } + 1
         binding.tvLineNumbers.text = (1..lineCount).joinToString("\n")
+    }
+
+    private fun extractApkContents(apkFile: File) {
+        val ctx = requireContext()
+        val outputDir = java.io.File(ctx.cacheDir, "apk_extract/${apkFile.nameWithoutExtension}")
+        outputDir.mkdirs()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            val count = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                apkStrategy.extractAll(apkFile, outputDir)
+            }
+            if (_binding == null) return@launch
+            if (count > 0) {
+                com.google.android.material.snackbar.Snackbar.make(
+                    binding.root,
+                    getString(R.string.apk_extracted, count, outputDir.absolutePath),
+                    com.google.android.material.snackbar.Snackbar.LENGTH_LONG
+                ).setAction(getString(R.string.browse)) {
+                    // Open the extracted folder in the file viewer
+                    val nav = findNavController()
+                    val bundle = android.os.Bundle().apply { putString("browse_path", outputDir.absolutePath) }
+                    try { nav.navigate(R.id.browseFragment, bundle) } catch (_: Exception) {}
+                }.show()
+            } else {
+                com.google.android.material.snackbar.Snackbar.make(
+                    binding.root, getString(R.string.apk_extract_failed),
+                    com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
+                ).show()
+            }
+        }
     }
 
     private fun installApk(file: File) {

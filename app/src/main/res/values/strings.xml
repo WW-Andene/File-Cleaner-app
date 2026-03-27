@@ -367,6 +367,10 @@
     <string name="viewer_audio_play">Play / Pause</string>
     <string name="viewer_audio_error">Ricky can\u0027t play this audio file \u2014 it may be corrupted or in an unsupported format.</string>
     <string name="viewer_video_play">Play video</string>
+    <string name="video_skip_back">Skip back 10 seconds</string>
+    <string name="video_skip_forward">Skip forward 10 seconds</string>
+    <string name="video_mute">Mute</string>
+    <string name="video_unmute">Unmute</string>
     <string name="viewer_video_error">Ricky can\u0027t play this video \u2014 it may be corrupted or in an unsupported format.</string>
     <string name="viewer_archive_error">Ricky can\u0027t read this archive: %s</string>
 
@@ -1217,6 +1221,10 @@
     <!-- APK Viewer -->
     <string name="apk_parse_failed">Cannot parse this APK file. It may be corrupted or use an unsupported format.</string>
     <string name="apk_install">Install</string>
+    <string name="apk_extract_all">Extract All</string>
+    <string name="apk_extracted">Extracted %1$d files to %2$s</string>
+    <string name="apk_extract_failed">Failed to extract APK contents</string>
+    <string name="browse">Browse</string>
 
     <!-- Core File Management -->
     <string name="create_new">Create New</string>

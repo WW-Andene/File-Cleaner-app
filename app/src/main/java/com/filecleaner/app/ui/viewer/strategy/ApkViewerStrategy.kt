@@ -153,6 +153,54 @@ class ApkViewerStrategy : ViewerStrategy {
         }
     }
 
+    /** Extract a single file from the APK to outputDir. Returns the extracted File or null. */
+    fun extractFile(apkFile: File, entryName: String, outputDir: File): File? {
+        return try {
+            java.util.zip.ZipFile(apkFile).use { zip ->
+                val entry = zip.getEntry(entryName) ?: return null
+                val outFile = File(outputDir, entryName.substringAfterLast('/'))
+                zip.getInputStream(entry).use { input ->
+                    outFile.outputStream().use { output -> input.copyTo(output) }
+                }
+                outFile
+            }
+        } catch (_: Exception) { null }
+    }
+
+    /** Extract all APK contents to outputDir. Returns the number of files extracted. */
+    fun extractAll(apkFile: File, outputDir: File): Int {
+        var count = 0
+        try {
+            java.util.zip.ZipFile(apkFile).use { zip ->
+                for (entry in zip.entries()) {
+                    if (entry.isDirectory) continue
+                    val outFile = File(outputDir, entry.name)
+                    outFile.parentFile?.mkdirs()
+                    zip.getInputStream(entry).use { input ->
+                        outFile.outputStream().use { output -> input.copyTo(output) }
+                    }
+                    count++
+                }
+            }
+        } catch (_: Exception) { }
+        return count
+    }
+
+    /** Get the list of entries in the APK for browsable display. */
+    fun getEntries(apkFile: File): List<Pair<String, Long>> {
+        val entries = mutableListOf<Pair<String, Long>>()
+        try {
+            java.util.zip.ZipFile(apkFile).use { zip ->
+                for (entry in zip.entries()) {
+                    if (!entry.isDirectory) {
+                        entries.add(entry.name to entry.size)
+                    }
+                }
+            }
+        } catch (_: Exception) { }
+        return entries
+    }
+
     private fun sdkToVersion(sdk: Int): String = when (sdk) {
         29 -> "10"; 30 -> "11"; 31 -> "12"; 32 -> "12L"
         33 -> "13"; 34 -> "14"; 35 -> "15"

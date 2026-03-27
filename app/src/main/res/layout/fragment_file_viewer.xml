@@ -103,7 +103,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:background="@color/overlayDark"
+            android:background="#CC000000"
             android:scrollbars="none"
             android:visibility="gone">
 
@@ -121,7 +121,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/edit_rotate"
                     android:textAllCaps="false"
-                    android:textColor="@color/textOnPrimary"
+                    android:textColor="@android:color/white"
                     android:textSize="11sp"
                     android:minHeight="0dp"
                     android:insetTop="0dp"
@@ -129,7 +129,7 @@
                     app:icon="@drawable/ic_refresh"
                     app:iconGravity="top"
                     app:iconSize="20dp"
-                    app:iconTint="@color/textOnPrimary" />
+                    app:iconTint="@android:color/white" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_flip"
@@ -138,7 +138,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/edit_flip"
                     android:textAllCaps="false"
-                    android:textColor="@color/textOnPrimary"
+                    android:textColor="@android:color/white"
                     android:textSize="11sp"
                     android:minHeight="0dp"
                     android:insetTop="0dp"
@@ -146,7 +146,7 @@
                     app:icon="@drawable/ic_flip"
                     app:iconGravity="top"
                     app:iconSize="20dp"
-                    app:iconTint="@color/textOnPrimary" />
+                    app:iconTint="@android:color/white" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_crop"
@@ -155,7 +155,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/edit_crop"
                     android:textAllCaps="false"
-                    android:textColor="@color/textOnPrimary"
+                    android:textColor="@android:color/white"
                     android:textSize="11sp"
                     android:minHeight="0dp"
                     android:insetTop="0dp"
@@ -163,7 +163,7 @@
                     app:icon="@drawable/ic_crop"
                     app:iconGravity="top"
                     app:iconSize="20dp"
-                    app:iconTint="@color/textOnPrimary" />
+                    app:iconTint="@android:color/white" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_bw"
@@ -172,7 +172,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/edit_grayscale"
                     android:textAllCaps="false"
-                    android:textColor="@color/textOnPrimary"
+                    android:textColor="@android:color/white"
                     android:textSize="11sp"
                     android:minHeight="0dp"
                     android:insetTop="0dp"
@@ -180,7 +180,7 @@
                     app:icon="@drawable/ic_contrast"
                     app:iconGravity="top"
                     app:iconSize="20dp"
-                    app:iconTint="@color/textOnPrimary" />
+                    app:iconTint="@android:color/white" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_invert"
@@ -189,7 +189,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/edit_invert"
                     android:textAllCaps="false"
-                    android:textColor="@color/textOnPrimary"
+                    android:textColor="@android:color/white"
                     android:textSize="11sp"
                     android:minHeight="0dp"
                     android:insetTop="0dp"
@@ -197,7 +197,7 @@
                     app:icon="@drawable/ic_invert"
                     app:iconGravity="top"
                     app:iconSize="20dp"
-                    app:iconTint="@color/textOnPrimary" />
+                    app:iconTint="@android:color/white" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_bright"
@@ -206,7 +206,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/edit_brighten"
                     android:textAllCaps="false"
-                    android:textColor="@color/textOnPrimary"
+                    android:textColor="@android:color/white"
                     android:textSize="11sp"
                     android:minHeight="0dp"
                     android:insetTop="0dp"
@@ -214,7 +214,7 @@
                     app:icon="@drawable/ic_brightness"
                     app:iconGravity="top"
                     app:iconSize="20dp"
-                    app:iconTint="@color/textOnPrimary" />
+                    app:iconTint="@android:color/white" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_dark"
@@ -223,7 +223,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/edit_darken"
                     android:textAllCaps="false"
-                    android:textColor="@color/textOnPrimary"
+                    android:textColor="@android:color/white"
                     android:textSize="11sp"
                     android:minHeight="0dp"
                     android:insetTop="0dp"
@@ -231,7 +231,7 @@
                     app:icon="@drawable/ic_dark_mode"
                     app:iconGravity="top"
                     app:iconSize="20dp"
-                    app:iconTint="@color/textOnPrimary" />
+                    app:iconTint="@android:color/white" />
             </LinearLayout>
         </HorizontalScrollView>
 
@@ -537,6 +537,16 @@
                     android:layout_marginTop="@dimen/spacing_xs">
 
                     <ImageButton
+                        android:id="@+id/btn_video_skip_back"
+                        android:layout_width="@dimen/icon_button"
+                        android:layout_height="@dimen/icon_button"
+                        android:src="@drawable/ic_undo"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:focusable="true"
+                        android:contentDescription="@string/video_skip_back"
+                        app:tint="@android:color/white" />
+
+                    <ImageButton
                         android:id="@+id/btn_video_play"
                         android:layout_width="@dimen/icon_button"
                         android:layout_height="@dimen/icon_button"
@@ -544,7 +554,17 @@
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:focusable="true"
                         android:contentDescription="@string/viewer_video_play"
-                        app:tint="@color/textOnPrimary" />
+                        app:tint="@android:color/white" />
+
+                    <ImageButton
+                        android:id="@+id/btn_video_skip_forward"
+                        android:layout_width="@dimen/icon_button"
+                        android:layout_height="@dimen/icon_button"
+                        android:src="@drawable/ic_redo"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:focusable="true"
+                        android:contentDescription="@string/video_skip_forward"
+                        app:tint="@android:color/white" />
 
                     <TextView
                         android:id="@+id/tv_video_current"
@@ -553,7 +573,7 @@
                         android:layout_marginStart="@dimen/spacing_xs"
                         android:text="@string/media_time_default"
                         android:contentDescription="@string/a11y_video_current_time"
-                        android:textColor="@color/textOnPrimary"
+                        android:textColor="@android:color/white"
                         android:textAppearance="@style/TextAppearance.FileCleaner.Numeric" />
 
                     <View
@@ -568,8 +588,19 @@
                         android:layout_height="wrap_content"
                         android:text="@string/media_time_default"
                         android:contentDescription="@string/a11y_video_duration"
-                        android:textColor="@color/textOnPrimary"
+                        android:textColor="@android:color/white"
                         android:textAppearance="@style/TextAppearance.FileCleaner.Numeric" />
+
+                    <ImageButton
+                        android:id="@+id/btn_video_mute"
+                        android:layout_width="@dimen/icon_button"
+                        android:layout_height="@dimen/icon_button"
+                        android:layout_marginStart="@dimen/spacing_sm"
+                        android:src="@drawable/ic_audio"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:focusable="true"
+                        android:contentDescription="@string/video_mute"
+                        app:tint="@android:color/white" />
 
                     <TextView
                         android:id="@+id/btn_video_speed"
@@ -579,7 +610,7 @@
                         android:paddingHorizontal="@dimen/spacing_sm"
                         android:gravity="center"
                         android:text="@string/speed_1x"
-                        android:textColor="@color/textOnPrimary"
+                        android:textColor="@android:color/white"
                         android:textAppearance="@style/TextAppearance.FileCleaner.BodySmall"
                         android:textStyle="bold"
                         android:background="?attr/selectableItemBackgroundBorderless"

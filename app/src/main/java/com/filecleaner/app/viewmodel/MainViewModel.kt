@@ -677,6 +677,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun compressFiles(filePaths: List<String>, archiveName: String?) {
+        if (filePaths.isEmpty()) return
         viewModelScope.launch {
             val opResult = withContext(Dispatchers.IO) {
                 fileOps.compressFiles(filePaths, archiveName)
@@ -761,29 +762,27 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         saveCacheJob?.cancel()
         saveCacheJob = viewModelScope.launch {
             delay(SAVE_CACHE_DEBOUNCE_MS)
-            // Capture state after delay so the cache reflects the latest data
-            val files = latestFiles.ifEmpty { return@launch }
-            val tree = latestTree ?: return@launch
-            withContext(NonCancellable + Dispatchers.IO) {
-                try {
-                    ScanCache.save(getApplication(), files, tree)
-                } catch (_: Exception) {
-                    // Non-critical — cache will be rebuilt on next scan
-                }
-            }
+            flushCacheToDisc()
         }
     }
 
     /** Immediately flush any pending cache write (e.g. after a scan). */
     private fun saveCacheNow() {
-        val files = latestFiles.ifEmpty { return }
-        val tree = latestTree ?: return
         saveCacheJob?.cancel()
         saveCacheJob = viewModelScope.launch {
-            withContext(NonCancellable + Dispatchers.IO) {
-                try {
-                    ScanCache.save(getApplication(), files, tree)
-                } catch (_: Exception) { }
+            flushCacheToDisc()
+        }
+    }
+
+    /** Shared cache-write logic used by both debounced and immediate paths. */
+    private suspend fun flushCacheToDisc() {
+        val files = latestFiles.ifEmpty { return }
+        val tree = latestTree ?: return
+        withContext(NonCancellable + Dispatchers.IO) {
+            try {
+                ScanCache.save(getApplication(), files, tree)
+            } catch (e: Exception) {
+                android.util.Log.w("MainViewModel", "Cache save failed", e)
             }
         }
     }

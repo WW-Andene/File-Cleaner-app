@@ -204,19 +204,16 @@ object CrashReporter {
     }
 
     private fun extractTitle(content: String): String {
-        // Extract the exception line for the issue title
-        val exceptionLine = content.lineSequence()
-            .firstOrNull { it.startsWith("```") && it.length == 3 }
-            ?.let { null } // skip the ``` markers
-        // Find the line after "### Exception" and "```"
         val lines = content.lines()
-        val exIdx = lines.indexOfFirst { it.startsWith("```") && it.length > 3 }
-        val raw = if (exIdx >= 0) lines.getOrNull(exIdx + 1)?.removePrefix("```")?.trim()
-        else null
-
         // Find exception class:message from the crash report
         val exLine = lines.firstOrNull { it.contains("Exception:") || it.contains("Error:") }
             ?.removePrefix("```")?.trim()
+
+        // Fallback: find the line after the first ``` code fence marker
+        val raw = if (exLine == null) {
+            val exIdx = lines.indexOfFirst { it.startsWith("```") && it.length > 3 }
+            if (exIdx >= 0) lines.getOrNull(exIdx + 1)?.removePrefix("```")?.trim() else null
+        } else null
 
         val title = (exLine ?: raw ?: "Unknown crash").take(120)
         return "Crash: $title"

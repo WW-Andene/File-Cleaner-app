@@ -114,16 +114,7 @@ class MainActivity : AppCompatActivity() {
             if (currentDest != null && currentDest !in bottomNavIds) {
                 navController.popBackStack(currentDest, true)
             }
-            val options = NavOptions.Builder()
-                .setPopUpTo(R.id.raccoonManagerFragment, inclusive = false, saveState = true)
-                .setLaunchSingleTop(true)
-                .setRestoreState(true)
-                .setEnterAnim(R.anim.nav_enter)
-                .setExitAnim(R.anim.nav_exit)
-                .setPopEnterAnim(R.anim.nav_pop_enter)
-                .setPopExitAnim(R.anim.nav_pop_exit)
-                .build()
-            navController.navigate(destId, null, options)
+            navController.navigate(destId, null, buildBottomNavOptions())
             true
         }
         // Reselect: if on a non-tab fragment (e.g. tree view), pop back to the tab
@@ -132,16 +123,7 @@ class MainActivity : AppCompatActivity() {
             if (currentDest != null && currentDest !in bottomNavIds) {
                 navController.popBackStack(currentDest, true)
                 val destId = menuToNav[item.itemId] ?: return@setOnItemReselectedListener
-                val options = NavOptions.Builder()
-                    .setPopUpTo(R.id.raccoonManagerFragment, inclusive = false, saveState = true)
-                    .setLaunchSingleTop(true)
-                    .setRestoreState(true)
-                    .setEnterAnim(R.anim.nav_enter)
-                    .setExitAnim(R.anim.nav_exit)
-                    .setPopEnterAnim(R.anim.nav_pop_enter)
-                    .setPopExitAnim(R.anim.nav_pop_exit)
-                    .build()
-                navController.navigate(destId, null, options)
+                navController.navigate(destId, null, buildBottomNavOptions())
             }
         }
 
@@ -346,6 +328,16 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         handleOAuthIntent(intent)
     }
+
+    private fun buildBottomNavOptions(): NavOptions = NavOptions.Builder()
+        .setPopUpTo(R.id.raccoonManagerFragment, inclusive = false, saveState = true)
+        .setLaunchSingleTop(true)
+        .setRestoreState(true)
+        .setEnterAnim(R.anim.nav_enter)
+        .setExitAnim(R.anim.nav_exit)
+        .setPopEnterAnim(R.anim.nav_pop_enter)
+        .setPopExitAnim(R.anim.nav_pop_exit)
+        .build()
 
     private fun handleOAuthIntent(intent: Intent?) {
         val uri = intent?.data ?: return

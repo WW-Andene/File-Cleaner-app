@@ -2,6 +2,7 @@ package com.filecleaner.app
 
 import android.app.Application
 import com.filecleaner.app.data.UserPreferences
+import com.filecleaner.app.data.cloud.CloudConnectionStore
 import com.filecleaner.app.utils.CrashReporter
 
 class FileCleanerApp : Application() {
@@ -22,7 +23,7 @@ class FileCleanerApp : Application() {
 
         // Initialize preferences early so CrashReporter can read the token
         UserPreferences.init(applicationContext)
-        com.filecleaner.app.data.cloud.CloudConnectionStore.init(applicationContext)
+        CloudConnectionStore.init(applicationContext)
 
         // Install crash handler (writes crash files to disk on uncaught exceptions)
         CrashReporter.install(applicationContext)

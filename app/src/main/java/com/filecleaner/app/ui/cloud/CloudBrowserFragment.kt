@@ -567,6 +567,7 @@ class CloudBrowserFragment : Fragment() {
                 try { withTimeout(5000L) { provider.disconnect() } } catch (_: Exception) {}
             }
         }
+        currentProvider = null
         _binding?.spinnerConnection?.onItemSelectedListener = null
         super.onDestroyView()
         _binding = null

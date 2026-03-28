@@ -379,10 +379,10 @@ class BrowseFragment : Fragment() {
         binding.btnToggleExpandCollapse.visibility = View.VISIBLE
         val expanded = adapter.hasExpandedFolders()
         if (expanded) {
-            binding.btnToggleExpandCollapse.text = getString(R.string.folders_only)
-            binding.btnToggleExpandCollapse.setIconResource(R.drawable.ic_folder)
+            binding.btnToggleExpandCollapse.text = getString(R.string.collapse_all)
+            binding.btnToggleExpandCollapse.setIconResource(R.drawable.ic_chevron_up)
         } else {
-            binding.btnToggleExpandCollapse.text = getString(R.string.show_all)
+            binding.btnToggleExpandCollapse.text = getString(R.string.expand_all)
             binding.btnToggleExpandCollapse.setIconResource(R.drawable.ic_arrow_down)
         }
     }

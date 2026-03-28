@@ -990,6 +990,8 @@
     <!-- Browse folder collapse/expand -->
     <string name="expand_all">Expand All</string>
     <string name="collapse_all">Collapse All</string>
+    <string name="folders_only">Folders Only</string>
+    <string name="show_all">Show All</string>
     <string name="collapse_expand">Toggle expand or collapse</string>
     <string name="a11y_expand_folder">Expand folder %s</string>
     <string name="a11y_collapse_folder">Collapse folder %s</string>

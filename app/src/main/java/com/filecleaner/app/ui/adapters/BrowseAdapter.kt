@@ -207,14 +207,15 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
     /** When true in direct browse mode, files are hidden (only folders shown). */
     var filesCollapsed = false
 
-    /** Expand all folders. */
+    /** Expand all — show all items (folders + files). */
     fun expandAll() {
         collapsedFolders.clear()
         filesCollapsed = false
         expandedByUser.clear()
+        submitList(ArrayList(computeVisibleList()))
     }
 
-    /** Collapse all folders. */
+    /** Collapse — hide files, show folders only (direct browse) or collapse headers (scan). */
     fun collapseAll() {
         collapsedFolders.clear()
         for (item in fullList) {
@@ -224,6 +225,7 @@ class BrowseAdapter : ListAdapter<BrowseAdapter.Item, RecyclerView.ViewHolder>(D
         }
         expandedByUser.clear()
         filesCollapsed = true
+        submitList(ArrayList(computeVisibleList()))
     }
 
     /** Returns true if any folder is expanded or files are visible. */

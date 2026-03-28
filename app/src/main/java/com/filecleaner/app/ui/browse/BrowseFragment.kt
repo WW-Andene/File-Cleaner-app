@@ -363,16 +363,13 @@ class BrowseFragment : Fragment() {
     private var restoredFolderViewMode = -1
     private var restoredScrollPos = -1
 
-    /** Toggle all folders between expanded and collapsed. */
+    /** Toggle between showing all items and folders only. */
     private fun toggleAllFolders() {
         if (adapter.hasExpandedFolders()) {
             adapter.collapseAll()
         } else {
             adapter.expandAll()
         }
-        // Always do a full refresh to guarantee the RecyclerView updates.
-        // collapseAll/expandAll only set flags — refresh() rebuilds the list.
-        refresh()
         updateExpandCollapseButton()
     }
 
@@ -382,10 +379,10 @@ class BrowseFragment : Fragment() {
         binding.btnToggleExpandCollapse.visibility = View.VISIBLE
         val expanded = adapter.hasExpandedFolders()
         if (expanded) {
-            binding.btnToggleExpandCollapse.text = getString(R.string.collapse_all)
-            binding.btnToggleExpandCollapse.setIconResource(R.drawable.ic_chevron_up)
+            binding.btnToggleExpandCollapse.text = getString(R.string.folders_only)
+            binding.btnToggleExpandCollapse.setIconResource(R.drawable.ic_folder)
         } else {
-            binding.btnToggleExpandCollapse.text = getString(R.string.expand_all)
+            binding.btnToggleExpandCollapse.text = getString(R.string.show_all)
             binding.btnToggleExpandCollapse.setIconResource(R.drawable.ic_arrow_down)
         }
     }

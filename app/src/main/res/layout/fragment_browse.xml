@@ -84,6 +84,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scrollbars="none"
+        android:clipToPadding="false"
         android:paddingTop="@dimen/spacing_sm">
 
     <LinearLayout
@@ -91,7 +92,8 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingHorizontal="@dimen/spacing_lg">
+        android:paddingHorizontal="@dimen/spacing_lg"
+        android:clipToPadding="false">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_category_filter"
